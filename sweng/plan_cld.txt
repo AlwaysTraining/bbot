@@ -1,0 +1,13 @@
+bbot conceptual design
+----------------------
+
+ConnectState        S
+InputUserNameState  S
+InputPasswordState  S
+MainMenuState       S
+LogOutState         S
+
+Configuration       L
+Main                L
+Util                VL
+

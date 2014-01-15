@@ -1,0 +1,8 @@
+bbot requirements
+-----------------
+
+Log in to arbitrary bbs given a username and password
+Log out of the bbs
+    
+
+
