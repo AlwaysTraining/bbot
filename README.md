@@ -1,2 +1,5 @@
 bbot
 ====
+
+dependencies:
+    pexpect
