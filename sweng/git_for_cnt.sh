@@ -52,6 +52,7 @@ if [ -z "$full" ] ; then
 
     echo Removing text files
     find . -name "*.txt" -exec rm -f {} \;
+    rm LICENSE README.md
     echo Removing test data files
     rm -rf test/var/log
     echo "Removing git files"
