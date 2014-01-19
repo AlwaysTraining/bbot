@@ -17,25 +17,17 @@ import getpass
 parser = OptionParser(usage="Wikicnt Command Line App")
 parser.add_option("-u", "--username",
                   action="store", type="string", dest="username",
-                  help="Your Confluence username.", 
-                  default=None)
+                  help="Your BBS username.", 
+                  default='Randy32')
 parser.add_option("-p", "--password",
                   action="store", type="string", dest="password",
-                  help="Your Confluence password.",
+                  help="Your BBS password.",
                   default=None)
-parser.add_option("-l", "--url",
+parser.add_option("-a", "--address",
                   action="store", type="string", dest="url",
-                  help="Optional: a confluence XMLRPC URL. Default is to confluence,di2e",
+                  help="BBS address",
                   default='https://confluence.di2e.net/rpc/xmlrpc')
-parser.add_option("-s", "--space", action="store", type="string",
-                  dest="space",
-                  help="name of space",
-                  default=None)
-parser.add_option("-t", "--title", action="store", type="string",
-                  dest="title", 
-                  help="title of page",
-                  default=None)
-parser.add_option("-a", "--action", action="store", type="string",
+parser.add_option("-a", "--strategy", action="append", type="string",
                   dest="action", 
                   help="action to perform []",
                   default=None)

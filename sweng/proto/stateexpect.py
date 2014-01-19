@@ -51,8 +51,8 @@ class mmenu(state):
         return ['...External programs','AFTERSHOCK:']
     def parse_token(self,tok):
         if tok == 0:
-            print 'i^&^&matched to:', tok, len(t.match.string), t.match.pos, t.match.endpos
-            self.val = t.match[0]
+            print 'i^&^&matched to:', tok, t.after
+            self.val = t.after[0]
             return self
         elif tok == 1:
             print 'i^&^&sending ' , self.val
