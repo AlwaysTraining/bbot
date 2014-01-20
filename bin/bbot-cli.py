@@ -37,7 +37,16 @@ parser.add_argument("strategies", nargs='+',
                   help="list of actions to perform")
 
 args = parser.parse_args(sys.argv[1:])
+
+# get all arguments in dictionary form
 options = vars(args)
+
+# build list of options set to None
+noneops = [ o for o,v in options.items() if v is None]
+
+#remove all options set to none from the options dict
+for o in noneops:
+    del options[o]
 
 logging.debug("opts from args: " + str(options))
 

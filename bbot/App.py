@@ -38,6 +38,8 @@ class App:
         if secret:
             return self.secret_query_func('Please enter ' + key)
 
+        return self.query_func(key)
+
 
     def send(self, msg, eol=False):
         """
@@ -46,9 +48,10 @@ class App:
 
         time.sleep(1)
 
-        for c in msg:
-            time.sleep(random.uniform(0.25, 0.75))
-            self.telnet.send(c)
+        if msg is not None:
+            for c in msg:
+                time.sleep(random.uniform(0.25, 0.75))
+                self.telnet.send(c)
 
         if eol:
             time.sleep(random.uniform(0.25, 0.75))

@@ -45,6 +45,7 @@ class Session(Strategy):
 
         elif lastState == 4 and state == 5:
 
+            self.app.telnet.interact()
             self.app.send('x') # external menu
             self.app.send('2') # games
             self.app.send('10') # BRE Local Game
