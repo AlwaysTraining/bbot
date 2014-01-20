@@ -4,14 +4,13 @@
 # Emerging Technology Center, Carnegie Mellon University, Copyright 2013
 # Unclassified
 
-import Constants
 import os
-import Strategy
+from bbot.Strategy import Strategy
 
-class Common(Strategy.Strategy):
+class Common(Strategy):
 
     def __init__(self, app):
-        Strategy.Strategy.__init__(self, app)
+        Strategy.__init__(self, app)
 
     def get_indicators(self):
         return {
@@ -26,7 +25,7 @@ class Common(Strategy.Strategy):
 
         elif self.lastState == 1 and state == 2:
 
-            self.app.sendl('Randyland')
+            self.app.sendl(self.app.get_app_value('realm'))
             self.app.telnet.interact()
 
 

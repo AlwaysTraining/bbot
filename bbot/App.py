@@ -9,7 +9,9 @@ import os,sys
 import pexpect
 import random
 import time
-import Session
+import logging
+import Utils
+from bbot import *
 
 class App:
 
@@ -57,12 +59,33 @@ class App:
 
    
     def run(self):
-        # use options to determine what to do 
-        self.telnet = pexpect.spawn('telnet shenks.synchro.net', logfile=sys.stdout)
-        
-        session = Session.Session(self)
-        stratgem = {session.get_name() : session} 
 
+        # begin the telnet session
+        self.telnet = pexpect.spawn('telnet ' + self.get_app_value('address'), logfile=sys.stdout)
+
+        # get list of strategies from user
+        stratgem = {}
+        strats = self.get_app_value('strategies')
+
+        # if one string is provided, someitmes they can just give it to us as one string,
+        #   convert it to a list to implify 
+        if isinstance(strats, basestring):
+            strats = [strats]
+
+        # shouldn't happen with cmd line checking
+        if strats is None:
+            raise Exception("No Strategies provided")
+
+        # dynamically load all strategies given form the command line
+        for strstrat in strats:
+            codepath = os.path.join(os.path.dirname(__file__),strstrat + ".py")
+            strat = Utils.create_instance(codepath, strstrat,app=self)
+
+            stratgem[strat.get_name()] = strat
+
+
+        # pull indicators out of the strategies into a collection keyed by indicator
+        # each indicator correspnds to a dictionary of strategies that use that indicator
         indicators = {}
         
 

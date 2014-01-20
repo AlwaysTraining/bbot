@@ -4,14 +4,13 @@
 # Emerging Technology Center, Carnegie Mellon University, Copyright 2013
 # Unclassified
 
-import Constants
-import os
-import Strategy
+from bbot.Strategy import Strategy
+ 
 
-class Session(Strategy.Strategy):
+class Session(Strategy):
 
     def __init__(self, app):
-        Strategy.Strategy.__init__(self, app)
+        Strategy.__init__(self, app)
 
     def get_indicators(self):
         return {
@@ -27,11 +26,11 @@ class Session(Strategy.Strategy):
     def on_indicator(self, lastState, state):
         if lastState is None and state == 1:
 
-            self.app.sendl('Randy32')
+            self.app.sendl(self.app.get_app_value('username'))
 
         elif lastState == 1 and state == 2:
 
-            self.app.sendl('RANDYPAS')
+            self.app.sendl(self.app.get_app_value('password'))
 
         elif (lastState == 2 or lastState == 3) and state == 3:
 
