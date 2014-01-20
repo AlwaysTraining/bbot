@@ -1,1 +1,1 @@
-$(dirname $0)/bbot-cli.py Session
+$(dirname $0)/bbot-cli.py Session Common

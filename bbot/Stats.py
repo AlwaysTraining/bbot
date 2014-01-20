@@ -14,17 +14,26 @@ class Common(Strategy):
 
     def get_indicators(self):
         return {
-                'Do you want ANSI Graphics' :   1,
-                'Continue? (Y/n)'   : 2,
-                'Name your Realm'   : 3,
-                'Name Your Empire' : 4,
-                'Would you like Instructions' : 5,
-                '>Paused<' : 6,
-                'Play Game' : 7, 
-                'See Status' : 8,
-                'See Scores' : 9,
-                'Would you like to buy a lottery ticket' : 10,
-                }
+            "gold was earned in taxes"  :   10,
+            "gold was produced from the Ore Mines"  :   20,
+            "gold was earned in Tourism"    : 30,
+            "gold was earned by Solar Power Generators" :   40,
+            "Food units were grown" :   50
+}
+
+"""
+Turns: 10
+Score: 213
+Gold: 1,048,281
+Population: 100 Million (Tax Rate: 15%)
+Popular Support: 100%
+Food: 1600
+Military: [100 Troopers] 
+          [100% Morale]
+Regions:  [2 Agricultural] [5 Desert] [5 Mountains] [3 Coastal] 
+You have 100 Years of Protection Left.
+���������������������������������������������������������������������
+"""
 
     def on_indicator(self, state):
         if self.lastState is None and state == 1:

@@ -49,3 +49,5 @@ class Session(Strategy):
             self.app.send('2') # games
             self.app.send('10') # BRE Local Game
 
+        else:
+            return Strategy.UNHANDLED

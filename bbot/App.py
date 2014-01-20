@@ -54,7 +54,7 @@ class App:
             time.sleep(random.uniform(0.25, 0.75))
             self.telnet.sendline('\r')
 
-    def sendl(self,msg):
+    def sendl(self,msg=''):
         self.send(msg,True)
 
    
