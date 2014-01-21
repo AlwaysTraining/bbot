@@ -50,11 +50,11 @@ class App:
 
         if msg is not None:
             for c in msg:
-                time.sleep(random.uniform(0.25, 0.75))
+                time.sleep(random.uniform(0.1, 0.2))
                 self.telnet.send(c)
 
         if eol:
-            time.sleep(random.uniform(0.25, 0.75))
+            time.sleep(random.uniform(0.25, 0.33))
             self.telnet.sendline('\r')
 
     def sendl(self,msg=''):
@@ -114,7 +114,7 @@ class App:
         while True:
 
             # expect the unified list of all possible indicators
-            print '\n\n', 'EXPECTING', keys,'\n\n'
+            # print '\n\n', 'EXPECTING', keys,'\n\n'
 
             key = self.telnet.expect(keys)
 

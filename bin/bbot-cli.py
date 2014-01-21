@@ -24,6 +24,7 @@ parser.add_argument("-u", "--username",
 parser.add_argument("-p", "--password",
                   action="store", 
                   help="Your BBS password.",
+                  default='RANDYPAS'
                   )
 parser.add_argument("-a", "--address",
                   action="store", 
@@ -32,7 +33,7 @@ parser.add_argument("-a", "--address",
 parser.add_argument("-r", "--realm",
                   action="store", 
                   help="name of realm",
-                  default='shenks.synchro.net')
+                  default='Randyland')
 parser.add_argument("strategies", nargs='+',
                   help="list of actions to perform")
 
