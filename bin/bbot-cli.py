@@ -34,8 +34,11 @@ parser.add_argument("-r", "--realm",
                   action="store", 
                   help="name of realm",
                   default='Randyland')
-parser.add_argument("strategies", nargs='+',
-                  help="list of actions to perform")
+parser.add_argument("strategies", nargs='?',
+                  help="list of actions to perform",
+                  default=['Session', 'Common', 'Diplomacy', 'Main', 'Stats', 'Maintenance',
+                      'Food','Bank','Spending','Attack', 'Trading', 'EndTurn']
+                  )
 
 args = parser.parse_args(sys.argv[1:])
 

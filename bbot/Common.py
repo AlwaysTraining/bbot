@@ -20,10 +20,7 @@ class Common(Strategy):
                 'Name Your Empire' : 4,
                 'Would you like Instructions' : 5,
                 '>Paused<' : 6,
-                'Choice> Play Game' : 7, 
                 '^Would you like to buy a lottery ticket\? \(Y/n\) ':10,
-                'Do you wish to visit the Bank\? \(y/N\) ' : 20
-                # '^Do you wish to visit the Bank\? \(y/N\) ' : 20
                 }
 
     def on_indicator(self, lastState, state):
@@ -57,9 +54,6 @@ class Common(Strategy):
             # Paused, press enter
             self.app.sendl()
 
-        elif state == 7:
-            # press enter to start play
-            self.app.sendl()
         elif state == 10:
             # play the lottery
             for i in range(7):
@@ -75,8 +69,6 @@ class Common(Strategy):
             self.app.sendl('>')
             # carreirs at 0
             self.app.sendl()
-        elif state == 20:
-            self.app.sendl('y')
             
 
 

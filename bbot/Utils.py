@@ -12,6 +12,7 @@ import Strategy
 bbot_TOOL_VERSION="0.1"
 ENVIRON_PREFIX="bbot_"
 
+NUM_REGEX='([0-9][,0-9]*)'
 
 def load_modules(
     modulePaths    # list of paths to python modules
@@ -98,3 +99,7 @@ def create_instance(
     instance = type_(**kwargs)
 
     return instance
+
+def ToNum(strNum):
+    strNum = strNum.replace(',','')
+    return int(strNum)

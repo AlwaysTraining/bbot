@@ -11,6 +11,7 @@ import random
 import time
 import logging
 import Utils
+import Data
 from bbot import *
 
 class App:
@@ -19,19 +20,20 @@ class App:
         self.options = options
         self.query_func = query_func
         self.secret_query_func = secret_query_func
+        self.data = Data.Data()
 
     def get_app_value(self, key, secret=False):
         # Check if value is in options
         if key in self.options and self.options[key] is not None:
             if not secret:
-                print '[options]', key,':',self.options[key]
+                logging.debug( '[options]'+ key+':'+str(self.options[key]))
             return self.options[key]
 
         environkey = Constants.ENVIRON_PREFIX + key
         # otherwise check if value is in environment
         if environkey in os.environ and self.options[key] != '':
             if not secret:
-                print '[environment]', environkey,':',os.environ[environkey]
+                logging.debug( '[environment]'+ environkey + ':' + os.environ[environkey])
             return os.environ[environkey]
         
         # otherwise call query function, or secretquery Func
@@ -59,6 +61,12 @@ class App:
 
     def sendl(self,msg=''):
         self.send(msg,True)
+
+    def get_num(self, matchIndex=0):
+        """
+        Get a number from the current matchign regex group
+        """
+        return Utils.ToNum(self.telnet.match.groups()[matchIndex])
 
    
     def run(self):
@@ -118,7 +126,7 @@ class App:
 
             key = self.telnet.expect(keys)
 
-            print '\n\n', 'MATCHED', keys[key],'\n\n'
+            logging.debug( 'Matched: ' + keys[key])
 
             # expect returns the index into the list, use this to locate the record 
             #   for the strategies and states tied to this keyword

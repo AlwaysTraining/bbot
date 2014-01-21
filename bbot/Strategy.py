@@ -6,10 +6,14 @@
 
 import Constants
 import os
+import logging
 
 UNHANDLED="bbot_UNHANDLED"
 
 class Strategy:
+
+    UNHANDLED="bbot_UNHANDLED"
+
 
     def __init__(self, app):
         self.app = app
@@ -20,9 +24,13 @@ class Strategy:
 
 
     def base_on_indicator(self, state):
+        logging.debug(self.get_name() + " handling state " + str(state) + 
+                ', lastState ' + str(self.lastState))
         s = self.on_indicator(self.lastState, state)
         if s != UNHANDLED:
             self.lastState = state
+        else:
+            logging.debug(self.get_name() + " state " + str(state) + " was unhandled")
         
 
     def on_indicator(self, lastState, state):
