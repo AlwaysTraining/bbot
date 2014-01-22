@@ -81,7 +81,7 @@ class Diplomacy(Strategy):
     def get_indicators(self):
         return {
 '\[Diplomacy Menu\]' : 10,
-'Choice>' : 20,
+'\(9\) View Treaties' : 20,
 '\-\*Relations\*\-' : 30,
 '\[([A-Z])\]  (.*)' : 40
 }
@@ -93,15 +93,7 @@ class Diplomacy(Strategy):
             pass
         elif lastState == 10 and state == 20:
             # at the diplomacy menu view treatys
-            self.app.send(9)
-        elif lastState == 20 and state == 30:
-            pass
-        elif (lastState == 30 or lastState == 40) and state == 40:
-            print "read !!@!!@!!!", self.app.telnet.match.group(0), self.app.telnet.match.group(1)
-
-
-
-
+            self.app.sendl()
 
         else:
             return Strategy.UNHANDLED

@@ -1,0 +1,141 @@
+Trying 50.53.160.105...
+Connected to x-bit.org.
+Escape character is '^]'.
+
+Synchronet BBS for Win32  Version 3.15
+Connection from: 74.98.226.206
+Resolving hostname...
+
+[s[255B[255C_[6n[u[!_[30;40mÂŸZuul.connection.write('\x1bAre you the gatekeeper?')Âœ[2J[H      Synchronet BBS for Win32  Version 3.15  Copyright 2011 Rob Swindell
+
+  ú         ú                ú   ú   ú   ú  ÜÜßß   ú   ßßÜÜ ú ÜÜÜÜÜÛ²²±±°°ÛÛÛÛÛ
+            ú                            Üßß            ÜÜÜÛÛ²²±±°°ÛÛÛÛÛÛÛÛÛ²ÛÛ
+    ú  ú         ú        ú ú     ú  ú  Û     ÜÛÛÛÛßÜÜÛÛ²²±°°ÛÛÛÛÛÛÛÛÛ²Û²ÛÛ²²²²
+   ú     ú            ú                Þ     ÞÛÛßÜÜÛ²²±±°°ÛÛÛÛÛÛÛÛÛ²²Û²²²²²²±²²
+             úþ ß þú        þ ß þ ú    Ý      ßÜÛ²²²±±°°ÛÛÛÛÛÛ²Û²Û²²²²±²±±²±±²±
+ú    ú ú     þÜßßßÜþ ÜÜßßÜ þÜßßßÜþ     þ     Üß²²²±±°°°ÛÛÛÛÛ²Û²²²²²²±±±±±°²±°±±
+ßßßÜÜÛÛÛÜÜÜ  þßÜÜÜßþÛÛßÞßÛÛþßÜÜÜßþ  ÜÜÜÛÛÛßßßßß²±±°°°ÛÛÛÛÛÛ²²²±²±²²±±°±°°°±°°°±
+ú    ßßßßÜÜÜÛÜÜÜÜþÜÛß  Þ þßßÜþÜÜÜÜÛßßßßßßß Ü²²±±°°°ÛÛÛÛÛÛ²²²±²±±°±²°° ° ° ± ° °
+    ú       ßßßßÜÛÛß   Þ  þßÛßÜßßßß       Ü²±°°ÛÛÛÛÛÛÛ²²²²²±±±±°°°±°° °   ° ° °
+ú               ßÛÛÛßßßÞßßßÛÛÛß           ²±°ÛÛÛÛÛÛÛ²²²²±²±±°°±°° ± °   °°°   ú
+     ú      ú  ÜßÜ ßÛÛÜÞÜÛÜß ÜÜÜ     ú   ²±°ÛÛÛÛÛÛ²²²±±±°±°°° °°  °°°°  °° °°
+ú    úú   ú     ß  ú  ßÞßú    ß          ±°ÛÛÛÛÛ²²²²±±°± ° °° ° °°°      °
+  úú             ú               ú       °ÛÛÛÛ²²²²²²±°°°    °        °°°
+ ú ú                 ú                   ÛÛÛÛ²²²±±±°°°           °°°°
+ú    ú ú             ú ú      ú ú     ú   ÛÛ²²²²²±±±°°°° °°° ° °°°            °
+    ú      ú                  ú           ßÛÛ²²²±±°°°                       °°
+               ú   ú    ú           ú      ßÛÛ²²²±±°°°        °°°         °°
+ Your journey has ended.. Welcome Åo Åhe ú  ßÛÛ²²²²±±°°°         °°°
+úX-áŒÅ. MakŒng sure ÅhaÅ Åhe arÅ of ááS'Œng   ÛÛ²²²±±±°°°°° °°°     °°
+ never dŒes..       ú   ú     ú            ú   ßÛ²²²±±°°
+ú     ú              ú    úú      ú              ßßÛ²²±±°°  °°°°  °
+   ú          ú          ú úú   ú     ú  ú  ú   ú   ßß²²²±°°°
+[Hit a key] 
+             
+
+CLIENT >>>>CONN: Telnet
+       >>>>ADDR: pool-74-98-226-206.pitbpa.fios.verizon.net [74.98.226.206]
+SERVER >>>>NAME: The X-BIT BBS
+       >>>>ADDR: x-bit.org
+       >>>>NODE: 1 (of 15)
+       >>>>DATE: 01/21/14
+       >>>>TIME: 05:04 pm
+       >>>>ADMN: Rob McGee
+
+If you are a new user to the system, type "New" now.
+Otherwise, enter your user name or number now.
+
+Enter User Name or Number or 'New'
+NN:Login: Bob Falooley
+Bob Falooley
+PW:Password: karpet
+******
+Loading message pointers...                               
+                                                  ##   #
+                            #  ####             ##         gj/+E
+      synchronet   ## #   *       #####   ##   ][
+       # *    ######    ######  *##]#### ]####### #########   #  ####
+    ##   ##########  ####### ### #### ### ]#######   ######  ###### #[
+   ][   ##########[ ##### ]#### #########[ ## ############## #### ######
+    #  ]###### ##### ## # ]###[]# ########  ########## ##### ]]##[######## #
+   #### ########  #####[# ]######  # ##### ##########[ ]################ # ##
+  ### ##### ###### ####[ ]]#########  ### ]##### ###[ * ########### ########
+ ]##[]## ### # ]#########]###[############]####  #####  ]###[  ####[ ####
+  ####[######## ## ########## #### ####### ###### ## ##[ ###[]#]#### ###
+       ########## ##### ]###[]####[  #####[ # ## ##*###[#]##[]#]####[][
+    ##  #####[#### #### #### ######[## ##### # ########  ]## # ##### #
+      #  #  ###########] ##[###  # # #### ##### # ###   ### ] #####
+                # ##  ##########   ## ######     *    #      *
+                          ####             ][##   bbs software
+                         ###            #  #
+                        ####
+                         ##
+                         [
+
+
+[Hit a key]  |
+             [Hit a key]  |/-\|/
+             
+Synchronet BullsEye! Version 2.00 by Rob Swindell
+
++---------------------------------+  ---------------------------------------
+|-------------+        #  [ ##  #[|   You enter the crowded confines of the
+|##[.### .  . |  ] [    [### .##[ |   xbit bbs bulletin area. This is where
+|## ]###[. .  | ##- #   ]##.[*[*# |   you can find  updated info about xbit
+|  .]###[ . . | ]* *[   ####.---.[|   bbs and more! Xbit again welcomes you
+|.*#######*  .|### ###   [ ##.### |   to the new age of the BBS.  So grab a
+|#####[#####-##  ##  # *###.[##*|   drink and take a chair.  For many new
+|__-- ##--------_##--__-  -- -##--|   people and worlds await you!
++---------------------------------+  ---------------------------------------
+ +--] Bulletins [-------------------------------------------------------+
+ |                                                                      |-+
+ | [1:> ... X-bi+ BBS Newsletter     [9:> ... Yesterday's Stats         | |
+ | [2:> ... The Rules at X-bi+       [10> ... Full Stats on Xbit        | |
+ | [3:> ... FidoNET Newsletter       [11> ... How to contact the Sysop  | |
+ | [4:> ... Comix In ASCII: 'cows'   [12> ... Info about Synchronet     | |
+ | [5:> ... What is a BBS?           [13> ... New User Instructions     | |
+ | [6:> ... Donations for the X-bi+  [14> ... What is Dove-Net?         | |
+ | [7:> ... Available FidoNet Echos  [15> ... FAQ: Synchronet BBS       | |
+ | [8:> ... Other BBS Networks       [16> ... Bulding a Linux SBBS      | |
+ +----------------------------------------------------------------------+ |
+     +--------------------------------------------------------------------+
+
+Enter number of bulletin to view or press (ENTER) to continue:  |  |/-\|
+ 
+Last few callers:
+
+1  409408 Bob Falooley              Pittsbutgh, Pa           16:39 Telnet     5
+1  409409 Bob Falooley              Pittsbutgh, Pa           16:52 Telnet     6
+1  409410 Bob Falooley              Pittsbutgh, Pa           16:55 Telnet     7
+1  409411 Bob Falooley              Pittsbutgh, Pa           17:01 Telnet     8
+
+Auto message by: xbit #1 on Tue Apr 3 2012 5:22 am
+
+Congrats to the X-Bit for topping over 400k hits!
+
+The +--   +--
+     +-- +--
+      +----
+     +-- +--
+    +--   +--  Bit
+ 
+System          : The X-BIT BBS
+User #152       : Bob Falooley
+Logons Today    : 9     (Max 10)
+Time on Today   : 41    (Max 480)
+Mail Waiting    : 0
+Sysop is        : Available
+[Hit a key]  |             
+[Hit a key]  |/-\|
+
+             
+* Main * 3:59:56 [1] Xbit Local Echo [4] InterBBS FE:  | 
+
+Unrecognized command. Hit '?' for a menu.
+
+* Main * 3:59:56 [1] Xbit Local Echo [4] InterBBS FE:  |/-\| 
+* Main * 3:59:55 [1] Xbit Local Echo [4] InterBBS FE:  | 
+
+Unrecognized command. Hit '?' for a menu.
+
+* Main * 3:59:54 [1] Xbit Local Echo [4] InterBBS FE:  |/-\|x4

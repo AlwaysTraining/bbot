@@ -34,9 +34,9 @@ You have 100 Years of Protection Left.
 
 """
 import os
+from bbot.Utils import *
 from bbot.Strategy import Strategy
 
-NUM_REGEX='([0-9][,0-9]*)'
 
 class Stats(Strategy):
 
@@ -46,7 +46,7 @@ class Stats(Strategy):
     
     def get_indicators(self):
         return {
-            '^'+NUM_REGEX+' gold was earned in taxes\.$'  :   10,
+            NUM_REGEX+' gold was earned in taxes\.'  :   10,
             "gold was produced from the Ore Mines"  :   20,
             "gold was earned in Tourism"    : 30,
             "gold was earned by Solar Power Generators" :   40,
@@ -54,10 +54,9 @@ class Stats(Strategy):
         }
 
 
-    def on_indicator(self, state):
+    def on_indicator(self, lastState, state):
         if state == 10:
-            print 'Read a value!!!!!!!', self.app.telnet.match.group(0)
-
+            self.app.data.set("Turn Tax Revenue", self.app.get_num(0))
 
 
         else:

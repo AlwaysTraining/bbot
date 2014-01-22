@@ -72,7 +72,9 @@ class App:
     def run(self):
 
         # begin the telnet session
-        self.telnet = pexpect.spawn('telnet ' + self.get_app_value('address'), logfile=sys.stdout)
+        # fout = file('mylog.txt','w')
+        fout = sys.stdout
+        self.telnet = pexpect.spawn('telnet ' + self.get_app_value('address'), logfile=fout)
 
         # get list of strategies from user
         stratgem = {}

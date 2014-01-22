@@ -34,6 +34,10 @@ parser.add_argument("-r", "--realm",
                   action="store", 
                   help="name of realm",
                   default='Randyland')
+parser.add_argument("-g", "--game",
+                  action="store", 
+                  help="menu number for the game",
+                  default='10')
 parser.add_argument("strategies", nargs='?',
                   help="list of actions to perform",
                   default=['Session', 'Common', 'Diplomacy', 'Main', 'Stats', 'Maintenance',

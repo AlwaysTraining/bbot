@@ -3,6 +3,7 @@
 
 """
 
+Do you wish to visit the Bank? (y/N)
 
 Your Armed Forces Require 10 gold.
 How much will you give? (10; 10)
@@ -28,6 +29,7 @@ class Maintenance(Strategy):
     
     def get_indicators(self):
         return {
+            'Do you wish to visit the Bank\? \(y/N\)'  :   5,
             'Your Armed Forces Require '+NUM_REGEX+' gold\.'  :   10,
             NUM_REGEX + ' gold is required to maintain your regions.'   :   20,
             'The Queen Royale requires '+NUM_REGEX+' gold for Taxes.' : 30,
@@ -36,7 +38,9 @@ class Maintenance(Strategy):
 
 
     def on_indicator(self, lastState, state):
-        if state == 10:
+        if state == 5:
+            self.app.sendl()
+        elif state == 10:
             self.app.data.set("Turn Army Maintenance", self.app.get_num())
             self.app.sendl()
         elif state == 20:

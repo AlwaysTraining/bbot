@@ -16,38 +16,42 @@ class Session(Strategy):
         return {
                 'Login:'    :   1,
                 'Password'  :   2,
-                'Hit a key'   :   3,
-                'Enter number of bulletin to view or press'    :   3,
+                '\[Hit a key\]'   :   3,
+                'Enter number of bulletin to view or press \(ENTER\) to continue:'    :   3,
                 'Search all groups for new messages'   :   4,
                 'Search all groups for un-read messages to you' : 4,
-                'AFTERSHOCK'   :   5
+                'AFTERSHOCK'   :   5,
+                '\* Main \* .* Xbit Local Echo \[4\] InterBBS FE:'  :   6,
                 }
 
     def on_indicator(self, lastState, state):
-        if lastState is None and state == 1:
+        if state == 1:
 
             self.app.sendl(self.app.get_app_value('username'))
 
-        elif lastState == 1 and state == 2:
+        elif state == 2:
 
             self.app.sendl(self.app.get_app_value('password'))
 
-        elif (lastState == 2 or lastState == 3) and state == 3:
+        elif state == 3:
 
-            self.app.sendl('')
-
-        elif (lastState == 3 or lastState == 4)  and state == 4:
+            self.app.sendl()
+        elif state == 4:
 
             self.app.send('n')
-
-# NOTE states 2 through 4 could be combined because there is no variability
-# in the keypresses after password to login
-
-        elif lastState == 4 and state == 5:
+                
+        elif state == 5:
 
             self.app.send('x') # external menu
             self.app.send('2') # games
-            self.app.send('10') # BRE Local Game
+            self.app.send(self.app.get_app_value('game'))
+
+        elif state == 6:
+
+            self.app.send('x') # external menu
+            self.app.send('4') # games
+            self.app.send(self.app.get_app_value('game'))
+
 
         else:
             return Strategy.UNHANDLED
