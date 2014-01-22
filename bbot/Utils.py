@@ -58,9 +58,8 @@ def load_modules(
 
         # set the returned python module resulting from invoking 
         #   loadFunction into returning dictionary
-        logging.debug("Loading: " + expandedModulePath)
+        logging.debug("dynamically loding: " + expandedModulePath)
         mod = loadFunc(mod_name, expandedModulePath)
-        logging.debug("Loaded: " + expandedModulePath)
         modules[modulePath] = mod
 
     # return the dictinoary mapping modulePaths to loaded module objects

@@ -12,6 +12,7 @@ import time
 import logging
 import Utils
 import Data
+import Strategy
 from bbot import *
 
 class App:
@@ -69,6 +70,8 @@ class App:
    
     def run(self):
 
+        logging.info("bbot has begun")
+
         # begin the telnet session
         # fout = file('mylog.txt','w')
         fout = sys.stdout
@@ -119,7 +122,8 @@ class App:
         keys = indicators.keys()
 
         # repeat forever or until we think of something better to do
-        while True:
+        running = True
+        while running:
 
             # expect the unified list of all possible indicators
             # print '\n\n', 'EXPECTING', keys,'\n\n'
@@ -135,9 +139,14 @@ class App:
             # iterate each indicator
             for indicator,strategyState in indicatorRec.items():
 
-                    s = strategyState[0]
-                    state = strategyState[1]
-                    s.base_on_indicator(state)
+                s = strategyState[0]
+                state = strategyState[1]
+                action = s.base_on_indicator(state)
+                if action == Strategy.TERMINATE:
+                    self.telnet.close()
+                    running = False
+                    break
 
+        logging.info("bbot has completed")
 
 

@@ -9,10 +9,12 @@ import os
 import logging
 
 UNHANDLED="bbot_UNHANDLED"
+TERMINATE="bbot_TERMINATE"
 
 class Strategy:
 
     UNHANDLED="bbot_UNHANDLED"
+    TERMINATE="bbot_TERMINATE"
 
 
     def __init__(self, app):
@@ -31,6 +33,8 @@ class Strategy:
             self.lastState = state
         else:
             logging.debug(self.get_name() + " state " + str(state) + " was unhandled")
+
+        return s
         
 
     def on_indicator(self, lastState, state):
