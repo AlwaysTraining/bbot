@@ -19,7 +19,7 @@ class Common(Strategy):
                 'Name your Realm'   : 3,
                 'Name Your Empire' : 4,
                 'Would you like Instructions' : 5,
-                '>Paused<' : 6,
+                '[<>]Paused[<>]' : 6,
                 '^Would you like to buy a lottery ticket\? \(Y/n\) ':10,
                 }
 

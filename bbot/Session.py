@@ -20,8 +20,9 @@ class Session(Strategy):
                 'Enter number of bulletin to view or press \(ENTER\) to continue:'    :   3,
                 'Search all groups for new messages'   :   4,
                 'Search all groups for un-read messages to you' : 4,
-                'AFTERSHOCK'   :   5,
-                '\* Main \* .* Xbit Local Echo \[4\] InterBBS FE:'  :   6,
+                '.+fidonet.+AFTERSHOCK:'   :   5,
+                '. Main .* Xbit Local Echo \[[0-9]+\] InterBBS FE:'  :   6,
+                'Sub\-board, Group, or All:' :   7,  
                 }
 
     def on_indicator(self, lastState, state):
@@ -42,9 +43,18 @@ class Session(Strategy):
                 
         elif state == 5:
 
-            self.app.send('x') # external menu
-            self.app.send('2') # games
-            self.app.send(self.app.get_app_value('game'))
+            # shenk's BBS
+
+            if lastState != 5:
+                # get to the bre menu
+                self.app.send('x') # external menu
+                self.app.send('2') # games
+                self.app.send(self.app.get_app_value('game'))
+        elif state == 7:
+            # for some infernal reason on shenk's bbs, when trying to access
+            # the game menu's it doesn't take, ant it ens up in the stupid 
+            # messages menu, press enter to get out of it
+            self.app.sendl()
 
         elif state == 6:
 

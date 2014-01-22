@@ -26,14 +26,14 @@ class App:
         # Check if value is in options
         if key in self.options and self.options[key] is not None:
             if not secret:
-                logging.debug( '[options]'+ key+':'+str(self.options[key]))
+                logging.debug( 'reading application value [options] '+ key+' : '+str(self.options[key]))
             return self.options[key]
 
         environkey = Constants.ENVIRON_PREFIX + key
         # otherwise check if value is in environment
         if environkey in os.environ and self.options[key] != '':
             if not secret:
-                logging.debug( '[environment]'+ environkey + ':' + os.environ[environkey])
+                logging.debug( 'reading application value [environment] '+ environkey + ' : ' + os.environ[environkey])
             return os.environ[environkey]
         
         # otherwise call query function, or secretquery Func
@@ -43,20 +43,18 @@ class App:
         return self.query_func(key)
 
 
-    def send(self, msg, eol=False):
+    def send(self, msg, eol=False, sleep=(1,2)):
         """
         Send a message to the client use some rudemantry random delay to semi similate a human's typing
         """
 
-        time.sleep(1)
-
         if msg is not None:
             for c in msg:
-                time.sleep(random.uniform(0.1, 0.2))
+                time.sleep(random.uniform(sleep[0],sleep[1]))
                 self.telnet.send(c)
 
         if eol:
-            time.sleep(random.uniform(0.25, 0.33))
+            time.sleep(random.uniform(sleep[0],sleep[1]))
             self.telnet.sendline('\r')
 
     def sendl(self,msg=''):

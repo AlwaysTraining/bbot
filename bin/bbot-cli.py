@@ -6,7 +6,7 @@
 # Unclassified
 import logging
 logging.basicConfig(
-        level=logging.DEBUG,format='%(asctime)s:%(levelname)s:%(message)s')
+        level=logging.DEBUG,format='\n%(asctime)s:%(levelname)s:%(message)s')
 
 # logging.getLogger('suds.client').setLevel(logging.CRITICAL)
 
@@ -40,8 +40,8 @@ parser.add_argument("-g", "--game",
                   default='10')
 parser.add_argument("strategies", nargs='?',
                   help="list of actions to perform",
-                  default=['Session', 'Common', 'Diplomacy', 'Main', 'Stats', 'Maintenance',
-                      'Food','Bank','Spending','Attack', 'Trading', 'EndTurn']
+                  default=['Session', 'Common', 'Messages', 'Diplomacy', 'Main', 'Stats', 
+                      'Maintenance', 'Food','Bank','Spending','Attack', 'Trading', 'EndTurn']
                   )
 
 args = parser.parse_args(sys.argv[1:])

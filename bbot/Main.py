@@ -4,7 +4,6 @@
 # Emerging Technology Center, Carnegie Mellon University, Copyright 2013
 # Unclassified
 
-import os
 from bbot.Strategy import Strategy
 
 """
@@ -26,20 +25,19 @@ class Main(Strategy):
 
     def get_indicators(self):
         return {
-'\[Barren Realms Elite\]' : 10,
-'\(1\) Play Game             \(7\) Send Messages' : 20,
-'Choice>' : 30,
-}
+            '\[Barren Realms Elite\]' : 10,
+            '\(1\) Play Game             \(7\) Send Messages' : 20,
+            '\(6\) Read Messages         \(0\) Quit' : 30,
+            }
 
 
     def on_indicator(self, lastState, state):
             
-        if (lastState == None or lastState == 30) and state == 10:
+        if state == 10:
             pass # read the menu header
         elif lastState == 10 and state == 20:
-            pass # read the first row of options
+            pass 
         elif lastState == 20 and state == 30:
-            # read the prompt
             # press enter to do the default prompt
             self.app.sendl() 
 
