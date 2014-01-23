@@ -102,3 +102,57 @@ def create_instance(
 def ToNum(strNum):
     strNum = strNum.replace(',','')
     return int(strNum)
+
+import smtplib
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEBase import MIMEBase
+from email.MIMEText import MIMEText
+from email.Utils import COMMASPACE, formatdate
+from email import Encoders
+
+def send_mail(to, subject, text, _from="", files=[], cc=[], bcc=[],
+        server="smtp.gmail.com",port=587,server_user=None, server_user_pass=None):
+    assert type(to)==list
+    assert type(files)==list
+    assert type(cc)==list
+    assert type(bcc)==list
+
+    message = MIMEMultipart()
+    message['From'] = _from
+    message['To'] = COMMASPACE.join(to)
+    message['Date'] = formatdate(localtime=True)
+    message['Subject'] = subject
+    message['Cc'] = COMMASPACE.join(cc)
+    
+    message.attach(MIMEText(text))
+    
+    for f in files:
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(open(f, 'rb').read())
+        Encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment; filename="%s"' % os.path.basename(f))
+        message.attach(part)
+    
+    addresses = []
+    for x in to:
+        addresses.append(x)
+    for x in cc:
+        addresses.append(x)
+    for x in bcc:
+        addresses.append(x)
+
+    smtp =  smtplib.SMTP(server,port) 
+    if server_user is not None:
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.login(server_user, server_user_pass)
+
+    smtp.sendmail(_from, addresses, message.as_string())
+    smtp.close()
+
+
+import os
+import datetime
+def modification_date(filename):
+    t = os.path.getmtime(filename)
+    return datetime.datetime.fromtimestamp(t)

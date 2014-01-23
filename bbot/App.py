@@ -14,14 +14,54 @@ import Utils
 import Data
 import Strategy
 from bbot import *
+import logging
+import string
+
+valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits) 
 
 class App:
+
+    def get_data_dir(self):
+        return "."
+
+    def get_tag_str(self,joiner='_'):
+        s = joiner.join([
+                "bbot",
+                self.get_app_value('address'),
+                self.get_app_value('game'),
+                self.get_app_value('realm')])
+       
+        s = ''.join(c for c in s if c in valid_chars)
+       
+        return s
+
+    def file_roll(self,suffix):
+        logfile = os.path.join(self.get_data_dir(),
+                self.get_tag_str() + suffix)
+        if os.path.exists(logfile):
+            oldlogfile = logfile + "." + str(Utils.modification_date(logfile))
+            os.rename(logfile,oldlogfile)
+        return logfile
 
     def __init__(self, options, query_func, secret_query_func):
         self.options = options
         self.query_func = query_func
         self.secret_query_func = secret_query_func
         self.data = Data.Data()
+
+        level=logging.DEBUG
+        self.logfile=None
+        self.outfile=None
+        if not self.get_app_value('debug'):
+            level=logging.INFO
+            self.logfile = self.file_roll('.log')
+            self.outfile = self.file_roll('.out')
+            
+        logging.getLogger('').handlers = []
+        logging.basicConfig(
+                level=level,format='\n%(asctime)s:%(levelname)s::%(message)s',
+                filename=self.logfile)
+
 
     def get_app_value(self, key, secret=False):
         # Check if value is in options
@@ -68,14 +108,16 @@ class App:
         return Utils.ToNum(self.telnet.match.groups()[matchIndex])
 
    
-    def run(self):
+    def run_loop(self):
 
-        logging.info("bbot has begun")
 
         # begin the telnet session
-        # fout = file('mylog.txt','w')
         fout = sys.stdout
-        self.telnet = pexpect.spawn('telnet ' + self.get_app_value('address'), logfile=fout)
+        if self.outfile is not None:
+            fout = file(self.outfile,'w')
+
+        self.telnet = pexpect.spawn('telnet ' + self.get_app_value('address'), 
+                logfile=fout)
 
         # get list of strategies from user
         stratgem = {}
@@ -147,6 +189,59 @@ class App:
                     running = False
                     break
 
-        logging.info("bbot has completed")
+
+    def send_notification(self, game_exception):
+        if "notify" not in self.options or self.options['notify'] is None:
+            logging.info("No notification email address provided")
+            return
+
+        to = self.get_app_value('notify')
+        if isinstance(to, basestring):
+            to = [to]
 
 
+        logging.info("Sending Notification emails to " + str(to))
+
+        files = []
+        if self.logfile is not None:
+            # close the logger
+            files.append(self.logfile)
+        if self.outfile is not None:
+            files.append(self.outfile)
+
+        subject = "Success"
+        body = "TODO, Fancy Summary"
+        if game_exception is not None:
+            subject = "Failure"
+            body = str(game_exception)
+
+
+        Utils.send_mail(
+            to,
+            '[' + self.get_tag_str(' ') + '] ' + subject,
+            body,
+            _from='bbot@' + self.get_app_value('address'),
+            files=files,
+            server=self.get_app_value('smtp_server'),
+            port=self.get_app_value('smtp_port'),
+            server_user=self.get_app_value('smtp_user'),
+            server_user_pass=self.get_app_value('smtp_password',secret=True))
+            
+
+    def run(self):
+        
+        game_exception = None
+        try:
+            logging.info("bbot has begun")
+
+            self.run_loop()
+
+            logging.info("bbot has completed")
+        except Exception, e:
+            logging.exception(e)
+            game_exception = e
+
+        
+
+        self.send_notification(game_exception)
+        

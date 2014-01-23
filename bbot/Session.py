@@ -37,7 +37,7 @@ class Session(Strategy):
 
         elif state == 2:
 
-            self.app.sendl(self.app.get_app_value('password'))
+            self.app.sendl(self.app.get_app_value('password',secret=True))
 
         elif state == 3:
 

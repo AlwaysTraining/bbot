@@ -4,17 +4,13 @@
 # Author: Derrick H. Karimi
 # Emerging Technology Center, Carnegie Mellon University, Copyright 2013
 # Unclassified
-import logging
-logging.basicConfig(
-        level=logging.DEBUG,format='\n%(asctime)s:%(levelname)s:%(message)s')
-
-# logging.getLogger('suds.client').setLevel(logging.CRITICAL)
 
 
 import sys
 from argparse import ArgumentParser
 from bbot import App
 import getpass
+import pprint
 
 parser = ArgumentParser(usage="Wikicnt Command Line App")
 parser.add_argument("-u", "--username",
@@ -24,8 +20,7 @@ parser.add_argument("-u", "--username",
 parser.add_argument("-p", "--password",
                   action="store", 
                   help="Your BBS password.",
-                  default='RANDYPAS'
-                  )
+                  default='RANDYPAS')
 parser.add_argument("-a", "--address",
                   action="store", 
                   help="BBS address",
@@ -38,6 +33,32 @@ parser.add_argument("-g", "--game",
                   action="store", 
                   help="menu number for the game",
                   default='10')
+parser.add_argument("--smtp-server",
+                  action="store", 
+                  default='smtp.gmail.com',
+                  help="Outgoing Mail Server address ")
+parser.add_argument("--smtp-port",
+                  action="store", 
+                  default=587,
+                  help="Outgoing Mail Server port")
+parser.add_argument("--smtp-user",
+                  action="store", 
+                  help="Outgoing Mail Server user name",
+                  default="derrick.karimi")
+parser.add_argument("--smtp-password",
+                  action="store", 
+                  help="Outgoing Mail Server user password")
+parser.add_argument("-n","--notify",
+                  nargs="?",
+                  help="email addresses for recipiants of notifications",
+                  default=["derrick.karimi@gmail.com"])
+parser.add_argument("-d","--debug",
+                  action="store_true",
+                  help="enable debug mode",
+                  default=False)
+
+
+
 parser.add_argument("strategies", nargs='?',
                   help="list of actions to perform",
                   default=['Session', 'Common', 'Messages', 'Diplomacy', 'Main', 'Stats', 
@@ -56,14 +77,13 @@ noneops = [ o for o,v in options.items() if v is None]
 for o in noneops:
     del options[o]
 
-logging.debug("opts from args: " + str(options))
-
-
 def query(prompt):
     return raw_input("%s: " % prompt) 
 
 def query_secret(prompt):
     return getpass.getpass(prompt + ': ')
+
+pprint.pprint(options)
 
 app = App.App(options, query, query_secret)
 app.run()
