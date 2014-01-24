@@ -3,8 +3,8 @@
 # Installer logs
 pip-log.txt
 
-bin/*.log*
-bin/*.out*
+*.log*
+*.out*
 
 sweng/bbot_*
 

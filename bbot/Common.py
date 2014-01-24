@@ -20,7 +20,7 @@ class Common(Strategy):
                 'Name Your Empire' : 4,
                 'Would you like Instructions' : 5,
                 '[<>]Paused[<>]' : 6,
-                '^Would you like to buy a lottery ticket\? \(Y/n\) ':10,
+                'Would you like to buy a lottery ticket\? \(Y/n\)':10,
                 }
 
     def on_indicator(self, lastState, state):

@@ -31,7 +31,8 @@ class EndTurn(Strategy):
         return {
 'Do you wish to send a message\? \(y/N\) ' : 10,
 'End of Turn Statistics' : 20,
-'Your dominion gained '+NUM_REGEX+' million people.' : 30,
+'Your dominion gained '+NUM_REGEX+' million people\.' : 30,
+'Your dominion lost '+NUM_REGEX+' million people\.' :35,
 NUM_REGEX + ' units of food spoiled.' : 40,
 'Do you wish to continue\? \(Y/n\)' : 50
 }
@@ -45,9 +46,11 @@ NUM_REGEX + ' units of food spoiled.' : 40,
             pass
         elif lastState == 20 and state == 30:
             self.app.data.set("Turn Population Gain", self.app.get_num(0))
-        elif lastState == 30 and state == 40:
+        elif lastState == 20 and state == 35:
+            self.app.data.set("Turn Population Gain", -self.app.get_num(0))
+        elif (lastState == 30 or lastState == 35) and state == 40:
             self.app.data.set("Turn Food Spoilage", self.app.get_num(0))
-        elif lastState == 40 and state == 50:
+        elif state == 50:
             self.app.sendl()
         else:
             return Strategy.UNHANDLED
