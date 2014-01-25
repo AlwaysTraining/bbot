@@ -36,11 +36,25 @@ class App:
         return s
 
     def file_roll(self,suffix):
-        logfile = os.path.join(self.get_data_dir(),
-                self.get_tag_str() + suffix)
+
+        name = self.get_tag_str() + '_' + suffix + ".txt"
+        logfile = os.path.join(self.get_data_dir(), name)
+
         if os.path.exists(logfile):
-            oldlogfile = logfile + "." + str(Utils.modification_date(logfile))
+            name = self.get_tag_str() + suffix + ".txt"
+            logdir = os.path.join(self.get_data_dir(),'old')
+
+            if not os.path.exists(logdir):
+                os.makedirs(logdir)
+
+            oldname = (self.get_tag_str() + '_' +  
+                    str(Utils.modification_date(logfile)) + '_'
+                        + suffix + ".txt")
+
+            oldlogfile = os.path.join(logdir, oldname)
+
             os.rename(logfile,oldlogfile)
+
         return logfile
 
     def __init__(self, options, query_func, secret_query_func):
@@ -55,8 +69,8 @@ class App:
         debug=True
         if not self.get_app_value('debug'):
             level=botlog.INFO
-            self.logfile = self.file_roll('.log')
-            self.tracefile = self.file_roll('.out')
+            self.logfile = self.file_roll('log')
+            self.tracefile = self.file_roll('out')
             debug=False
             
         botlog.configure(
@@ -75,7 +89,7 @@ class App:
 
         environkey = Constants.ENVIRON_PREFIX + key
         # otherwise check if value is in environment
-        if environkey in os.environ and self.options[key] != '':
+        if environkey in os.environ and os.environ[environkey] != '':
             if not secret:
                 botlog.debug( 'reading application value [environment] '+ environkey + ' : ' + os.environ[environkey])
             return os.environ[environkey]
@@ -91,17 +105,22 @@ class App:
 
     def send(self, msg, eol=False, sleep=1.5):
         """
-        Send a message to the client use some rudemantry random delay to semi similate a human's typing
+        Send a message to the client use some rudemantry random delay to 
+        semi similate a human's typing
         """
 
-        if msg is not None:
+        if msg is not None and len(msg) > 0:
+            botlog.info('Sending {' + msg + '}')
             for c in msg:
-                time.sleep(selg.get_close_float(sleep))
+                self.telnet.delaybeforesend=self.get_close_float(sleep)
                 self.telnet.send(c)
 
         if eol:
-            time.sleep(selg.get_close_float(sleep))
-            self.telnet.sendline('\r')
+            botlog.info('Sending {\\r}')
+            self.telnet.delaybeforesend=self.get_close_float(sleep)
+            time.sleep(self.get_close_float(sleep))
+            self.telnet.send('\r')
+
 
     def sendl(self,msg='',sleep=0.5):
         self.send(msg,eol=True,sleep=sleep)
@@ -119,7 +138,8 @@ class App:
         # begin the telnet session
 
         self.telnet = pexpect.spawn('telnet ' + self.get_app_value('address'), 
-                logfile=botlog.tracefile)
+                logfile=botlog.tracefile,
+                maxread=1)
 
         # get list of strategies from user
         stratgem = {}

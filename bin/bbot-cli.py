@@ -6,11 +6,34 @@
 # Unclassified
 
 
-import sys
+import sys,os
 from argparse import ArgumentParser
 from bbot import App
 import getpass
 import pprint
+
+import signal
+
+app=None
+def signal_handler(signal, frame):
+    code = 1
+    try:
+        if app is not None:
+            if 'smtp_password' in app.options or 'bbot_smtp_password' in os.environ:
+                app.send_notification(KeyboardInterrupt('ctrl-c triggered an interrupt'))
+            else:
+                print >> sys.stderr, "Not sending notification emails because smtp_password is not set"
+
+    except Exception as e:
+        print >> sys.stderr, "Failed when sending email upon interupt: ", str(e)
+        code = len(str(e)) + 2
+
+    sys.exit(code)
+       
+
+    
+
+signal.signal(signal.SIGINT, signal_handler)
 
 parser = ArgumentParser(usage="Wikicnt Command Line App")
 parser.add_argument("-u", "--username",

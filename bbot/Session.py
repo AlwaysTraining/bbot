@@ -44,7 +44,7 @@ class Session(Strategy):
             self.app.sendl()
         elif state == 4:
 
-            self.app.send('n')
+            self.app.send('n',sleep=3)
                 
         elif state == 5:
 
@@ -52,11 +52,11 @@ class Session(Strategy):
 
             if not self.played:
                 # get to the bre menu
-                self.app.send('x') # external menu
+                self.app.send('X',sleep=3) # external menu
             else:
                 # bre is done, log out
-                self.app.send('o',sleep=1)
-                self.app.sendl('y',sleep=1)
+                self.app.send('o',sleep=3)
+                self.app.sendl('y',sleep=3)
 
         elif state == 7:
             
@@ -68,23 +68,23 @@ class Session(Strategy):
         elif state == 8:
 
             if not self.played:
-                self.app.send('2') # games
+                self.app.send('2',sleep=3) # games
             else:
-                self.app.send('q')
+                self.app.send('q',sleep=3)
 
         elif state == 9:
 
             if not self.played:
-                self.app.send(self.app.get_app_value('game'))
+                self.app.send(self.app.get_app_value('game'),sleep=3)
                 self.played = True
             else:
-                self.app.send('q')
+                self.app.send('q',sleep=3)
 
         elif state == 6:
 
-            self.app.send('x') # external menu
-            self.app.send('4') # games
-            self.app.send(self.app.get_app_value('game'))
+            self.app.send('x',sleep=3) # external menu
+            self.app.send('4',sleep=3) # games
+            self.app.send(self.app.get_app_value('game'),sleep=3)
             self.played = True
 
         elif state == 100000:
