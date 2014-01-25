@@ -6,7 +6,7 @@
 
 import imp
 import os,sys
-import logging
+import botlog
 import Strategy
 
 bbot_TOOL_VERSION="0.1"
@@ -58,7 +58,7 @@ def load_modules(
 
         # set the returned python module resulting from invoking 
         #   loadFunction into returning dictionary
-        logging.debug("dynamically loding: " + expandedModulePath)
+        botlog.debug("dynamically loding: " + expandedModulePath)
         mod = loadFunc(mod_name, expandedModulePath)
         modules[modulePath] = mod
 

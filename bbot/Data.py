@@ -4,12 +4,12 @@
 # Emerging Technology Center, Carnegie Mellon University, Copyright 2013
 # Unclassified
 
-import logging
+import botlog
 
 class Data(dict):
 
     def set(self, key, value):
-        logging.debug("recording " + str(key) + " = " + str(value))
+        botlog.debug("recording " + str(key) + " = " + str(value))
         self[key] = value
 
 

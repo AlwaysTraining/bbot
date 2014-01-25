@@ -6,7 +6,7 @@
 
 import Constants
 import os
-import logging
+import botlog
 
 UNHANDLED="bbot_UNHANDLED"
 TERMINATE="bbot_TERMINATE"
@@ -26,13 +26,13 @@ class Strategy:
 
 
     def base_on_indicator(self, state):
-        logging.debug(self.get_name() + " handling state " + str(state) + 
+        botlog.debug(self.get_name() + " handling state " + str(state) + 
                 ', lastState ' + str(self.lastState))
         s = self.on_indicator(self.lastState, state)
         if s != UNHANDLED:
             self.lastState = state
         else:
-            logging.debug(self.get_name() + " state " + str(state) + " was unhandled")
+            botlog.debug(self.get_name() + " state " + str(state) + " was unhandled")
 
         return s
         

@@ -9,12 +9,12 @@ import os,sys
 import pexpect
 import random
 import time
-import logging
+import botlog
 import Utils
 import Data
 import Strategy
 from bbot import *
-import logging
+import botlog
 import string
 
 valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits) 
@@ -49,32 +49,35 @@ class App:
         self.secret_query_func = secret_query_func
         self.data = Data.Data()
 
-        level=logging.DEBUG
+        level=botlog.DEBUG
         self.logfile=None
-        self.outfile=None
+        self.tracefile=None
+        debug=True
         if not self.get_app_value('debug'):
-            level=logging.INFO
+            level=botlog.INFO
             self.logfile = self.file_roll('.log')
-            self.outfile = self.file_roll('.out')
+            self.tracefile = self.file_roll('.out')
+            debug=False
             
-        logging.getLogger('').handlers = []
-        logging.basicConfig(
-                level=level,format='\n%(asctime)s:%(levelname)s::%(message)s',
-                filename=self.logfile)
+        botlog.configure(
+                level=level,
+                format='\n%(asctime)s:%(levelname)s::%(message)s',
+                logpath=self.logfile,
+                tracepath=self.tracefile)
 
 
     def get_app_value(self, key, secret=False):
         # Check if value is in options
         if key in self.options and self.options[key] is not None:
             if not secret:
-                logging.debug( 'reading application value [options] '+ key+' : '+str(self.options[key]))
+                botlog.debug( 'reading application value [options] '+ key+' : '+str(self.options[key]))
             return self.options[key]
 
         environkey = Constants.ENVIRON_PREFIX + key
         # otherwise check if value is in environment
         if environkey in os.environ and self.options[key] != '':
             if not secret:
-                logging.debug( 'reading application value [environment] '+ environkey + ' : ' + os.environ[environkey])
+                botlog.debug( 'reading application value [environment] '+ environkey + ' : ' + os.environ[environkey])
             return os.environ[environkey]
         
         # otherwise call query function, or secretquery Func
@@ -83,23 +86,25 @@ class App:
 
         return self.query_func(key)
 
+    def get_close_float(self,x):
+        return random.uniform(x*0.75,x*1.25)
 
-    def send(self, msg, eol=False, sleep=(1,2)):
+    def send(self, msg, eol=False, sleep=1.5):
         """
         Send a message to the client use some rudemantry random delay to semi similate a human's typing
         """
 
         if msg is not None:
             for c in msg:
-                time.sleep(random.uniform(sleep[0],sleep[1]))
+                time.sleep(selg.get_close_float(sleep))
                 self.telnet.send(c)
 
         if eol:
-            time.sleep(random.uniform(sleep[0],sleep[1]))
+            time.sleep(selg.get_close_float(sleep))
             self.telnet.sendline('\r')
 
-    def sendl(self,msg=''):
-        self.send(msg,True)
+    def sendl(self,msg='',sleep=0.5):
+        self.send(msg,eol=True,sleep=sleep)
 
     def get_num(self, matchIndex=0):
         """
@@ -112,12 +117,9 @@ class App:
 
 
         # begin the telnet session
-        fout = sys.stdout
-        if self.outfile is not None:
-            fout = file(self.outfile,'w')
 
         self.telnet = pexpect.spawn('telnet ' + self.get_app_value('address'), 
-                logfile=fout)
+                logfile=botlog.tracefile)
 
         # get list of strategies from user
         stratgem = {}
@@ -172,7 +174,7 @@ class App:
 
             key = self.telnet.expect(keys)
 
-            logging.debug( 'Matched: ' + keys[key])
+            botlog.debug( 'Matched: ' + keys[key])
 
             # expect returns the index into the list, use this to locate the record 
             #   for the strategies and states tied to this keyword
@@ -192,7 +194,7 @@ class App:
 
     def send_notification(self, game_exception):
         if "notify" not in self.options or self.options['notify'] is None:
-            logging.info("No notification email address provided")
+            botlog.info("No notification email address provided")
             return
 
         to = self.get_app_value('notify')
@@ -200,14 +202,14 @@ class App:
             to = [to]
 
 
-        logging.info("Sending Notification emails to " + str(to))
+        botlog.info("Sending Notification emails to " + str(to))
 
         files = []
         if self.logfile is not None:
             # close the logger
             files.append(self.logfile)
-        if self.outfile is not None:
-            files.append(self.outfile)
+        if self.tracefile is not None:
+            files.append(self.tracefile)
 
         subject = "Success"
         body = "TODO, Fancy Summary"
@@ -232,13 +234,13 @@ class App:
         
         game_exception = None
         try:
-            logging.info("bbot has begun")
+            botlog.info("bbot has begun")
 
             self.run_loop()
 
-            logging.info("bbot has completed")
+            botlog.info("bbot has completed")
         except Exception, e:
-            logging.exception(e)
+            botlog.exception(e)
             game_exception = e
 
         

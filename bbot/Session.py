@@ -55,8 +55,8 @@ class Session(Strategy):
                 self.app.send('x') # external menu
             else:
                 # bre is done, log out
-                self.app.send('o')
-                self.app.sendl('y')
+                self.app.send('o',sleep=1)
+                self.app.sendl('y',sleep=1)
 
         elif state == 7:
             
