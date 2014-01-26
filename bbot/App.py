@@ -131,6 +131,11 @@ class App:
         """
         return Utils.ToNum(self.telnet.match.groups()[matchIndex])
 
+    def get_str(self, matchIndex=0):
+        """
+        Get a number from the current matchign regex group
+        """
+        return self.telnet.match.groups()[matchIndex]
    
     def run_loop(self):
 
@@ -154,36 +159,13 @@ class App:
         if strats is None:
             raise Exception("No Strategies provided")
 
-        # dynamically load all strategies given form the command line
-        for strstrat in strats:
-            codepath = os.path.join(os.path.dirname(__file__),strstrat + ".py")
-            strat = Utils.create_instance(codepath, strstrat,app=self)
+        # union with the default strategy handlers
+        default=['Session', 'Common', 'Messages', 'Diplomacy', 'Main', 'Stats', 
+            'Maintenance', 'Food','Bank','Spending','Attack', 'Trading', 'EndTurn']
+        strats = list (set(strats) |  set(default))
 
-            stratgem[strat.get_name()] = strat
-
-
-        # pull indicators out of the strategies into a collection keyed by indicator
-        # each indicator correspnds to a dictionary of strategies that use that indicator
-        indicators = {}
-        
-
-        # iterate through all the strategies collecting all of the indicators
-        for sname,s in stratgem.items():
-            # get the indicators for the current stratefy
-            stateindicators = s.get_indicators()
-            for indicator,state in stateindicators.items():
-
-                # Get the record for all occurances of this indicator if it exists
-                if indicator in indicators:
-                    indicatorRec = indicators[indicator]
-                else:
-                    indicatorRec = {}
-                    indicators[indicator] = indicatorRec
-
-                # add in this indicator a record for the state value
-                indicatorRec[sname] = (s,state)
-
-        keys = indicators.keys()
+        # compile the strategies into indicators sorted by priority
+        strategies = Strategy.Strategies(self, strats)
 
         # repeat forever or until we think of something better to do
         running = True
@@ -192,27 +174,25 @@ class App:
             # expect the unified list of all possible indicators
             # print '\n\n', 'EXPECTING', keys,'\n\n'
 
-            key = self.telnet.expect(keys)
+            keyIndex = self.telnet.expect(strategies.get_keys())
 
-            botlog.debug( 'Matched: ' + keys[key])
+            botlog.debug( 'Matched: ' + strategies.get_key(keyIndex))
 
-            # expect returns the index into the list, use this to locate the record 
-            #   for the strategies and states tied to this keyword
-            indicatorRec = indicators[keys[key]]
+            for rec in strategies.enumerate_matches(keyIndex):
 
-            # iterate each indicator
-            for indicator,strategyState in indicatorRec.items():
-
-                s = strategyState[0]
-                state = strategyState[1]
-                action = s.base_on_indicator(state)
+                action = rec.strategy.base_on_indicator(rec.state)
                 if action == Strategy.TERMINATE:
                     self.telnet.close()
                     running = False
                     break
+                elif action == Strategy.CONSUMED:
+                    break
 
 
     def send_notification(self, game_exception):
+        if (self.get_app_value('debug')):
+            botlog.debug("No notification email is sent in debug mode")
+            return
         if "notify" not in self.options or self.options['notify'] is None:
             botlog.info("No notification email address provided")
             return

@@ -32,14 +32,20 @@ Choice>
 
 class IndMtn(Strategy):
 
+    ind_to_mtn_and_tech_ratio = 5
+
     def __init__(self, app):
         Strategy.__init__(self, app)
 
     def get_indicators(self):
         return {
-'\[Spending Menu\]' : 10,
-'You have '+NUM_REGEX+' gold and '+NUM_REGEX+' turns.' : 20
-}
+            '\[Spending Menu\]' : 10,
+            'You have '+NUM_REGEX+' gold and '+NUM_REGEX+' turns.' : 20,
+            "\(T\) Technology[ \t]+"+NUM_REGEX      :   30,
+            "Buy how many Industrial regions\?"     :   40,
+            "Buy how many Mountain regions\?"       :   50,
+            "Buy how many Technology regions\?"     :   60,
+            }
 
     def get_priority(self,state):
         return MED_PRIORITY
@@ -49,15 +55,21 @@ class IndMtn(Strategy):
         if state == 10:
             pass
         elif lastState == 10 and state == 20:
-
-            self.app.data.set("Current Gold on Hand", self.app.get_num(0))
-            self.app.data.set("Remaining Turns", self.app.get_num(1))
-            self.app.send('6m')
-            self.app.sendl('1')
+            self.app.send('6')
+        elif lastState == 20 and state == 30:
+            self.app.send('t')
+        elif lastState == 30 and state == 60:
+            self.a = self.app.data.realm.regions.number_affordable
+            # 5:1:1 is 5+1+1 = 7 is 5/7,1/7,1/7
+            self.t = int(a/7)
+            self.app.sendl(str(t))
+            self.app.send('m')
+        elif lastState == 60 and state == 50:
+            self.app.sendl(str(t))
             self.app.send('i')
-            self.app.sendl('1')
+        elif lastState == 50 and state == 40:
+            self.app.sendl('>')
             self.app.sendl()
-
 
         else:
             return Strategy.UNHANDLED

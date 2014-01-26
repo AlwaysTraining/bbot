@@ -84,8 +84,7 @@ parser.add_argument("-d","--debug",
 
 parser.add_argument("strategies", nargs='?',
                   help="list of actions to perform",
-                  default=['Session', 'Common', 'Messages', 'Diplomacy', 'Main', 'Stats', 
-                      'Maintenance', 'Food','Bank','Spending','Attack', 'Trading', 'EndTurn']
+                  default=['IndMtn',]
                   )
 
 args = parser.parse_args(sys.argv[1:])
