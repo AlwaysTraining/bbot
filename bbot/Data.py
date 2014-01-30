@@ -9,6 +9,7 @@ import botlog
 class Units(object):
     number=None
     price=None
+    industrialallocation=None
 class ArmyUnits(Units):
     pass
 class Troopers(ArmyUnits):

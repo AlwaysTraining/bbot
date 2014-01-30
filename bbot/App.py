@@ -161,7 +161,8 @@ class App:
 
         # union with the default strategy handlers
         default=['Session', 'Common', 'Messages', 'Diplomacy', 'Main', 'Stats', 
-            'Maintenance', 'Food','Bank','Spending','Attack', 'Trading', 'EndTurn']
+            'Maintenance', 'Food','Bank','Spending','Attack', 'Trading', 
+            'EndTurn', 'Industry']
         strats = list (set(strats) |  set(default))
 
         # compile the strategies into indicators sorted by priority

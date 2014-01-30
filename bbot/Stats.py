@@ -180,6 +180,15 @@ class Stats(Strategy):
             "\(9\) Carriers"+SPACE_REGEX+NUM_REGEX+SPACE_REGEX+NUM_REGEX  : 890,
             "You have "+NUM_REGEX+" gold and "+NUM_REGEX+" turns\." : 900,
 
+
+            "\[Industrial Production\]" :   1300,
+            "Troopers        : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1310,
+            "Jets            : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1320,
+            "Turrets         : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1330,
+            "Bombers         : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1340,
+            "Tanks           : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1350,
+            "Carriers        : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1360,
+
 }
 
 
@@ -254,6 +263,27 @@ class Stats(Strategy):
             realm.gold = self.app.get_num(0)
             realm.bank.gold = self.app.get_num(1)
             realm.turns.remaining = self.app.get_num(1)
+        elif state == 1300:
+            pass
+        elif state == 1310 : 
+            manufacture.troopers.industrialallocation = self.app.get_num(0)
+            manufacture.troopers.number = self.app.get_num(1)
+        elif state == 1320 : 
+            manufacture.jets.industrialallocation = self.app.get_num(0)
+            manufacture.jets.number = self.app.get_num(1)
+        elif state == 1330 : 
+            manufacture.turrets.industrialallocation = self.app.get_num(0)
+            manufacture.turrets.number = self.app.get_num(1)
+        elif state == 1340 : 
+            manufacture.bomberstroopers.industrialallocation = self.app.get_num(0)
+            manufacture.bomberstroopers.number = self.app.get_num(1)
+        elif state == 1350 : 
+            manufacture.tanks.industrialallocation = self.app.get_num(0)
+            manufacture.tanks.number = self.app.get_num(1)
+        elif state == 1360 : 
+            manufacture.carriers.industrialallocation = self.app.get_num(0)
+            manufacture.carriers.number = self.app.get_num(1)
+
 
         else:
             return Strategy.UNHANDLED

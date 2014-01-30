@@ -20,12 +20,14 @@ class Session(Strategy):
                 'Enter number of bulletin to view or press \(ENTER\) to continue:'    :   3,
                 'Search all groups for new messages'   :   4,
                 'Search all groups for un-read messages to you' : 4,
-                '.+fidonet.+AFTERSHOCK:'   :   5,
-                '. Main .* Xbit Local Echo \[[0-9]+\] InterBBS FE:'  :   6,
+                '.+fidonet.+AFTERSHOCK:'   :   5,                                       #Shenks Main Menu
+                '. Main .* Xbit Local Echo \[[0-9]+\] InterBBS FE:'  :   6,             #XBIT Main Menu
                 '\(S\)ub\-board, \(G\)roup, or \(A\)ll:' :   7,  
                 'Select External Program Section:'    :   8,
                 'Games External Programs:'  :   9,
                 'Connection closed by foreign host\.'  :   100000,
+                '\[\+\] Read your mail now\? \[Yes\] No'    :   10,
+                '\* Main \* [0-9:]+ \[[0-9]+\] Main \[[0-9]+\] Notices:'    :   11,     #TNSOA Main Menu
                 }
 
     played=False 
@@ -42,11 +44,11 @@ class Session(Strategy):
         elif state == 3:
 
             self.app.sendl()
-        elif state == 4:
+        elif state == 4 or state == 10:
 
             self.app.send('n',sleep=3)
                 
-        elif state == 5:
+        elif state == 5 or state == 11:
 
             # shenk's 
 

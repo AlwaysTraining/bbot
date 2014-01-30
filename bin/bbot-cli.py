@@ -30,61 +30,102 @@ def signal_handler(signal, frame):
 
     sys.exit(code)
        
+signal.signal(signal.SIGINT, signal_handler)
 
     
+defaults={
+        'shenks' : {
+            'username'  :   'Randy32',
+            'password'  :   'RANDYPAS',
+            'address'   :   'shenks.synchro.net',
+            'realm'     :   'Randyland',
+            'game'      :   '10',
+            'smtp_server':  'smtp.gmail.com',
+            'smtp_port' :   587,
+            'smtp_user' :   'derrick.karimi',
+            'notify'    :   'derrick.karimi@gmail.com',
+            'debug'     :   True,
+            'strategies':   ['IndMtn',],
+            },
 
-signal.signal(signal.SIGINT, signal_handler)
+        'tnsoa' : {
+            'username'  :   'Randy32',
+            'password'  :   'RANDYPAS',
+            'address'   :   'tnsoa.strangled.net',
+            'realm'     :   'Randyland',
+            'game'      :   '6',
+            'smtp_server':  'smtp.gmail.com',
+            'smtp_port' :   587,
+            'smtp_user' :   'derrick.karimi',
+            'notify'    :   'derrick.karimi@gmail.com',
+            'debug'     :   True,
+            'strategies':   ['IndMtn',],
+            },
+        }
+
+
+def get_default(key):
+    superkey = 'tnsoa'
+    ans = None
+    if superkey in defaults:
+        d = defaults[superkey]
+        if key in d:
+            ans = d[key]
+    return ans
+
+
 
 parser = ArgumentParser(usage="Wikicnt Command Line App")
 parser.add_argument("-u", "--username",
                   action="store", 
                   help="Your BBS username.", 
-                  default='Randy32')
+                  default=get_default('username'))
 parser.add_argument("-p", "--password",
                   action="store", 
                   help="Your BBS password.",
-                  default='RANDYPAS')
+                  default=get_default('password'))
 parser.add_argument("-a", "--address",
                   action="store", 
                   help="BBS address",
-                  default='shenks.synchro.net')
+                  default=get_default('address'))
 parser.add_argument("-r", "--realm",
                   action="store", 
                   help="name of realm",
-                  default='Randyland')
+                  default=get_default('realm'))
 parser.add_argument("-g", "--game",
                   action="store", 
                   help="menu number for the game",
-                  default='10')
+                  default=get_default('game'))
 parser.add_argument("--smtp-server",
                   action="store", 
-                  default='smtp.gmail.com',
+                  default=get_default('smtp_server'),
                   help="Outgoing Mail Server address ")
 parser.add_argument("--smtp-port",
                   action="store", 
-                  default=587,
+                  default=get_default('smtp_port'),
                   help="Outgoing Mail Server port")
 parser.add_argument("--smtp-user",
                   action="store", 
                   help="Outgoing Mail Server user name",
-                  default="derrick.karimi")
+                  default=get_default("smtp_user"))
 parser.add_argument("--smtp-password",
                   action="store", 
-                  help="Outgoing Mail Server user password")
+                  help="Outgoing Mail Server user password",
+                  default=get_default('smtp_password'))
 parser.add_argument("-n","--notify",
                   nargs="?",
                   help="email addresses for recipiants of notifications",
-                  default=["derrick.karimi@gmail.com"])
+                  default=get_default('notify'))
 parser.add_argument("-d","--debug",
                   action="store_true",
                   help="enable debug mode",
-                  default=False)
+                  default=get_default('debug'))
 
 
 
 parser.add_argument("strategies", nargs='?',
                   help="list of actions to perform",
-                  default=['IndMtn',]
+                  default=get_default('strategies')
                   )
 
 args = parser.parse_args(sys.argv[1:])
