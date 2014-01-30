@@ -110,6 +110,8 @@ import os
 from bbot.Utils import *
 from bbot.Strategy import Strategy
 
+S = SPACE_REGEX
+N = NUM_REGEX
 
 class Stats(Strategy):
 
@@ -122,72 +124,72 @@ class Stats(Strategy):
     
     def get_indicators(self):
         return {
-            "You can afford "+NUM_REGEX+' regions\.':   50,
+            "You can afford "+N+' regions\.':   50,
             "Key Name            Owned"             :   60,
-            "\(C\) Coastal[ \t]+"+NUM_REGEX         :   70,
-            "\(R\) River[ \t]+"+NUM_REGEX           :   80,
-            "\(A\) Agricultural[ \t]+"+NUM_REGEX    :   90,
-            "\(D\) Desert[ \t]+"+NUM_REGEX          :   100,
-            "\(I\) Industrial[ \t]+"+NUM_REGEX      :   110,
-            "\(U\) Urban[ \t]+"+NUM_REGEX           :   120,
-            "\(M\) Mountain[ \t]+"+NUM_REGEX        :   130,
-            "\(T\) Technology[ \t]+"+NUM_REGEX      :   140,
+            "\(C\) Coastal[ \t]+"+N         :   70,
+            "\(R\) River[ \t]+"+N           :   80,
+            "\(A\) Agricultural[ \t]+"+N    :   90,
+            "\(D\) Desert[ \t]+"+N          :   100,
+            "\(I\) Industrial[ \t]+"+N      :   110,
+            "\(U\) Urban[ \t]+"+N           :   120,
+            "\(M\) Mountain[ \t]+"+N        :   130,
+            "\(T\) Technology[ \t]+"+N      :   140,
 
 
 
 
-            NUM_REGEX+' gold was earned in taxes.'  :   500,
-            NUM_REGEX+' gold was produced from the Ore Mines.'  :   510,
-            NUM_REGEX+' gold was earned in Tourism.'    :   520,
-            NUM_REGEX+' gold was earned by Solar Power Generators.' :   530,
-            NUM_REGEX+' gold was created by Hydropower.'    :   540,
-            NUM_REGEX+' Food units were grown.' :   550,
+            N+' gold was earned in taxes.'  :   500,
+            N+' gold was produced from the Ore Mines.'  :   510,
+            N+' gold was earned in Tourism.'    :   520,
+            N+' gold was earned by Solar Power Generators.' :   530,
+            N+' gold was created by Hydropower.'    :   540,
+            N+' Food units were grown.' :   550,
 
-            NUM_REGEX+' Troopers were manufactured by Industrial Zones.'    :   560,
-            NUM_REGEX+' Turrets were manufactured by Industrial Zones.' :   570,
-            NUM_REGEX+' Jets were manufactured by Industrial Zones.'    :   580,
-            NUM_REGEX+' Carriers were manufactured by Industrial Zones.'    :   590,
-            NUM_REGEX+' Bombers were manufactured by Industrial Zones.' :   600,
-            NUM_REGEX+' Tanks were manufactured by Industrial Zones.'   :   610,
-            NUM_REGEX+' gold was earned from investment returns.'   :   620,
+            N+' Troopers were manufactured by Industrial Zones.'    :   560,
+            N+' Turrets were manufactured by Industrial Zones.' :   570,
+            N+' Jets were manufactured by Industrial Zones.'    :   580,
+            N+' Carriers were manufactured by Industrial Zones.'    :   590,
+            N+' Bombers were manufactured by Industrial Zones.' :   600,
+            N+' Tanks were manufactured by Industrial Zones.'   :   610,
+            N+' gold was earned from investment returns.'   :   620,
             
 
             "\-\*(^[\*]+)\*\-"  :   200,
-            "Turns: "+NUM_REGEX :   210,
-            "Score: "+NUM_REGEX :   220,
-            "Gold: "+NUM_REGEX  :   230,
-            "Bank: "+NUM_REGEX  :   240,
-            "Population: "+NUM_REGEX+" Million \(Tax Rate: "+NUM_REGEX+"\%" :   250,
-            "Popular Support: "+NUM_REGEX+"\%"  :   260,
-            "Food: "+NUM_REGEX  :   270,
-            "Agents: "+NUM_REGEX    :   280,
-            "Headquarters: "+NUM_REGEX+"\% Complete"    :   290,
-            "SDI Strength: "+NUM_REGEX+"\%" :   300,
-            "This is year "+NUM_REGEX+" of your freedom."   :   310,
-            "You have "+NUM_REGEX+" Years of Protection Left."  :   320,
+            "Turns: "+N :   210,
+            "Score: "+N :   220,
+            "Gold: "+N  :   230,
+            "Bank: "+N  :   240,
+            "Population: "+N+" Million \(Tax Rate: "+N+"\%" :   250,
+            "Popular Support: "+N+"\%"  :   260,
+            "Food: "+N  :   270,
+            "Agents: "+N    :   280,
+            "Headquarters: "+N+"\% Complete"    :   290,
+            "SDI Strength: "+N+"\%" :   300,
+            "This is year "+N+" of your freedom."   :   310,
+            "You have "+N+" Years of Protection Left."  :   320,
 
 
 
             "\[Spending Menu\]"   : 800,
-            "\(1\) Troopers"+SPACE_REGEX+NUM_REGEX+SPACE_REGEX+NUM_REGEX  : 810,
-            "\(2\) Jets"+SPACE_REGEX+NUM_REGEX+SPACE_REGEX+NUM_REGEX  : 820,
-            "\(3\) Turret"+SPACE_REGEX+NUM_REGEX+SPACE_REGEX+NUM_REGEX  : 830,
-            "\(4\) Bombers"+SPACE_REGEX+NUM_REGEX+SPACE_REGEX+NUM_REGEX  : 840,
-            "\(5\) HeadQuarters"+SPACE_REGEX+NUM_REGEX+SPACE_REGEX+NUM_REGEX  : 850,
-            "\(6\) Regions"+SPACE_REGEX+NUM_REGEX+SPACE_REGEX+NUM_REGEX  : 860,
-            "\(7\) Covert Agents"+SPACE_REGEX+NUM_REGEX+SPACE_REGEX+NUM_REGEX  : 870,
-            "\(8\) Tanks"+SPACE_REGEX+NUM_REGEX+SPACE_REGEX+NUM_REGEX  : 880,
-            "\(9\) Carriers"+SPACE_REGEX+NUM_REGEX+SPACE_REGEX+NUM_REGEX  : 890,
-            "You have "+NUM_REGEX+" gold and "+NUM_REGEX+" turns\." : 900,
+            "\(1\) Troopers"+S+N+S+N  : 810,
+            "\(2\) Jets"+S+N+S+N  : 820,
+            "\(3\) Turret"+S+N+S+N  : 830,
+            "\(4\) Bombers"+S+N+S+N  : 840,
+            "\(5\) HeadQuarters"+S+N+S+N  : 850,
+            "\(6\) Regions"+S+N+S+N  : 860,
+            "\(7\) Covert Agents"+S+N+S+N  : 870,
+            "\(8\) Tanks"+S+N+S+N  : 880,
+            "\(9\) Carriers"+S+N+S+N  : 890,
+            "You have "+N+" gold and "+N+" turns\." : 900,
 
 
-            "\[Industrial Production\]" :   1300,
-            "Troopers        : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1310,
-            "Jets            : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1320,
-            "Turrets         : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1330,
-            "Bombers         : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1340,
-            "Tanks           : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1350,
-            "Carriers        : "+NUM_REGEX+"\%[ \t]+\("+NUM_REGEX+" per year\)" :   1360,
+            "\[Industrial Production\]" :   1300,               
+            'Troopers'+S+':'+S+N+'\%'+S+'\('+N+' per year\)'  :   1310,
+            'Jets'+S+':'+S+N+'\%'+S+'\('+N+' per year\)'      :   1320,
+            'Turrets'+S+':'+S+N+'\%'+S+'\('+N+' per year\)'   :   1330,
+            'Bombers'+S+':'+S+N+'\%'+S+'\('+N+' per year\)'   :   1340,
+            'Tanks'+S+':'+S+N+'\%'+S+'\('+N+' per year\)'     :   1350,
+            'Carriers'+S+':'+S+N+'\%'+S+'\('+N+' per year\)'  :   1360,
 
 }
 
@@ -210,7 +212,7 @@ class Stats(Strategy):
         elif lastState == 60 and state == 70: regions.coastal.number = self.app.get_num()
         elif lastState == 70 and state == 80: regions.river.number = self.app.get_num()
         elif lastState == 80 and state == 90: regions.agricultural.number = self.app.get_num()
-        elif lastState == 100 and state == 100: regions.desert.number = self.app.get_num()
+        elif lastState == 90 and state == 100: regions.desert.number = self.app.get_num()
         elif lastState == 100 and state == 110: regions.industrial.number = self.app.get_num()
         elif lastState == 110 and state == 120: regions.urban.number = self.app.get_num()
         elif lastState == 120 and state == 130: regions.mountain.number = self.app.get_num()
@@ -228,7 +230,7 @@ class Stats(Strategy):
         elif state == 570 : manufacture.turrets.number = self.app.get_num()
         elif state == 580 : manufacture.jets.number = self.app.get_num()
         elif state == 590 : manufacture.carriers.number = self.app.get_num()
-        elif state == 600 : manufacture.bomberstroopers.number = self.app.get_num()
+        elif state == 600 : manufacture.bombers.number = self.app.get_num()
         elif state == 610 : manufacture.tanks.number = self.app.get_num()
 
         elif state == 800 : pass
@@ -275,8 +277,8 @@ class Stats(Strategy):
             manufacture.turrets.industrialallocation = self.app.get_num(0)
             manufacture.turrets.number = self.app.get_num(1)
         elif state == 1340 : 
-            manufacture.bomberstroopers.industrialallocation = self.app.get_num(0)
-            manufacture.bomberstroopers.number = self.app.get_num(1)
+            manufacture.bombers.industrialallocation = self.app.get_num(0)
+            manufacture.bombers.number = self.app.get_num(1)
         elif state == 1350 : 
             manufacture.tanks.industrialallocation = self.app.get_num(0)
             manufacture.tanks.number = self.app.get_num(1)

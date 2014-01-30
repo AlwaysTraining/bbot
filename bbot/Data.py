@@ -94,31 +94,27 @@ class Realm(object):
     bank=Bank()
     turns=Turns()
 
+def _indent(d):
+    s='\n'
+    for i in range(d):
+        s+='\t'
+        
+def _printvisitor(o,d):
+    indent=_indent(d)
+    t = ''
+    for n,v in o.__dict__.items():
+        if v is None or isinstance(v, basestring) or isinstance(v, int) or isinstance(v, float) or isinstance(v,bool):
+            t += indent + n + "\t:\t" + str(v)
+        else:
+            t += indent + n + "\t:\n" + _printvisitor(v,d+1)
+
 class Data(dict):
 
     realm=Realm()
 
-    def _indent(d):
-        s='\n'
-        for i in range(d):
-            s+='\t'
-            
-    def _printvisitor(o,d):
-        indent=_indent(d)
-        t = ''
-        for n,v in o.__dict__.items():
-            if v is None or isinstance(v, basestring) or isinstance(v, int) or isinstance(v, float) or isinstance(v,bool):
-                t += indent + n + "\t:\t" + str(v)
-            else:
-                t += indent + n + "\t:\n" + _printvisitor(v,d+1)
-
-                
-
-
-        
 
     def __str__(self):
-        return _printvisitor(self.realm)
+        return _printvisitor(self.realm,0)
 
 
     def set(self, key, value):

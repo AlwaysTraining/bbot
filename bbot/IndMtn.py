@@ -36,6 +36,7 @@ class IndMtn(Strategy):
 
     def __init__(self, app):
         Strategy.__init__(self, app)
+        self.turn = None
 
     def get_indicators(self):
         return {
@@ -55,17 +56,25 @@ class IndMtn(Strategy):
         if state == 10:
             pass
         elif lastState == 10 and state == 20:
-            self.app.send('6')
+
+            turn = self.app.get_num(1)
+
+            # make sure buy logic is only applied once
+            if self.turn != turn:
+                self.app.send('6')
+                self.turn = turn
+                return Strategy.CONSUMED # stop other strategies from doing buy menu stuff
+
         elif lastState == 20 and state == 30:
             self.app.send('t')
         elif lastState == 30 and state == 60:
             self.a = self.app.data.realm.regions.number_affordable
             # 5:1:1 is 5+1+1 = 7 is 5/7,1/7,1/7
-            self.t = int(a/7)
-            self.app.sendl(str(t))
+            self.t = int(self.a/7)
+            self.app.sendl(str(self.t))
             self.app.send('m')
         elif lastState == 60 and state == 50:
-            self.app.sendl(str(t))
+            self.app.sendl(str(self.t))
             self.app.send('i')
         elif lastState == 50 and state == 40:
             self.app.sendl('>')
