@@ -30,6 +30,9 @@ You have 49,325 gold and 10 turns.
 Choice> 
 """
 
+S = SPACE_REGEX
+N = NUM_REGEX
+
 class IndMtn(Strategy):
 
     ind_to_mtn_and_tech_ratio = 5
@@ -37,6 +40,8 @@ class IndMtn(Strategy):
     def __init__(self, app):
         Strategy.__init__(self, app)
         self.turn = None
+        self.soldturn = None
+        self.curTankAlloc = None
 
     def get_indicators(self):
         return {
@@ -46,6 +51,9 @@ class IndMtn(Strategy):
             "Buy how many Industrial regions\?"     :   40,
             "Buy how many Mountain regions\?"       :   50,
             "Buy how many Technology regions\?"     :   60,
+            "\[Industrial Production\]" :   70,               
+            'Tanks'+S+':'+S+N+'\%'+S+'\('+N+' per year\)'     :   80,
+            "Change Production\? \(y/N\)"   :   90,
             }
 
     def get_priority(self,state):
@@ -58,6 +66,14 @@ class IndMtn(Strategy):
         elif lastState == 10 and state == 20:
 
             turn = self.app.get_num(1)
+            soldturn = self.app.get_num(1)
+
+            # make sure buy logic is only applied once
+            if self.soldturn != soldturn:
+                self.app.sendl('s8>')
+                self.app.send('b')
+                self.soldturn = soldturn
+                return Strategy.CONSUMED # stop other strategies from doing buy menu stuff
 
             # make sure buy logic is only applied once
             if self.turn != turn:
@@ -79,6 +95,24 @@ class IndMtn(Strategy):
         elif lastState == 50 and state == 40:
             self.app.sendl('>')
             self.app.sendl()
+        elif state == 70:
+            pass
+        elif lastState == 70 and state == 80:
+            self.curTankAlloc = self.app.get_num(0)
+        elif lastState == 80 and state == 90:
+            # if tank production not at 100%, reset industry
+            botlog.debug("Current tank allocation 2 is " + str(self.curTankAlloc))
+            if self.curTankAlloc < 100:
+                self.app.send('y')
+                self.app.sendl('0')
+                self.app.sendl('0')
+                self.app.sendl('0')
+                self.app.sendl('0')
+                self.app.sendl('100')
+                self.app.sendl('0')
+                
+                
+                return Strategy.CONSUMED
 
         else:
             return Strategy.UNHANDLED

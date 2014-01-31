@@ -129,7 +129,9 @@ class App:
         """
         Get a number from the current matchign regex group
         """
-        return Utils.ToNum(self.telnet.match.groups()[matchIndex])
+        n = Utils.ToNum(self.telnet.match.groups()[matchIndex])
+        # botlog.debug("Read Number: " + str(n))
+        return n
 
     def get_str(self, matchIndex=0):
         """
@@ -194,6 +196,7 @@ class App:
         if (self.get_app_value('debug')):
             botlog.debug("No notification email is sent in debug mode")
             return
+
         if "notify" not in self.options or self.options['notify'] is None:
             botlog.info("No notification email address provided")
             return
@@ -213,7 +216,7 @@ class App:
             files.append(self.tracefile)
 
         subject = "Success"
-        body = "TODO, Fancy Summary"
+        body = str(self.data) 
         if game_exception is not None:
             subject = "Failure"
             body = str(game_exception)

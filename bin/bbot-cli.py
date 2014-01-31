@@ -61,11 +61,25 @@ defaults={
             'debug'     :   False,
             'strategies':   ['IndMtn',],
             },
+
+        'tnsoa2' : {
+            'username'  :   'Bob Falooley',
+            'password'  :   None,
+            'address'   :   'tnsoa.strangled.net',
+            'realm'     :   'Skull House',
+            'game'      :   '6',
+            'smtp_server':  'smtp.gmail.com',
+            'smtp_port' :   587,
+            'smtp_user' :   'derrick.karimi',
+            'notify'    :   'derrick.karimi@gmail.com',
+            'debug'     :   False,
+            'strategies':   ['IndMtn',],
+            },
         }
 
 
 def get_default(key):
-    superkey = 'tnsoa'
+    superkey = 'tnsoa2'
     ans = None
     if superkey in defaults:
         d = defaults[superkey]

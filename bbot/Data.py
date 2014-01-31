@@ -9,8 +9,10 @@ import botlog
 class Units(object):
     number=None
     price=None
-    industrialallocation=None
+    sellprice=None
 class ArmyUnits(Units):
+    allocation=None
+    production=None
     pass
 class Troopers(ArmyUnits):
     pass
@@ -28,13 +30,16 @@ class Agents(Units):
     pass
 class Headquarters(Units):
     pass
-class Army(object):
+
+class ManufacturedArmy(object):
     troopers=Troopers()
     turrets=Turrets()
     jets=Jets()
     tanks=Tanks()
     bombers=Bombers()
     carriers=Carriers()
+
+class Army(ManufacturedArmy):
     agents=Agents()
     headquarters=Headquarters()
 
@@ -42,8 +47,7 @@ class Region(object):
     number=None
 
 class Industrial(Region):
-    zonemanufacturing=Army()
-    
+    zonemanufacturing=ManufacturedArmy()
 
 class Agricultural(Region):
     foodyield=None
@@ -114,7 +118,10 @@ def _printvisitor(o,d):
 
     for n,v in enumerate_attribs(o):
 
-        if v is None or isinstance(v, basestring) or isinstance(v, int) or isinstance(v, float) or isinstance(v,bool):
+        if v is None:
+            continue
+
+        if isinstance(v, basestring) or isinstance(v, int) or isinstance(v, float) or isinstance(v,bool):
             t += indent + n + ": " + str(v)
         else:
             t += indent + n + ":" + _printvisitor(v,d+1)

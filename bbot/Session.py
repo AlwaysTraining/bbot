@@ -28,7 +28,7 @@ class Session(Strategy):
                 'Games External Programs:'  :   9,
                 'Connection closed by foreign host\.'  :   100000,
                 '\[\+\] Read your mail now\? \[Yes\] No'    :   10,
-                '\* Main \* [0-9:]+ \[[0-9]+\] Main \[[0-9]+\] Notices:'    :   11,     #TNSOA Main Menu
+                '. Main . [0-9:]+ \[[0-9]+\] Main \[[0-9]+\] Notices:'    :   11,     #TNSOA Main Menu
                 }
 
     played=False 

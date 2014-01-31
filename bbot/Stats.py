@@ -171,6 +171,7 @@ class Stats(Strategy):
 
 
             "\[Spending Menu\]"   : 800,
+            "\[Sell Menu\]"   : 805,
             "\(1\) Troopers"+S+N+S+N  : 810,
             "\(2\) Jets"+S+N+S+N  : 820,
             "\(3\) Turret"+S+N+S+N  : 830,
@@ -226,40 +227,50 @@ class Stats(Strategy):
         elif state == 550: regions.agricultural.foodyield = self.app.get_num()
         #TODO river producing food
 
-        elif state == 560 : manufacture.troopers.number = self.app.get_num()
-        elif state == 570 : manufacture.turrets.number = self.app.get_num()
-        elif state == 580 : manufacture.jets.number = self.app.get_num()
-        elif state == 590 : manufacture.carriers.number = self.app.get_num()
-        elif state == 600 : manufacture.bombers.number = self.app.get_num()
-        elif state == 610 : manufacture.tanks.number = self.app.get_num()
+        elif state == 560 : manufacture.troopers.production = self.app.get_num()
+        elif state == 570 : manufacture.turrets.production = self.app.get_num()
+        elif state == 580 : manufacture.jets.production = self.app.get_num()
+        elif state == 590 : manufacture.carriers.production = self.app.get_num()
+        elif state == 600 : manufacture.bombers.production = self.app.get_num()
+        elif state == 610 : manufacture.tanks.production = self.app.get_num()
 
-        elif state == 800 : pass
+        elif state == 800 : self.buymenu = True
+        elif state == 805 : self.buymenu = False
         elif state == 810 : 
-            army.troopers.price = self.app.get_num(0)
+            if self.buymenu: army.troopers.price = self.app.get_num(0)
+            if not self.buymenu: army.troopers.sellprice = self.app.get_num(0)
             army.troopers.number = self.app.get_num(1)
         elif state == 820 : 
-            army.jets.price = self.app.get_num(0)
+            if self.buymenu: army.jets.price = self.app.get_num(0)
+            if not self.buymenu: army.jets.sellprice = self.app.get_num(0)
             army.jets.number = self.app.get_num(1)
         elif state == 830 : 
-            army.turrets.price = self.app.get_num(0)
+            if self.buymenu: army.turrets.price = self.app.get_num(0)
+            if not self.buymenu: army.turrets.sellprice = self.app.get_num(0)
             army.turrets.number = self.app.get_num(1)
         elif state == 840 : 
-            army.bombers.price = self.app.get_num(0)
+            if self.buymenu: army.bombers.price = self.app.get_num(0)
+            if not self.buymenu: army.bombers.sellprice = self.app.get_num(0)
             army.bombers.number = self.app.get_num(1)
         elif state == 850 : 
-            army.headquarters.price = self.app.get_num(0)
+            if self.buymenu: army.headquarters.price = self.app.get_num(0)
+            if not self.buymenu: army.headquarters.sellprice = self.app.get_num(0)
             army.headquarters.number = self.app.get_num(1)
         elif state == 860 : 
-            regions.price = self.app.get_num(0)
+            if self.buymenu: regions.price = self.app.get_num(0)
+            if not self.buymenu: regions.sellprice = self.app.get_num(0)
             regions.number = self.app.get_num(1)
         elif state == 870 : 
-            army.agents.price = self.app.get_num(0)
+            if self.buymenu: army.agents.price = self.app.get_num(0)
+            if not self.buymenu: army.agents.sellprice = self.app.get_num(0)
             army.agents.number = self.app.get_num(1)
         elif state == 880 : 
-            army.tanks.price = self.app.get_num(0)
+            if self.buymenu: army.tanks.price = self.app.get_num(0)
+            if not self.buymenu: army.tanks.sellprice = self.app.get_num(0)
             army.tanks.number = self.app.get_num(1)
         elif state == 890 : 
-            army.carriers.price = self.app.get_num(0)
+            if self.buymenu: army.carriers.price = self.app.get_num(0)
+            if not self.buymenu: army.carriers.sellprice = self.app.get_num(0)
             army.carriers.number = self.app.get_num(1)
         elif state == 900 :
             realm.gold = self.app.get_num(0)
@@ -268,23 +279,23 @@ class Stats(Strategy):
         elif state == 1300:
             pass
         elif state == 1310 : 
-            manufacture.troopers.industrialallocation = self.app.get_num(0)
-            manufacture.troopers.number = self.app.get_num(1)
+            manufacture.troopers.allocation = self.app.get_num(0)
+            manufacture.troopers.production = self.app.get_num(1)
         elif state == 1320 : 
-            manufacture.jets.industrialallocation = self.app.get_num(0)
-            manufacture.jets.number = self.app.get_num(1)
+            manufacture.jets.allocation = self.app.get_num(0)
+            manufacture.jets.production = self.app.get_num(1)
         elif state == 1330 : 
-            manufacture.turrets.industrialallocation = self.app.get_num(0)
-            manufacture.turrets.number = self.app.get_num(1)
+            manufacture.turrets.allocation = self.app.get_num(0)
+            manufacture.turrets.production = self.app.get_num(1)
         elif state == 1340 : 
-            manufacture.bombers.industrialallocation = self.app.get_num(0)
-            manufacture.bombers.number = self.app.get_num(1)
+            manufacture.bombers.allocation = self.app.get_num(0)
+            manufacture.bombers.production = self.app.get_num(1)
         elif state == 1350 : 
-            manufacture.tanks.industrialallocation = self.app.get_num(0)
-            manufacture.tanks.number = self.app.get_num(1)
+            manufacture.tanks.allocation = self.app.get_num(0)
+            manufacture.tanks.production = self.app.get_num(1)
         elif state == 1360 : 
-            manufacture.carriers.industrialallocation = self.app.get_num(0)
-            manufacture.carriers.number = self.app.get_num(1)
+            manufacture.carriers.allocation = self.app.get_num(0)
+            manufacture.carriers.production = self.app.get_num(1)
 
 
         else:
