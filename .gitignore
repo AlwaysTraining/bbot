@@ -5,6 +5,8 @@ pip-log.txt
 
 *.log*
 *.out*
+*_log.txt
+*_out.txt
 
 sweng/bbot_*
 

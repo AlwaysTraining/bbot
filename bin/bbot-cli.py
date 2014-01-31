@@ -44,7 +44,7 @@ defaults={
             'smtp_port' :   587,
             'smtp_user' :   'derrick.karimi',
             'notify'    :   'derrick.karimi@gmail.com',
-            'debug'     :   True,
+            'debug'     :   False,
             'strategies':   ['IndMtn',],
             },
 
@@ -58,7 +58,7 @@ defaults={
             'smtp_port' :   587,
             'smtp_user' :   'derrick.karimi',
             'notify'    :   'derrick.karimi@gmail.com',
-            'debug'     :   True,
+            'debug'     :   False,
             'strategies':   ['IndMtn',],
             },
         }
