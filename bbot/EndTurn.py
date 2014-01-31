@@ -52,7 +52,7 @@ NUM_REGEX + ' units of food spoiled.' : 40,
             self.app.data.set("Turn Food Spoilage", self.app.get_num(0))
         elif state == 50:
             self.app.sendl()
-            botlog.debug(self.app.data)
+            botlog.debug("End of Turn Stats : " + str(self.app.data))
         else:
             return Strategy.UNHANDLED
 

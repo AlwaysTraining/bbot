@@ -97,16 +97,28 @@ class Realm(object):
 def _indent(d):
     s='\n'
     for i in range(d):
-        s+='\t'
+        if i == len(range(d)) -1:
+            s+='  +- '
+        else:
+            s+='  |  '
+    return s
         
+def enumerate_attribs(obj):
+    for attr in dir(obj):
+        if not callable(getattr(obj,attr)) and not attr.startswith("__"):
+            yield attr,getattr(obj,attr)
+
 def _printvisitor(o,d):
     indent=_indent(d)
     t = ''
-    for n,v in o.__dict__.items():
+
+    for n,v in enumerate_attribs(o):
+
         if v is None or isinstance(v, basestring) or isinstance(v, int) or isinstance(v, float) or isinstance(v,bool):
-            t += indent + n + "\t:\t" + str(v)
+            t += indent + n + ": " + str(v)
         else:
-            t += indent + n + "\t:\n" + _printvisitor(v,d+1)
+            t += indent + n + ":" + _printvisitor(v,d+1)
+    return t
 
 class Data(dict):
 

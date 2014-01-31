@@ -11,6 +11,7 @@ class Session(Strategy):
 
     def __init__(self, app):
         Strategy.__init__(self, app)
+        self.session_sleep = 0.2
 
     def get_indicators(self):
         return {
@@ -46,7 +47,7 @@ class Session(Strategy):
             self.app.sendl()
         elif state == 4 or state == 10:
 
-            self.app.send('n',sleep=3)
+            self.app.send('n',sleep=self.session_sleep)
                 
         elif state == 5 or state == 11:
 
@@ -54,11 +55,11 @@ class Session(Strategy):
 
             if not self.played:
                 # get to the bre menu
-                self.app.send('X',sleep=3) # external menu
+                self.app.send('X',sleep=self.session_sleep) # external menu
             else:
                 # bre is done, log out
-                self.app.send('o',sleep=3)
-                self.app.sendl('y',sleep=3)
+                self.app.send('o',sleep=self.session_sleep)
+                self.app.sendl('y',sleep=self.session_sleep)
 
         elif state == 7:
             
@@ -70,23 +71,23 @@ class Session(Strategy):
         elif state == 8:
 
             if not self.played:
-                self.app.send('2',sleep=3) # games
+                self.app.send('2',sleep=self.session_sleep) # games
             else:
-                self.app.send('q',sleep=3)
+                self.app.send('q',sleep=self.session_sleep)
 
         elif state == 9:
 
             if not self.played:
-                self.app.send(self.app.get_app_value('game'),sleep=3)
+                self.app.send(self.app.get_app_value('game'),sleep=self.session_sleep)
                 self.played = True
             else:
-                self.app.send('q',sleep=3)
+                self.app.send('q',sleep=self.session_sleep)
 
         elif state == 6:
 
-            self.app.send('x',sleep=3) # external menu
-            self.app.send('4',sleep=3) # games
-            self.app.send(self.app.get_app_value('game'),sleep=3)
+            self.app.send('x',sleep=self.session_sleep) # external menu
+            self.app.send('4',sleep=self.session_sleep) # games
+            self.app.send(self.app.get_app_value('game'),sleep=self.session_sleep)
             self.played = True
 
         elif state == 100000:
