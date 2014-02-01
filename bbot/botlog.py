@@ -12,45 +12,59 @@ tracefile=sys.stdout
 
 traceid=0
 
+cur_state=None
+cur_strat=None
+
 def formattrace(msg):
     global traceid
     traceid = traceid + 1
-    return "<"+str(traceid)+"> " + str(msg)
+
+    s = "<"+str(traceid)
+    if cur_strat is not None:
+        s+=":"+cur_strat
+    if cur_state is not None:
+        s+=":"+cur_state
+    s+=">  " + str(msg)
+    return s
 
 def trace(msg):
     tracefile.write("\n" + msg + "\n")
     
 def info(msg):
     global level
-    if level < INFO:
-        return
     msg = formattrace(msg)
-    trace(msg)
     logging.info(msg)
+    #print 'info message',traceid,'going to log',level
+    if level <= INFO:
+        #print 'info message',traceid,'going to trace',level,'vs',INFO
+        trace(msg)
 def debug(msg):
     global level
-    if level < DEBUG:
-        return
     msg = formattrace(msg)
-    trace(msg)
     logging.debug(msg)
+    #print 'debug message',traceid,'going to log',level
+    if level <= DEBUG:
+        #print 'debug message',traceid,'going to trace',level,'vs',DEBUG
+        trace(msg)
 def warn(msg):
     global level
-    if level < WARN:
-        return
     msg = formattrace(msg)
-    trace(msg)
     logging.warn(msg)
+    if level <= WARN:
+        trace(msg)
 
 def exception(msg):
     trace(formattrace(str(msg)))
     logging.exception(msg)
 
-def configure(level,format,logpath,tracepath):
+def configure(msglevel,format,logpath,tracepath):
     global tracefile
+    global level
+    level = msglevel
     logging.getLogger('').handlers = []
     if logpath is not None:
-        logging.basicConfig(level=level,format=format,filename=logpath)
+        # file level shall always be debug
+        logging.basicConfig(level=DEBUG,format=format,filename=logpath)
     if tracepath is None:
         tracefile = sys.stdout
     else:

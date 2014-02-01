@@ -42,6 +42,10 @@ class ManufacturedArmy(object):
 class Army(ManufacturedArmy):
     agents=Agents()
     headquarters=Headquarters()
+    maintenance = None
+    food = None
+    
+    
 
 class Region(object):
     number=None
@@ -77,11 +81,16 @@ class Regions(object):
     number_affordable=None
     price=None
     number=None
+    maintenance=None
 
 
     
 class Population(object):
     taxearnings=None
+    growth=None
+    food = None
+    pop_support = None
+    
 
 class Bank(object):
     gold=None
@@ -89,14 +98,20 @@ class Bank(object):
 class Turns(object):
     remaining=None
 
+class Food(object):
+    spoilage=None
+    units=None
+
 class Realm(object):
     regions=Regions()
     population=Population()
     army=Army()
-    name=''
+    name=None
     gold=None
     bank=Bank()
     turns=Turns()
+    food=Food()
+    queen_taxes=None
 
 def _indent(d):
     s='\n'

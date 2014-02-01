@@ -174,7 +174,7 @@ class Stats(Strategy):
             "\[Sell Menu\]"   : 805,
             "\(1\) Troopers"+S+N+S+N  : 810,
             "\(2\) Jets"+S+N+S+N  : 820,
-            "\(3\) Turret"+S+N+S+N  : 830,
+            "\(3\) Turrets"+S+N+S+N  : 830,
             "\(4\) Bombers"+S+N+S+N  : 840,
             "\(5\) HeadQuarters"+S+N+S+N  : 850,
             "\(6\) Regions"+S+N+S+N  : 860,
@@ -192,6 +192,23 @@ class Stats(Strategy):
             'Tanks'+S+':'+S+N+'\%'+S+'\('+N+' per year\)'     :   1350,
             'Carriers'+S+':'+S+N+'\%'+S+'\('+N+' per year\)'  :   1360,
 
+            '\[Crazy Gold Bank\]' : 1500,
+            'You have '+NUM_REGEX+' gold in hand and '+NUM_REGEX+' gold in the bank.' : 1510,
+
+            'End of Turn Statistics' : 1600,
+            'Your dominion gained '+NUM_REGEX+' million people\.' : 1610,
+            'Your dominion lost '+NUM_REGEX+' million people\.' :   1620,
+            NUM_REGEX + ' units of food spoiled.' : 1630,
+
+        
+            'Your Armed Forces Require '+NUM_REGEX+' gold\.'  :   1700,
+            NUM_REGEX + ' gold is required to maintain your regions\.'   :   1710,
+            'The Queen Royale requires '+NUM_REGEX+' gold for Taxes\.' : 1720,
+            'Your People Need '+NUM_REGEX+' units of food'    :   1730,
+            'Your Armed Forces Require '+NUM_REGEX+' units of food'   :   1740,
+            NUM_REGEX + ' gold is requested to boost popular support\.' :   1750,
+
+            'You have ' + NUM_REGEX + ' gold and ' + NUM_REGEX + ' units of food.' : 1900,
 }
 
 
@@ -202,12 +219,9 @@ class Stats(Strategy):
         manufacture = regions.industrial.zonemanufacturing
         army = realm.army
 
-        if state == 10:
-            self.app.data.set("Turn Tax Revenue", self.app.get_num(0))
 
-        elif lastState != None and lastState < 200 and state == 200:
-            realm.name=app.get_str()
-            
+        if state == 200: realm.name=app.get_str()
+
         elif state == 50: regions.number_affordable = self.app.get_num()
         elif state == 60: pass
         elif lastState == 60 and state == 70: regions.coastal.number = self.app.get_num()
@@ -274,7 +288,6 @@ class Stats(Strategy):
             army.carriers.number = self.app.get_num(1)
         elif state == 900 :
             realm.gold = self.app.get_num(0)
-            realm.bank.gold = self.app.get_num(1)
             realm.turns.remaining = self.app.get_num(1)
         elif state == 1300:
             pass
@@ -298,6 +311,41 @@ class Stats(Strategy):
             manufacture.carriers.production = self.app.get_num(1)
 
 
+
+        elif state == 1500 : 
+            pass
+        elif lastState == 1500 and state == 1510 : 
+            self.app.data.realm.gold = self.app.get_num(0)
+            self.app.data.realm.bank.gold = self.app.get_num(1)
+
+        elif state == 1600:
+            pass
+        elif lastState == 1600 and state == 1610:
+            self.app.data.realm.population.growth = self.app.get_num(0)
+        elif lastState == 1600 and state == 1620:
+            self.app.data.realm.population.growth = -self.app.get_num(0)
+        elif (lastState == 1610 or lastState == 1620) and state == 1630:
+            self.app.data.realm.food.spoilage = self.app.get_num(0)
+
+        elif state == 1700:
+            army.maintenance = self.app.get_num(0)
+        elif state == 1710:
+            regions.maintenance = self.app.get_num(0)
+        elif state == 1720:
+            realm.queen_taxes = self.app.get_num(0)
+        elif state == 1730:
+            realm.population.food = self.app.get_num(0)
+        elif state == 1740:
+            army.food = self.app.get_num(0)
+        elif state == 1750:
+            realm.pop_support = self.app.get_num(0)
+        elif state == 1900:
+            realm.gold = self.app.get_num(0)
+            realm.food.units = self.app.get_num(1)
+        
+
+            
+            
         else:
             return Strategy.UNHANDLED
 

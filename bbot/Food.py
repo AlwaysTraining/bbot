@@ -34,8 +34,6 @@ class Food(Strategy):
             pass
         elif lastState == 10 and state == 20:
 
-            self.app.data.set("Current Gold on Hand", self.app.get_num(0))
-            self.app.data.set("Current Food", self.app.get_num(1))
             self.app.sendl()
 
         else:

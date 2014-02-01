@@ -17,7 +17,7 @@ from bbot import *
 import botlog
 import string
 
-valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits) 
+valid_chars = "-_. %s%s" % (string.ascii_letters, string.digits) 
 
 class App:
 
@@ -62,6 +62,8 @@ class App:
         self.query_func = query_func
         self.secret_query_func = secret_query_func
         self.data = Data.Data()
+        self.cur_strategy = None
+        self.cur_state = None
 
         level=botlog.DEBUG
         self.logfile=None
@@ -74,7 +76,7 @@ class App:
             debug=False
             
         botlog.configure(
-                level=level,
+                msglevel=level,
                 format='\n%(asctime)s:%(levelname)s::%(message)s',
                 logpath=self.logfile,
                 tracepath=self.tracefile)
@@ -121,6 +123,14 @@ class App:
             time.sleep(self.get_close_float(sleep))
             self.telnet.send('\r')
 
+#   def sendseq(self,msg='',sleep=0.5):
+#       """
+#       Send the sequence of charachters, performing reads between each char
+#       """
+#       for i in range(len(msg)):
+#           self.send(msg=msg[i:i+1],sleep=sleep)
+#           if i < len(msg)-1:
+#               self.telnet.read_nonblocking(10000000,1)
 
     def sendl(self,msg='',sleep=0.5):
         self.send(msg,eol=True,sleep=sleep)
@@ -183,7 +193,20 @@ class App:
 
             for rec in strategies.enumerate_matches(keyIndex):
 
+                botlog.cur_strat = rec.strategy.get_name()
+                botlog.cur_state = str(rec.state)
+                
+                if botlog.cur_strat != "Stats":
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
+                else:
+                    print botlog.cur_strat, botlog.cur_state
+                
                 action = rec.strategy.base_on_indicator(rec.state)
+
+                botlog.cur_strat = None
+                botlog.cur_state = None
+
                 if action == Strategy.TERMINATE:
                     self.telnet.close()
                     running = False
