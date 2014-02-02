@@ -117,6 +117,7 @@ class Stats(Strategy):
 
     def __init__(self, app):
         Strategy.__init__(self, app)
+        self.turnstats=0
 
 
     def get_priority(self,state):
@@ -154,7 +155,7 @@ class Stats(Strategy):
             N+' gold was earned from investment returns.'   :   620,
             
 
-            "\-\*(^[\*]+)\*\-"  :   200,
+            "\-\*(.+)\*\-"  :   200,
             "Turns: "+N :   210,
             "Score: "+N :   220,
             "Gold: "+N  :   230,
@@ -220,9 +221,8 @@ class Stats(Strategy):
         army = realm.army
 
 
-        if state == 200: realm.name=app.get_str()
 
-        elif state == 50: regions.number_affordable = self.app.get_num()
+        if state == 50: regions.number_affordable = self.app.get_num()
         elif state == 60: pass
         elif lastState == 60 and state == 70: regions.coastal.number = self.app.get_num()
         elif lastState == 70 and state == 80: regions.river.number = self.app.get_num()
@@ -233,6 +233,54 @@ class Stats(Strategy):
         elif lastState == 120 and state == 130: regions.mountain.number = self.app.get_num()
         elif lastState == 130 and state == 140: regions.technology.number = self.app.get_num()
               
+        # They really should mark the beginning of the turn better, rather than make it
+        # so it only matches your realm name, I just make sure that it doesn't catch
+        # the main menu when the main menu prints '-*Barren Realms Elite*-'
+        # so bbot does not support realms named the name of the game
+        elif state == 200 and self.app.get_str() != 'Barren Realms Elite':
+            botlog.debug("!! reading stats, turnstats: " + str(self.turnstats))
+            n = self.app.get_str()
+
+            if self.turnstats == 0: 
+                realm.name=self.app.get_str()
+            self.turnstats = 1
+        elif lastState == 200 and state == 210 and self.turnstats == 1:
+            realm.turns.current = self.app.get_num()
+            self.turnstats = 2
+        elif lastState == 210 and state == 220 and self.turnstats == 2:
+            realm.turns.score = self.app.get_num()
+            self.turnstats = 3
+        elif state == 230 and self.turnstats == 3:
+            realm.turns.gold = self.app.get_num()
+        elif state == 240 and self.turnstats == 3:
+            realm.bank.gold = self.app.get_num()
+        elif state == 250 and self.turnstats == 3:
+            realm.population.size = self.app.get_num(0)
+            realm.population.rate = self.app.get_num(1)
+        elif state == 250 and self.turnstats == 3:
+            realm.population.size = self.app.get_num(0)
+            realm.population.rate = self.app.get_num(1)
+        elif state == 260 and self.turnstats == 3:
+            realm.population.pop_support = self.app.get_num()
+        elif state == 270 and self.turnstats == 3:
+            realm.food.units = self.app.get_num()
+        elif state == 280 and self.turnstats == 3:
+            army.agents.number = self.app.get_num()
+        elif state == 290 and self.turnstats == 3:
+            army.headquarters.number = self.app.get_num()
+        elif state == 300 and self.turnstats == 3:
+            army.sdi = self.app.get_num()
+        elif state == 310 and self.turnstats == 3:
+            army.years_freedom = self.app.get_num()
+            self.turnstats = 0
+            botlog.debug("!!Resetting turnstats")
+        elif state == 320 and self.turnstats == 3:
+            army.years_protection = self.app.get_num()
+            self.turnstats = 0
+            botlog.debug("!!Resetting turnstats")
+
+        
+
         elif state == 500: realm.population.taxearnings = self.app.get_num()
         elif state == 510: regions.mountain.earnings = self.app.get_num()
         elif state == 520: regions.coastal.earnings = self.app.get_num()
@@ -338,7 +386,7 @@ class Stats(Strategy):
         elif state == 1740:
             army.food = self.app.get_num(0)
         elif state == 1750:
-            realm.pop_support = self.app.get_num(0)
+            realm.pop_support_bribe = self.app.get_num(0)
         elif state == 1900:
             realm.gold = self.app.get_num(0)
             realm.food.units = self.app.get_num(1)

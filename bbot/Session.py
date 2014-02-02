@@ -44,7 +44,7 @@ class Session(Strategy):
 
         elif state == 3:
 
-            self.app.sendl()
+            self.app.sendl(sleep=0)
         elif state == 4 or state == 10:
 
             self.app.send('n',sleep=self.session_sleep)

@@ -17,7 +17,7 @@ from bbot import *
 import botlog
 import string
 
-valid_chars = "-_. %s%s" % (string.ascii_letters, string.digits) 
+valid_chars = "-_.%s%s" % (string.ascii_letters, string.digits) 
 
 class App:
 
@@ -31,7 +31,16 @@ class App:
                 self.get_app_value('game'),
                 self.get_app_value('realm')])
        
-        s = ''.join(c for c in s if c in valid_chars)
+        s2 = []
+        for c in s:
+            if c in valid_chars:
+                s2.append(c)
+            else:
+                s2.append('_')
+        s = ''.join(s2)
+
+#       Just remove chars
+#        s = ''.join(c for c in s if c in valid_chars)
        
         return s
 
@@ -105,6 +114,12 @@ class App:
     def get_close_float(self,x):
         return random.uniform(x*0.75,x*1.25)
 
+    def wait_for_prompt(self):
+        gotprompt = 0
+        while not gotprompt:
+            #TODO forever guard
+            gotprompt = self.telnet.expect([".", pexpect.TIMEOUT], timeout=1)
+
     def send(self, msg, eol=False, sleep=1.5):
         """
         Send a message to the client use some rudemantry random delay to 
@@ -114,23 +129,19 @@ class App:
         if msg is not None and len(msg) > 0:
             botlog.info('Sending {' + msg + '}')
             for c in msg:
+               #if sleep > 0:
+               #    self.wait_for_prompt()
                 self.telnet.delaybeforesend=self.get_close_float(sleep)
-                self.telnet.send(c)
+                if 1 != self.telnet.send(c):
+                    raise Exception ("1 char not sent")
 
         if eol:
             botlog.info('Sending {\\r}')
             self.telnet.delaybeforesend=self.get_close_float(sleep)
-            time.sleep(self.get_close_float(sleep))
-            self.telnet.send('\r')
-
-#   def sendseq(self,msg='',sleep=0.5):
-#       """
-#       Send the sequence of charachters, performing reads between each char
-#       """
-#       for i in range(len(msg)):
-#           self.send(msg=msg[i:i+1],sleep=sleep)
-#           if i < len(msg)-1:
-#               self.telnet.read_nonblocking(10000000,1)
+           #if sleep > 0:
+           #    self.wait_for_prompt()
+            if 1 != self.telnet.send('\r'):
+                raise Exception ("1 char not sent")
 
     def sendl(self,msg='',sleep=0.5):
         self.send(msg,eol=True,sleep=sleep)
@@ -154,7 +165,7 @@ class App:
 
         # begin the telnet session
 
-        self.telnet = pexpect.spawn('telnet ' + self.get_app_value('address'), 
+        self.telnet = pexpect.spawn('rtelnet ' + self.get_app_value('address'), 
                 logfile=botlog.tracefile,
                 maxread=1)
 
@@ -182,6 +193,9 @@ class App:
 
         # repeat forever or until we think of something better to do
         running = True
+        strat = None
+        laststrat = None
+        dbgmode = self.get_app_value('debug')
         while running:
 
             # expect the unified list of all possible indicators
@@ -196,11 +210,14 @@ class App:
                 botlog.cur_strat = rec.strategy.get_name()
                 botlog.cur_state = str(rec.state)
                 
-                if botlog.cur_strat != "Stats":
-                    sys.stdout.write('.')
-                    sys.stdout.flush()
-                else:
-                    print botlog.cur_strat, botlog.cur_state
+                # Provide a decent user experience for watching progress
+                if not dbgmode:
+                    if botlog.cur_strat == "Stats" or botlog.cur_strat == laststrat:
+                        sys.stdout.write('.')
+                        sys.stdout.flush()
+                    else:
+                        laststrat = botlog.cur_strat
+                        sys.stdout.write( '\n' + botlog.cur_strat)
                 
                 action = rec.strategy.base_on_indicator(rec.state)
 

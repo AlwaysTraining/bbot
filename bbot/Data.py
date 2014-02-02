@@ -44,6 +44,9 @@ class Army(ManufacturedArmy):
     headquarters=Headquarters()
     maintenance = None
     food = None
+    sdi = None
+    years_protection = None
+    years_freedom = None
     
     
 
@@ -89,7 +92,9 @@ class Population(object):
     taxearnings=None
     growth=None
     food = None
+    pop_support_bribe = None
     pop_support = None
+    rate = None
     
 
 class Bank(object):
@@ -97,6 +102,7 @@ class Bank(object):
 
 class Turns(object):
     remaining=None
+    current=None
 
 class Food(object):
     spoilage=None
@@ -112,6 +118,7 @@ class Realm(object):
     turns=Turns()
     food=Food()
     queen_taxes=None
+    score=None
 
 def _indent(d):
     s='\n'
@@ -154,6 +161,18 @@ class Data(dict):
     def set(self, key, value):
         botlog.debug("recording " + str(key) + " = " + str(value))
         self[key] = value
+
+    def get_maint_cost(self):
+        c = 0
+        realm = self.realm
+        if realm.army.maintenance is not None: c = c + realm.army.maintenance
+        if realm.regions.maintenance is not None: c = c + realm.regions.maintenance
+        if realm.queen_taxes is not None: c = c + realm.queen_taxes
+        if realm.population.pop_support_bribe is not None: c = c + realm.population.pop_support_bribe
+        # TODO Morale cost
+
+        return c
+ 
 
 
 

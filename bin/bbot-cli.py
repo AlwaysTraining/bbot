@@ -79,7 +79,7 @@ defaults={
 
 
 def get_default(key):
-    superkey = 'tnsoa2'
+    superkey = 'tnsoa'
     ans = None
     if superkey in defaults:
         d = defaults[superkey]
