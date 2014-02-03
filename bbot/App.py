@@ -16,6 +16,8 @@ import Strategy
 from bbot import *
 import botlog
 import string
+import State
+import re
 
 valid_chars = "-_.%s%s" % (string.ascii_letters, string.digits) 
 
@@ -73,23 +75,27 @@ class App:
         self.data = Data.Data()
         self.cur_strategy = None
         self.cur_state = None
+        self.match = None
+        self.match_index = None
+        self.match_re = None
+        self.emptyreads = None
 
         level=botlog.DEBUG
         self.logfile=None
-        self.tracefile=None
+        self.tracefile = self.file_roll('out')
         debug=True
         if not self.get_app_value('debug'):
             level=botlog.INFO
             self.logfile = self.file_roll('log')
-            self.tracefile = self.file_roll('out')
             debug=False
+
+        self.debug = debug
             
         botlog.configure(
                 msglevel=level,
                 format='\n%(asctime)s:%(levelname)s::%(message)s',
                 logpath=self.logfile,
                 tracepath=self.tracefile)
-
 
     def get_app_value(self, key, secret=False):
         # Check if value is in options
@@ -114,11 +120,59 @@ class App:
     def get_close_float(self,x):
         return random.uniform(x*0.75,x*1.25)
 
-    def wait_for_prompt(self):
-        gotprompt = 0
-        while not gotprompt:
-            #TODO forever guard
-            gotprompt = self.telnet.expect([".", pexpect.TIMEOUT], timeout=1)
+    def read_until(self,stop_text,timeout=1):
+        
+        return self.read(timeout,stop_patterns=[re.compile(
+            '.*'+re.escape(stop_text)+'.*'
+        )])
+
+    def read(self,timeout=1,stop_patterns=None):
+        txt=[]
+        self.match = None
+        self.match_index = None
+        self.match_re = None
+        
+        while True:
+            #todo infinte guard
+            try:
+                x = self.telnet.read_nonblocking(size=1, timeout=timeout)
+
+                # print the read data in debug mode
+                if self.debug:
+                    sys.stdout.write(x)
+                    sys.stdout.flush()
+
+                txt.append(x)
+
+                if stop_patterns is not None:
+                    buf =  ''.join(txt)
+                    lines = buf.splitlines()
+                    line = lines[-1]
+
+                    for i in range(len(stop_patterns)):
+                        self.match = stop_patterns[i].match(line)
+                        if self.match is not None:
+                            self.match_index = i
+                            self.match_re = stop_patterns[i]
+                            break
+                    
+                if self.match is not None:
+                    break
+                
+            except pexpect.TIMEOUT:
+                break
+
+       
+        newbuf =  ''.join(txt)
+        if len(newbuf) > 0:
+            self.emptyreads = 0
+            self.buf = newbuf
+        else:
+            self.emptyreads = self.emptyreads + 1
+        
+        
+        return self.buf
+
 
     def send(self, msg, eol=False, sleep=1.5):
         """
@@ -126,25 +180,29 @@ class App:
         semi similate a human's typing
         """
 
+        msg = str(msg)
+
         if msg is not None and len(msg) > 0:
             botlog.info('Sending {' + msg + '}')
             for c in msg:
-               #if sleep > 0:
-               #    self.wait_for_prompt()
-                self.telnet.delaybeforesend=self.get_close_float(sleep)
+                # self.telnet.delaybeforesend=self.get_close_float(sleep)
                 if 1 != self.telnet.send(c):
                     raise Exception ("1 char not sent")
 
         if eol:
             botlog.info('Sending {\\r}')
-            self.telnet.delaybeforesend=self.get_close_float(sleep)
-           #if sleep > 0:
-           #    self.wait_for_prompt()
+            # self.telnet.delaybeforesend=self.get_close_float(sleep)
             if 1 != self.telnet.send('\r'):
                 raise Exception ("1 char not sent")
 
     def sendl(self,msg='',sleep=0.5):
         self.send(msg,eol=True,sleep=sleep)
+
+    def send_seq(self,seq):
+        for msg in seq:
+            self.send(msg)
+            self.read()
+        return self.buf
 
     def get_num(self, matchIndex=0):
         """
@@ -165,71 +223,32 @@ class App:
 
         # begin the telnet session
 
-        self.telnet = pexpect.spawn('rtelnet ' + self.get_app_value('address'), 
+        self.telnet = pexpect.spawn('telnet ' + self.get_app_value('address'), 
                 logfile=botlog.tracefile,
                 maxread=1)
 
-        # get list of strategies from user
-        stratgem = {}
-        strats = self.get_app_value('strategies')
-
-        # if one string is provided, someitmes they can just give it to us as one string,
-        #   convert it to a list to implify 
-        if isinstance(strats, basestring):
-            strats = [strats]
-
-        # shouldn't happen with cmd line checking
-        if strats is None:
-            raise Exception("No Strategies provided")
-
-        # union with the default strategy handlers
-        default=['Session', 'Common', 'Messages', 'Diplomacy', 'Main', 'Stats', 
-            'Maintenance', 'Food','Bank','Spending','Attack', 'Trading', 
-            'EndTurn', 'Industry']
-        strats = list (set(strats) |  set(default))
-
-        # compile the strategies into indicators sorted by priority
-        strategies = Strategy.Strategies(self, strats)
-
-        # repeat forever or until we think of something better to do
         running = True
-        strat = None
-        laststrat = None
-        dbgmode = self.get_app_value('debug')
-        while running:
 
-            # expect the unified list of all possible indicators
-            # print '\n\n', 'EXPECTING', keys,'\n\n'
+        
+        exitState = State.BailOut().get_name()
 
-            keyIndex = self.telnet.expect(strategies.get_keys())
+        state = State.Login()
 
-            botlog.debug( 'Matched: ' + strategies.get_key(keyIndex))
+        while state.get_name() != exitState:
 
-            for rec in strategies.enumerate_matches(keyIndex):
+            botlog.debug("Reading")
+            buf = self.read()
 
-                botlog.cur_strat = rec.strategy.get_name()
-                botlog.cur_state = str(rec.state)
-                
-                # Provide a decent user experience for watching progress
-                if not dbgmode:
-                    if botlog.cur_strat == "Stats" or botlog.cur_strat == laststrat:
-                        sys.stdout.write('.')
-                        sys.stdout.flush()
-                    else:
-                        laststrat = botlog.cur_strat
-                        sys.stdout.write( '\n' + botlog.cur_strat)
-                
-                action = rec.strategy.base_on_indicator(rec.state)
+            botlog.debug("Executing State: " + state.get_name())
+            nextstate = state.transition(self,buf)
 
-                botlog.cur_strat = None
-                botlog.cur_state = None
+            buf = None
+            if nextstate is not None:
+                state = nextstate
 
-                if action == Strategy.TERMINATE:
-                    self.telnet.close()
-                    running = False
-                    break
-                elif action == Strategy.CONSUMED:
-                    break
+            botlog.debug("Next State: " + state.get_name())
+
+            
 
 
     def send_notification(self, game_exception):

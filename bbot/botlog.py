@@ -62,13 +62,20 @@ def configure(msglevel,format,logpath,tracepath):
     global level
     level = msglevel
     logging.getLogger('').handlers = []
+
     if logpath is not None:
-        # file level shall always be debug
-        logging.basicConfig(level=DEBUG,format=format,filename=logpath)
+        # when logging to file always go full debug
+        logmsglevel=DEBUG
+    else:
+        logmsglevel = msglevel
+
+    logging.basicConfig(level=logmsglevel,format=format,filename=logpath)
+
     if tracepath is None:
         tracefile = sys.stdout
     else:
         tracefile = file(tracepath,'w')
+
 
 
         
