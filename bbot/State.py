@@ -32,7 +32,7 @@ class StatsState(State):
     def get_regexs(self):
     
         if self.regexs is None:
-            self.regex={}
+            self.regexs={}
             patterns = self.get_patterns()
             for pattern,id in patterns.items():
                 self.regexs[id]=re.compile(pattern)
@@ -40,15 +40,15 @@ class StatsState(State):
 
     def get_match(self,line):
         
-        regexes = self.get_regexs()
+        regexs = self.get_regexs()
         for rid,regex in regexs.items():
-            m = r.match(line)
+            m = regex.match(line)
             if m is not None:
                 self.match = m
                 return rid
 
-    def get_num(self, matchIndex):
-        n = Utils.ToNum(self.match.groups()[matchIndex])
+    def get_num(self, matchIndex=0):
+        n = ToNum(self.match.groups()[matchIndex])
         
     def get_str(self,matchIndex=0):
         """
@@ -98,11 +98,14 @@ class TurnStats(StatsState):
 
     def transition(self,app,buf):
         lines = buf.splitlines()
+        realm=app.data.realm
+        army=realm.army
+        regions=realm.regions
 
         for line in lines:
             state = self.get_match(line)
             
-            if state == 200 : realm.name=self.app.get_str()
+            if state == 200 : realm.name=self.get_str()
             elif state == 210: realm.turns.current = self.get_num()
             elif state == 220: realm.turns.score = self.get_num()
             elif state == 230: realm.turns.gold = self.get_num()
@@ -139,7 +142,7 @@ class PreTurns(State):
             # play the lottery
 
             for i in range(7):
-                self.app.sendl()
+                app.sendl()
 
         elif '-=<Paused>=-' in buf:
             app.sendl()
@@ -180,33 +183,32 @@ class MainMenu(State):
 
 class NewRealm(State):
     def transition(self,app,buf):
-        app.send_seq( [ app.get_app_value('realm'), 'y','n' ] )
+        app.send_seq( [ app.get_app_value('realm')+"\r", 'y','n' ] )
         return MainMenu()
 
             
         
     
-MENU_REGEX = re.compile(re.escape('(1) Play Game             (7) Send Messages'))
-NEW_EMPIRE_REGEX = re.compile(re.escape('Name your Realm'))
+MENU_REGEX = re.compile('.*'+re.escape('(1) Play Game             (7) Send Messages')+'.*')
+NEW_EMPIRE_REGEX = re.compile('.*'+re.escape('Name your Realm')+'.*')
 
 class StartGame(State):
     def transition(self,app,buf):
-        if 'Continue? (Y/n)' in buf:
-            app.send('n')
-            return
-        elif '<Paused>' in buf or '>Paused<' in buf:
+        if '<Paused>' in buf or '>Paused<' in buf:
             app.sendl()
-            return
         elif 'Do you want ANSI Graphics? (Y/n)' in buf:
             app.send('n')
             buf = app.read(stop_patterns=[MENU_REGEX,NEW_EMPIRE_REGEX])        
 
+            if 'Continue? (Y/n)' in buf:
+                app.send('y')
+                buf = app.read(stop_patterns=[MENU_REGEX,NEW_EMPIRE_REGEX])        
+            
             if app.match_re == NEW_EMPIRE_REGEX:
                 return NewRealm()
             elif app.match_re == MENU_REGEX:
                 return MainMenu()
 
-        return BailOut()
 
 
         

@@ -248,6 +248,8 @@ class App:
 
             botlog.debug("Next State: " + state.get_name())
 
+        self.read()
+
             
 
 
