@@ -13,7 +13,6 @@ class Units(object):
 class ArmyUnits(Units):
     allocation=None
     production=None
-    pass
 class Troopers(ArmyUnits):
     pass
 class Turrets(ArmyUnits):
@@ -45,8 +44,6 @@ class Army(ManufacturedArmy):
     maintenance = None
     food = None
     sdi = None
-    years_protection = None
-    years_freedom = None
     
     
 
@@ -103,6 +100,8 @@ class Bank(object):
 class Turns(object):
     remaining=None
     current=None
+    years_protection = None
+    years_freedom = None
 
 class Food(object):
     spoilage=None

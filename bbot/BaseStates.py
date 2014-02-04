@@ -4,11 +4,11 @@
 # Emerging Technology Center, Carnegie Mellon University, Copyright 2013
 # Unclassified
 
-import re
 # import botlog
 from bbot.Utils import *
 S = SPACE_REGEX
 N = NUM_REGEX
+from bbot.StatsParser import StatsParser
 
 class State(object):
     def transition(self,app,buf):
@@ -20,41 +20,33 @@ class BailOut(State):
     pass
 
 class StatsState(State):
-    def __init__(self):
+    def __init__(self, statsParser=None, get_patterns_method=None):
         State.__init__(self)
-        self.regexs = None
-        self.match = None
+        if statsParser is not None:
+            self.statsParse = statsParser
+            if get_patterns_method is not None:
+                self.statsParse.get_patterns_method = get_patterns_method
+        else:
+            self.statsParse = StatsParser(
+                get_patterns_method = self.get_patterns())
     
     def get_patterns(self):
         return {}
 
     def get_regexs(self):
+        return self.statsParse.get_regexs()
     
-        if self.regexs is None:
-            self.regexs={}
-            patterns = self.get_patterns()
-            for pattern,rid in patterns.items():
-                self.regexs[rid]=re.compile(pattern)
-        return self.regexs
-
     def get_match(self,line):
+        return self.statsParse.get_match(line)
         
-        regexs = self.get_regexs()
-        for rid,regex in regexs.items():
-            m = regex.match(line)
-            if m is not None:
-                self.match = m
-                return rid
-
     def get_num(self, matchIndex=0):
-        n = ToNum(self.match.groups()[matchIndex])
-        return n
+        return self.statsParse.get_num(matchIndex)
         
     def get_str(self,matchIndex=0):
-        """
-        Get a number from the current matchign regex group
-        """
-        return self.match.groups()[matchIndex]
+        return self.statsParse.get_str(matchIndex)
+
+    def parse(self,app,buf):
+        return self.statsParse.parse(self,app,buf)
     
             
 

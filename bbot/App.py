@@ -19,30 +19,23 @@ import string
 import State
 import re
 
-valid_chars = "-_.%s%s" % (string.ascii_letters, string.digits) 
 
 class App:
 
     def get_data_dir(self):
         return "."
 
+    
     def get_tag_str(self,joiner='_'):
+        a = self.get_app_value('address')
+        a = a.split('.')
+        a = a[0]
         s = joiner.join([
-                "bbot",
-                self.get_app_value('address'),
+                "bbot",a,
                 self.get_app_value('game'),
                 self.get_app_value('realm')])
-       
-        s2 = []
-        for c in s:
-            if c in valid_chars:
-                s2.append(c)
-            else:
-                s2.append('_')
-        s = ''.join(s2)
+        s = Utils.clean_string(s)
 
-#       Just remove chars
-#        s = ''.join(c for c in s if c in valid_chars)
        
         return s
 
@@ -58,9 +51,11 @@ class App:
             if not os.path.exists(logdir):
                 os.makedirs(logdir)
 
-            oldname = (self.get_tag_str() + '_' +  
-                    str(Utils.modification_date(logfile)) + '_'
+            moddate = Utils.get_file_date_string(logfile)
+
+            oldname = (self.get_tag_str() + '_' +  moddate + '_'
                         + suffix + ".txt")
+
 
             oldlogfile = os.path.join(logdir, oldname)
 
@@ -218,7 +213,6 @@ class App:
             self.send(msg)
             self.read()
         return self.buf
-
 
     def on_spending_menu(self):
         for s in self.strategies:

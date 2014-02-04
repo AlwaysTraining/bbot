@@ -4,44 +4,51 @@
 # Emerging Technology Center, Carnegie Mellon University, Copyright 2013
 # Unclassified
 
-import os
 from bbot.Utils import *
 from bbot.Strategy import Strategy
-
-"""
-[Spending Menu]
-Key Item                 Price       # Owned
-(*) System Menu                             
-(1) Troopers              271           100 
-(2) Jets                  330             0 
-(3) Turrets               383             0 
-(4) Bombers              3138             0 
-(5) HeadQuarters         5277             0 
-(6) Regions              1412            15 
-(7) Covert Agents         725             0 
-(8) Tanks                1735             0 
-(9) Carriers             5269             0 
-(S) Sell                                    
-(V) Visit Bank                              
-(?) Help                                    
-(0) Quit                                    
-
-You have 49,325 gold and 10 turns.
-Choice> 
-"""
+from bbot.SpendingParser import SpendingParser
 
 S = SPACE_REGEX
 N = NUM_REGEX
 
+
 class IndMtn(Strategy):
-
-    def __init__(self, app):
-        Strategy.__init__(self, app)
-
-    def get_priority(self):
-        return MED_PRIORITY
+    def __init__(self,app):
+        Strategy.__init__(self,app)
 
     def on_spending_menu(self):
+        # sell all tanks and return to buy menu
+        self.app.send('s')
+        # perform a read and through a spending state to parse all the data
+        sp = SpendingParser()
+        sp.parse(self.app, self.app.read())
 
-        return Strategy.UNHANDLED
+        sellItems = ['8']
+        # sell all the items specified
+        for saleItem in sellItems:
+            if str(saleItem) != '6':
+                self.app.send_seq( [ str(saleItem),'>','\r' ] )
+            else:
+                raise Exception("Do not know how to drop regions yet")
+
+        # return to buy menu
+        self.app.send('b')
+        sp.parse(self.app, self.app.read())
+        
+        # enter region buying menu
+        self.app.send('6')
+        sp.parse(self.app, self.app.read())
+
+        a = self.app.data.realm.regions.number_affordable
+        # 5:1:1 is 5+1+1 = 7 is 5/7,1/7,1/7
+        r = int(a/7)
+        # Sequence for buying regions, return to buy menu
+        self.app.send_seq(['t',r,'m',r,'i','>','\r'])
+        sp.parse(self.app, self.app.read())
+        
+
+
+
+        
+
 

@@ -159,8 +159,22 @@ def send_mail(to, subject, text, _from="", files=[], cc=[], bcc=[],
     smtp.close()
 
 
-import os
-import datetime
-def modification_date(filename):
-    t = os.path.getmtime(filename)
-    return datetime.datetime.fromtimestamp(t)
+import time
+def get_file_date_string(filename):
+    return time.strftime("%Y_%m_%d-%H_%M_%S",
+            time.gmtime(os.path.getmtime(filename)))
+
+import string
+VALID_CHARS = "-_.%s%s" % (string.ascii_letters, string.digits) 
+def clean_string(s):
+
+#       Just remove chars
+#        s = ''.join(c for c in s if c in valid_chars)
+    s2 = []
+    for c in s:
+        if c in VALID_CHARS:
+            s2.append(c)
+        else:
+            s2.append('_')
+    return ''.join(s2)
+    

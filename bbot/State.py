@@ -77,82 +77,20 @@ class EndTurn(StatsState):
             botlog.info(str(app.data))
             return TurnStats() 
 
+from bbot.SpendingParser import SpendingParser
+
 class Spending(StatsState):
 
     def __init__(self):
-        StatsState.__init__(self)
-        self.buymenu=None
-
-    def get_patterns(self):
-        return {
-            "\(1\) Troopers"+S+N+S+N  : 810,
-            "\(2\) Jets"+S+N+S+N  : 820,
-            "\(3\) Turrets"+S+N+S+N  : 830,
-            "\(4\) Bombers"+S+N+S+N  : 840,
-            "\(5\) HeadQuarters"+S+N+S+N  : 850,
-            "\(6\) Regions"+S+N+S+N  : 860,
-            "\(7\) Covert Agents"+S+N+S+N  : 870,
-            "\(8\) Tanks"+S+N+S+N  : 880,
-            "\(9\) Carriers"+S+N+S+N  : 890,
-            "You have "+N+" gold and "+N+" turns\." : 900,
-            }
-
+        StatsState.__init__(self,statsParser=SpendingParser())
     
     def transition(self,app,buf):
-        lines = buf.splitlines()
-        realm=app.data.realm
-        army=realm.army
-        regions=realm.regions
-        if '[Spending Menu]' in buf: self.buymenu = True
-        elif '[Sell Menu]' in buf: self.buymenu = False
+        
+        self.parse(app,buf)
 
-
-        for line in lines:
-            state = self.get_match(line)
-
-            if state == 810 : 
-                if self.buymenu: army.troopers.price = self.get_num(0)
-                if not self.buymenu: army.troopers.sellprice = self.get_num(0)
-                army.troopers.number = self.get_num(1)
-            elif state == 820 : 
-                if self.buymenu: army.jets.price = self.get_num(0)
-                if not self.buymenu: army.jets.sellprice = self.get_num(0)
-                army.jets.number = self.get_num(1)
-            elif state == 830 : 
-                if self.buymenu: army.turrets.price = self.get_num(0)
-                if not self.buymenu: army.turrets.sellprice = self.get_num(0)
-                army.turrets.number = self.get_num(1)
-            elif state == 840 : 
-                if self.buymenu: army.bombers.price = self.get_num(0)
-                if not self.buymenu: army.bombers.sellprice = self.get_num(0)
-                army.bombers.number = self.get_num(1)
-            elif state == 850 : 
-                if self.buymenu: army.headquarters.price = self.get_num(0)
-                if not self.buymenu: army.headquarters.sellprice = self.get_num(0)
-                army.headquarters.number = self.get_num(1)
-            elif state == 860 : 
-                if self.buymenu: regions.price = self.get_num(0)
-                if not self.buymenu: regions.sellprice = self.get_num(0)
-                regions.number = self.get_num(1)
-            elif state == 870 : 
-                if self.buymenu: army.agents.price = self.get_num(0)
-                if not self.buymenu: army.agents.sellprice = self.get_num(0)
-                army.agents.number = self.get_num(1)
-            elif state == 880 : 
-                if self.buymenu: army.tanks.price = self.get_num(0)
-                if not self.buymenu: army.tanks.sellprice = self.get_num(0)
-                army.tanks.number = self.get_num(1)
-            elif state == 890 : 
-                if self.buymenu: army.carriers.price = self.get_num(0)
-                if not self.buymenu: army.carriers.sellprice = self.get_num(0)
-                army.carriers.number = self.get_num(1)
-            elif state == 900 :
-                realm.gold = self.get_num(0)
-                realm.turns.remaining = self.get_num(1)
-                
-                app.OnSpendingMenu()
-                app.sendl()
-                return EndTurn()
+        app.OnSpendingMenu()
+        app.sendl()
+        return EndTurn()
 
 
 class Maint(StatsState):
@@ -202,7 +140,7 @@ class Maint(StatsState):
             app.sendl()
         elif '[Food Unlimited]' in buf:
             app.send('0')
-        elif 'Crazy Gold Bank]' in buf:
+        elif '[Crazy Gold Bank]' in buf:
             app.send('0')
             return Spending()
 
@@ -277,10 +215,10 @@ class TurnStats(StatsState):
                 app.sendl()
                 return ExitGame()
             elif state == 310: 
-                army.years_freedom = self.get_num()
+                realm.turns.years_freedom = self.get_num()
                 return Maint()
             elif state == 320: 
-                army.years_protection = self.get_num()
+                realm.turns.years_protection = self.get_num()
                 return Maint()
 
         #TODO river producing food
