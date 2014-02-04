@@ -170,6 +170,9 @@ class App:
                 
             except pexpect.TIMEOUT:
                 break
+            except pexpect.EOF:
+                botlog.info("No more data can be read from telnet")
+                break
 
        
         newbuf =  ''.join(txt)
@@ -244,9 +247,9 @@ class App:
                 state = nextstate
                 botlog.cur_state = state.get_name()
 
-
-        botlog.debug("Performing final read")
-        self.read()
+        if 'Connection closed by foreign host.' not in self.buf:
+            botlog.debug("Performing final read")
+            self.read()
 
             
 

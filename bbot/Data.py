@@ -107,6 +107,7 @@ class Turns(object):
 class Food(object):
     spoilage=None
     units=None
+    randomly_eaten=None
 
 class Realm(object):
     regions=Regions()

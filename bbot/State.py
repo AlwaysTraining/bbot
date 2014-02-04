@@ -16,9 +16,24 @@ from bbot.BaseStates import *
 S = SPACE_REGEX
 N = NUM_REGEX
 
+TNSOA_MAIN_REGEX = re.compile('. Main . [0-9:]+ \[[0-9]+\] Main \[[0-9]+\] Notices:')
+SHENKS_MAIN_REGEX = re.compile('.+fidonet.+AFTERSHOCK:')
+XBIT_MAIN_REGEX = re.compile('. Main .* Xbit Local Echo \[[0-9]+\] InterBBS FE:')
+
+MAIN_MENUS = [TNSOA_MAIN_REGEX,SHENKS_MAIN_REGEX,XBIT_MAIN_REGEX]
+
 class LogOff(State):
     def transition(self,app,buf):
-        pass
+        if 'Which or (Q)uit:' in buf:
+            app.send('q')
+        if 'Which, (Q)uit or [1]:' in buf:
+            app.send('q')
+            buf = app.read(stop_patterns=MAIN_MENUS)
+            if app.match_re != None:
+                app.send('o')
+                app.send_seq(['o','y'])
+                return BailOut()
+
 
 class ExitGame(State):
     def transition(self,app,buf):
@@ -34,7 +49,8 @@ class EndTurn(StatsState):
         return {
             'Your dominion gained '+NUM_REGEX+' million people\.' : 1610,
             'Your dominion lost '+NUM_REGEX+' million people\.' :   1620,
-            NUM_REGEX + ' units of food spoiled.' : 1630,
+            NUM_REGEX + ' units of food spoiled\.' : 1630,
+            NUM_REGEX + ' units of food has been eaten by a hungry user\.'  : 1640
             }
 
     def transition(self,app,buf):
@@ -49,6 +65,8 @@ class EndTurn(StatsState):
                 app.data.realm.population.growth = -self.get_num(0)
             elif state == 1630:
                 app.data.realm.food.spoilage = self.get_num(0)
+            elif state == 1640:
+                app.data.realm.food.randomly_eaten = self.get_num(0)
 
         if '[Attack Menu]' in buf or '[Trading]' in buf:
             app.send('0')
@@ -279,6 +297,8 @@ class PreTurns(State):
 
         elif '-=<Paused>=-' in buf:
             app.sendl()
+            if 'Sorry, you have used all of your turns today.' in buf:
+                return ExitGame()
 
         elif '[Diplomacy Menu]' in buf:
             # exit the diplomicy meny
@@ -294,8 +314,6 @@ class PreTurns(State):
             app.send('n')
 
             return TurnStats()
-        else:
-            return BailOut()
 
         
 
@@ -348,11 +366,6 @@ class StartGame(State):
 
 
 
-TNSOA_MAIN_REGEX = re.compile('. Main . [0-9:]+ \[[0-9]+\] Main \[[0-9]+\] Notices:')
-SHENKS_MAIN_REGEX = re.compile('.+fidonet.+AFTERSHOCK:')
-XBIT_MAIN_REGEX = re.compile('. Main .* Xbit Local Echo \[[0-9]+\] InterBBS FE:')
-
-MAIN_MENUS = [TNSOA_MAIN_REGEX,SHENKS_MAIN_REGEX,XBIT_MAIN_REGEX]
 
 class BBSMenus(State):
     def transition(self,app,buf):
