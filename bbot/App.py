@@ -79,6 +79,7 @@ class App:
         self.match_re = None
         self.wait_time = 0
         self.telnet = None
+        self.strategies = None
 
         level=botlog.DEBUG
         self.logfile=None
@@ -218,6 +219,11 @@ class App:
             self.read()
         return self.buf
 
+
+    def on_spending_menu(self):
+        for s in self.strategies:
+            s.on_spending_menu()
+
     def run_loop(self):
 
 
@@ -226,6 +232,24 @@ class App:
         self.telnet = pexpect.spawn('telnet ' + self.get_app_value('address'), 
                 logfile=botlog.tracefile,
                 maxread=1)
+
+        strats = self.get_app_value('strategies')
+
+        # if one string is provided, someitmes they can just give it to us as one string,
+        #   convert it to a list to implify 
+        if isinstance(strats, basestring):
+            strats = [strats]
+
+        # shouldn't happen with cmd line checking
+        if strats is None:
+            raise Exception("No Strategies provided")
+
+        # union with the default strategy handlers
+        default=[]                                                                                                                                                                                 
+        strats = list (set(strats) |  set(default))
+
+        # compile the strategies into indicators sorted by priority
+        self.strategies = Strategy.Strategies(self, strats)
 
         
         exitState = State.BailOut().get_name()

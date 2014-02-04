@@ -149,7 +149,8 @@ class Spending(StatsState):
             elif state == 900 :
                 realm.gold = self.get_num(0)
                 realm.turns.remaining = self.get_num(1)
-                # for now just exit buy menu until we figure out how we want to make an extension point
+                
+                app.OnSpendingMenu()
                 app.sendl()
                 return EndTurn()
 
