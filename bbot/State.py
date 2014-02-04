@@ -4,68 +4,196 @@
 # Emerging Technology Center, Carnegie Mellon University, Copyright 2013
 # Unclassified
 
-from bbot.Strategy import Strategy
 import re
 import botlog
 from bbot.Utils import *
+from bbot.BaseStates import *
+
+#rom BaseStates.State import State
+#rom BaseStates.StatsState import StatsState
+#rom BaseStates.BailOut import BailOut
 
 S = SPACE_REGEX
 N = NUM_REGEX
 
-class State(object):
+class LogOff(State):
     def transition(self,app,buf):
         pass
-    def get_name(self):
-        return self.__class__.__name__
 
-class BailOut(State):
-    pass
+class ExitGame(State):
+    def transition(self,app,buf):
+        if '(6) Read Messages         (0) Quit' in buf:
+            app.send('0')
+            return LogOff()
+        elif '-=<Paused>=-' in buf:
+            app.sendl()
 
-class StatsState(State):
-    def __init__(self):
-        self.regexs = None
-        self.match = None
-    
+
+class EndTurn(StatsState):
     def get_patterns(self):
-        return {}
+        return {
+            'Your dominion gained '+NUM_REGEX+' million people\.' : 1610,
+            'Your dominion lost '+NUM_REGEX+' million people\.' :   1620,
+            NUM_REGEX + ' units of food spoiled.' : 1630,
+            }
 
-    def get_regexs(self):
+    def transition(self,app,buf):
+
+        lines = buf.splitlines()
+
+        for line in lines:
+            state = self.get_match(line)
+            if state == 1610:
+                app.data.realm.population.growth = self.get_num(0)
+            elif state == 1620:
+                app.data.realm.population.growth = -self.get_num(0)
+            elif state == 1630:
+                app.data.realm.food.spoilage = self.get_num(0)
+
+        if '[Attack Menu]' in buf or '[Trading]' in buf:
+            app.send('0')
+        elif 'Do you wish to send a message? (y/N)' in buf:
+            app.send('n')
+        elif 'Do you wish to continue? (Y/n)' in buf:
+            app.send('y')
+            botlog.info(str(app.data))
+            return TurnStats() 
+
+class Spending(StatsState):
+
+    def __init__(self):
+        StatsState.__init__(self)
+        self.buymenu=None
+
+    def get_patterns(self):
+        return {
+            "\(1\) Troopers"+S+N+S+N  : 810,
+            "\(2\) Jets"+S+N+S+N  : 820,
+            "\(3\) Turrets"+S+N+S+N  : 830,
+            "\(4\) Bombers"+S+N+S+N  : 840,
+            "\(5\) HeadQuarters"+S+N+S+N  : 850,
+            "\(6\) Regions"+S+N+S+N  : 860,
+            "\(7\) Covert Agents"+S+N+S+N  : 870,
+            "\(8\) Tanks"+S+N+S+N  : 880,
+            "\(9\) Carriers"+S+N+S+N  : 890,
+            "You have "+N+" gold and "+N+" turns\." : 900,
+            }
+
     
-        if self.regexs is None:
-            self.regexs={}
-            patterns = self.get_patterns()
-            for pattern,id in patterns.items():
-                self.regexs[id]=re.compile(pattern)
-        return self.regexs
+    def transition(self,app,buf):
+        lines = buf.splitlines()
+        realm=app.data.realm
+        army=realm.army
+        regions=realm.regions
+        if '[Spending Menu]' in buf: self.buymenu = True
+        elif '[Sell Menu]' in buf: self.buymenu = False
 
-    def get_match(self,line):
-        
-        regexs = self.get_regexs()
-        for rid,regex in regexs.items():
-            m = regex.match(line)
-            if m is not None:
-                self.match = m
-                return rid
 
-    def get_num(self, matchIndex=0):
-        n = ToNum(self.match.groups()[matchIndex])
-        
-    def get_str(self,matchIndex=0):
-        """
-        Get a number from the current matchign regex group
-        """
-        return self.match.groups()[matchIndex]
-    
-            
+        for line in lines:
+            state = self.get_match(line)
+
+            if state == 810 : 
+                if self.buymenu: army.troopers.price = self.get_num(0)
+                if not self.buymenu: army.troopers.sellprice = self.get_num(0)
+                army.troopers.number = self.get_num(1)
+            elif state == 820 : 
+                if self.buymenu: army.jets.price = self.get_num(0)
+                if not self.buymenu: army.jets.sellprice = self.get_num(0)
+                army.jets.number = self.get_num(1)
+            elif state == 830 : 
+                if self.buymenu: army.turrets.price = self.get_num(0)
+                if not self.buymenu: army.turrets.sellprice = self.get_num(0)
+                army.turrets.number = self.get_num(1)
+            elif state == 840 : 
+                if self.buymenu: army.bombers.price = self.get_num(0)
+                if not self.buymenu: army.bombers.sellprice = self.get_num(0)
+                army.bombers.number = self.get_num(1)
+            elif state == 850 : 
+                if self.buymenu: army.headquarters.price = self.get_num(0)
+                if not self.buymenu: army.headquarters.sellprice = self.get_num(0)
+                army.headquarters.number = self.get_num(1)
+            elif state == 860 : 
+                if self.buymenu: regions.price = self.get_num(0)
+                if not self.buymenu: regions.sellprice = self.get_num(0)
+                regions.number = self.get_num(1)
+            elif state == 870 : 
+                if self.buymenu: army.agents.price = self.get_num(0)
+                if not self.buymenu: army.agents.sellprice = self.get_num(0)
+                army.agents.number = self.get_num(1)
+            elif state == 880 : 
+                if self.buymenu: army.tanks.price = self.get_num(0)
+                if not self.buymenu: army.tanks.sellprice = self.get_num(0)
+                army.tanks.number = self.get_num(1)
+            elif state == 890 : 
+                if self.buymenu: army.carriers.price = self.get_num(0)
+                if not self.buymenu: army.carriers.sellprice = self.get_num(0)
+                army.carriers.number = self.get_num(1)
+            elif state == 900 :
+                realm.gold = self.get_num(0)
+                realm.turns.remaining = self.get_num(1)
+                # for now just exit buy menu until we figure out how we want to make an extension point
+                app.sendl()
+                return EndTurn()
+
 
 class Maint(StatsState):
-    pass
+
+    def get_patterns(self):
+        return {
+            'Your Armed Forces Require '+NUM_REGEX+' gold\.'  :   1700,
+            NUM_REGEX + ' gold is required to maintain your regions\.'   :   1710,
+            'The Queen Royale requires '+NUM_REGEX+' gold for Taxes\.' : 1720,
+            'Your People Need '+NUM_REGEX+' units of food'    :   1730,
+            'Your Armed Forces Require '+NUM_REGEX+' units of food'   :   1740,
+            NUM_REGEX + ' gold is requested to boost popular support\.' :   1750,
+            'You have ' + NUM_REGEX + ' gold and ' + NUM_REGEX + ' units of food.' : 1900,
+            'You have '+NUM_REGEX+' gold in hand and '+NUM_REGEX+' gold in the bank.' : 1510,
+            }
+    def transition(self,app,buf):
+        lines = buf.splitlines()
+        realm=app.data.realm
+        army=realm.army
+        regions=realm.regions
+
+
+        for line in lines:
+            state = self.get_match(line)
+            if state == 1700:
+                army.maintenance = self.get_num(0)
+            elif state == 1710:
+                regions.maintenance = self.get_num(0)
+            elif state == 1720:
+                realm.queen_taxes = self.get_num(0)
+            elif state == 1730:
+                realm.population.food = self.get_num(0)
+            elif state == 1740:
+                army.food = self.get_num(0)
+            elif state == 1750:
+                realm.pop_support_bribe = self.get_num(0)
+            elif state == 1900:
+                realm.gold = self.get_num(0)
+                realm.food.units = self.get_num(1)
+            elif state == 1510 : 
+                realm.gold = self.get_num(0)
+                realm.bank.gold = self.get_num(1)
+
+        if 'Do you wish to visit the Bank? (y/N)' in buf:
+            app.send('n')
+        elif 'How much will you give?' in buf:
+            app.sendl()
+        elif '[Food Unlimited]' in buf:
+            app.send('0')
+        elif 'Crazy Gold Bank]' in buf:
+            app.send('0')
+            return Spending()
+
 
 class TurnStats(StatsState):
                 
     def get_patterns(self):
         return {
         re.escape('-=<Paused>=-')    :   0,
+        re.escape('Sorry, you have used all of your turns today.')  :   1,
         N+' gold was earned in taxes.'  :   500,
         N+' gold was produced from the Ore Mines.'  :   510,
         N+' gold was earned in Tourism.'    :   520,
@@ -102,6 +230,7 @@ class TurnStats(StatsState):
         army=realm.army
         regions=realm.regions
 
+        
         for line in lines:
             state = self.get_match(line)
             
@@ -125,6 +254,9 @@ class TurnStats(StatsState):
             elif state == 540: regions.river.earnings = self.get_num()
             elif state == 550: regions.agricultural.foodyield = self.get_num()
             elif state == 0: app.sendl()
+            elif state == 1: 
+                app.sendl()
+                return ExitGame()
             elif state == 310: 
                 army.years_freedom = self.get_num()
                 return Maint()
@@ -142,6 +274,7 @@ class PreTurns(State):
             # play the lottery
 
             for i in range(7):
+                i=i
                 app.sendl()
 
         elif '-=<Paused>=-' in buf:
@@ -227,7 +360,9 @@ class BBSMenus(State):
 
         if "Enter number of bulletin to view or press (ENTER) to continue:" in buf:
             app.sendl()
+            buf = app.read_until('Last few callers:')
             buf = app.read()
+
         if '[+] Read your mail now?' in buf:
             app.send('n')
             buf = app.read(stop_patterns=MAIN_MENUS)
@@ -239,9 +374,9 @@ class BBSMenus(State):
             buf = app.read(stop_patterns=MAIN_MENUS)
         
         botlog.debug("Checking for main")
-        match_re = None
+        #match_re = None
         if app.match:
-            match_re = app.match_re
+            #match_re = app.match_re
             botlog.debug("Found Main")
             app.send('x')
             buf = app.read()

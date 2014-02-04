@@ -73,12 +73,12 @@ class App:
         self.query_func = query_func
         self.secret_query_func = secret_query_func
         self.data = Data.Data()
-        self.cur_strategy = None
         self.cur_state = None
         self.match = None
         self.match_index = None
         self.match_re = None
-        self.emptyreads = None
+        self.wait_time = 0
+        self.telnet = None
 
         level=botlog.DEBUG
         self.logfile=None
@@ -120,13 +120,22 @@ class App:
     def get_close_float(self,x):
         return random.uniform(x*0.75,x*1.25)
 
-    def read_until(self,stop_text,timeout=1):
+    def read_until(self,stop_text,timeout=1,maxwait=20):
         
-        return self.read(timeout,stop_patterns=[re.compile(
-            '.*'+re.escape(stop_text)+'.*'
-        )])
+        while True:
+            b = self.read(timeout,stop_patterns=[re.compile(
+                '.*'+re.escape(stop_text)+'.*'
+                )])
+
+            if self.match_re is not None:
+                return b
+           
+            if self.wait_time > maxwait:
+                raise Exception("Could not read '" + str(stop_text) + 
+                    "' in " + str(maxwait) + " seconds")
 
     def read(self,timeout=1,stop_patterns=None):
+        botlog.debug("Reading...")
         txt=[]
         self.match = None
         self.match_index = None
@@ -165,16 +174,16 @@ class App:
        
         newbuf =  ''.join(txt)
         if len(newbuf) > 0:
-            self.emptyreads = 0
+            self.wait_time = 0
             self.buf = newbuf
         else:
-            self.emptyreads = self.emptyreads + 1
+            self.wait_time = self.wait_time + timeout
         
         
         return self.buf
 
 
-    def send(self, msg, eol=False, sleep=1.5):
+    def send(self, msg, eol=False, sleep=0):
         """
         Send a message to the client use some rudemantry random delay to 
         semi similate a human's typing
@@ -185,13 +194,15 @@ class App:
         if msg is not None and len(msg) > 0:
             botlog.info('Sending {' + msg + '}')
             for c in msg:
-                # self.telnet.delaybeforesend=self.get_close_float(sleep)
+                if sleep > 0:
+                    time.sleep(sleep)
                 if 1 != self.telnet.send(c):
                     raise Exception ("1 char not sent")
 
         if eol:
             botlog.info('Sending {\\r}')
-            # self.telnet.delaybeforesend=self.get_close_float(sleep)
+            if sleep > 0:
+                time.sleep(sleep)
             if 1 != self.telnet.send('\r'):
                 raise Exception ("1 char not sent")
 
@@ -204,20 +215,6 @@ class App:
             self.read()
         return self.buf
 
-    def get_num(self, matchIndex=0):
-        """
-        Get a number from the current matchign regex group
-        """
-        n = Utils.ToNum(self.telnet.match.groups()[matchIndex])
-        # botlog.debug("Read Number: " + str(n))
-        return n
-
-    def get_str(self, matchIndex=0):
-        """
-        Get a number from the current matchign regex group
-        """
-        return self.telnet.match.groups()[matchIndex]
-   
     def run_loop(self):
 
 
@@ -227,27 +224,28 @@ class App:
                 logfile=botlog.tracefile,
                 maxread=1)
 
-        running = True
-
         
         exitState = State.BailOut().get_name()
 
         state = State.Login()
+        botlog.cur_state = state.get_name()
 
         while state.get_name() != exitState:
 
-            botlog.debug("Reading")
             buf = self.read()
 
-            botlog.debug("Executing State: " + state.get_name())
+            if self.wait_time > 20:
+                raise Exception("Waited for about 20 seconds and nothing happened")
+
             nextstate = state.transition(self,buf)
 
             buf = None
             if nextstate is not None:
                 state = nextstate
+                botlog.cur_state = state.get_name()
 
-            botlog.debug("Next State: " + state.get_name())
 
+        botlog.debug("Performing final read")
         self.read()
 
             
