@@ -248,39 +248,27 @@ class BBSMenus(State):
     def transition(self,app,buf):
 
 
+        looking_for_main = False
         if "Enter number of bulletin to view or press (ENTER) to continue:" in buf:
             app.sendl()
             # there is a decent pause here sometimes, so just use the read until
             # function
-            buf = app.read_until('caller')
-            buf = app.read()
 
-        if '[+] Read your mail now?' in buf:
+        elif '[+] Read your mail now?' in buf:
             app.send('n')
-            buf = app.read(stop_patterns=MAIN_MENUS)
-        if 'Search all groups for new messages' in buf:
+            looking_for_main = True
+            
+        elif 'Search all groups for new messages' in buf:
             app.send('n')
-            buf = app.read(stop_patterns=MAIN_MENUS)
-        if 'Search all groups for un-read messages to you' in buf:
+
+        elif 'Search all groups for un-read messages to you' in buf:
             app.send('n')
-            buf = app.read(stop_patterns=MAIN_MENUS)
-        
-        botlog.debug("Checking for main")
-        #match_re = None
-        if app.match:
-            #match_re = app.match_re
-            botlog.debug("Found Main")
-            app.send('x')
-            buf = app.read()
 
-        if '2: Games' in buf:
-            app.send('2')
-            buf = app.read()
+        elif 'TNSOA' in buf and " Main " in buf and " Notices:" in buf:
+            app.send_seq(['x','2',app.get_app_value('game')])
+            return StartGame()
+ 
 
-        app.send(app.get_app_value('game'))
-        buf = app.read()
-
-        return StartGame()
         
         
         
@@ -293,9 +281,11 @@ class Password(State):
         if "Password:" in buf:
             app.sendl(app.get_app_value('password'))
             buf = app.read_until("[Hit a key]")
-        if "[Hit a key]" in buf:
             app.sendl()
-        return BBSMenus()
+            return BBSMenus()
+       #elif "[Hit a key]" in buf:
+       #    app.sendl()
+       #    return BBSMenus()
     
 class Login(State):
     def transition(self,app,buf):

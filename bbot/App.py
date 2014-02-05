@@ -176,9 +176,10 @@ class App:
         newbuf =  ''.join(txt)
         if len(newbuf) > 0:
             self.wait_time = 0
-            self.buf = newbuf
         else:
             self.wait_time = self.wait_time + timeout
+
+        self.buf = newbuf
         
         
         return self.buf
@@ -256,19 +257,27 @@ class App:
         state = State.Login()
         botlog.cur_state = state.get_name()
 
+        skip_read = False
+
         while state.get_name() != exitState and not self.EOF:
 
-            buf = self.read()
+            if skip_read:
+                skip_read = False
+            else:
+                buf = self.read()
+             
 
             if self.wait_time > 20:
                 raise Exception("Waited for about 20 seconds and nothing happened")
 
             nextstate = state.transition(self,buf)
+            
+            transitioned = nextstate is not None and nextstate != state
 
-            buf = None
-            if nextstate is not None:
+            if transitioned:
                 state = nextstate
                 botlog.cur_state = state.get_name()
+                skip_read = True
 
         if not self.EOF:
             botlog.debug("Performing final read")
