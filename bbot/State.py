@@ -43,31 +43,15 @@ class ExitGame(State):
         elif '-=<Paused>=-' in buf:
             app.sendl()
 
-
+from bbot.EndTurnParser import EndTurnParser
 class EndTurn(StatsState):
-    def get_patterns(self):
-        return {
-            'Your dominion gained '+NUM_REGEX+' million people\.' : 1610,
-            'Your dominion lost '+NUM_REGEX+' million people\.' :   1620,
-            NUM_REGEX + ' units of food spoiled\.' : 1630,
-            NUM_REGEX + ' units of food has been eaten by a hungry user\.'  : 1640
-            }
 
+    def __init__(self):
+        StatsState.__init__(self,statsParser=EndTurnParser())
+    
     def transition(self,app,buf):
-
-        lines = buf.splitlines()
-
-        for line in lines:
-            state = self.get_match(line)
-            if state == 1610:
-                app.data.realm.population.growth = self.get_num(0)
-            elif state == 1620:
-                app.data.realm.population.growth = -self.get_num(0)
-            elif state == 1630:
-                app.data.realm.food.spoilage = self.get_num(0)
-            elif state == 1640:
-                app.data.realm.food.randomly_eaten = self.get_num(0)
-
+        
+        self.parse(app,buf)
         if '[Attack Menu]' in buf or '[Trading]' in buf:
             app.send('0')
         elif 'Do you wish to send a message? (y/N)' in buf:
@@ -78,7 +62,6 @@ class EndTurn(StatsState):
             return TurnStats() 
 
 from bbot.SpendingParser import SpendingParser
-
 class Spending(StatsState):
 
     def __init__(self):
@@ -88,144 +71,98 @@ class Spending(StatsState):
         
         self.parse(app,buf)
 
-        app.OnSpendingMenu()
+        app.on_spending_menu()
         app.sendl()
         return EndTurn()
 
 
+from bbot.MaintParser import MaintParser
 class Maint(StatsState):
 
-    def get_patterns(self):
-        return {
-            'Your Armed Forces Require '+NUM_REGEX+' gold\.'  :   1700,
-            NUM_REGEX + ' gold is required to maintain your regions\.'   :   1710,
-            'The Queen Royale requires '+NUM_REGEX+' gold for Taxes\.' : 1720,
-            'Your People Need '+NUM_REGEX+' units of food'    :   1730,
-            'Your Armed Forces Require '+NUM_REGEX+' units of food'   :   1740,
-            NUM_REGEX + ' gold is requested to boost popular support\.' :   1750,
-            'You have ' + NUM_REGEX + ' gold and ' + NUM_REGEX + ' units of food.' : 1900,
-            'You have '+NUM_REGEX+' gold in hand and '+NUM_REGEX+' gold in the bank.' : 1510,
-            }
+    def __init__(self):
+        StatsState.__init__(self,statsParser=MaintParser())
+        self.money_reconsider_turn = None
+        self.food_reconsider_turn = None
+        self.which_maint = None
+        
+
     def transition(self,app,buf):
-        lines = buf.splitlines()
-        realm=app.data.realm
-        army=realm.army
-        regions=realm.regions
 
-
-        for line in lines:
-            state = self.get_match(line)
-            if state == 1700:
-                army.maintenance = self.get_num(0)
-            elif state == 1710:
-                regions.maintenance = self.get_num(0)
-            elif state == 1720:
-                realm.queen_taxes = self.get_num(0)
-            elif state == 1730:
-                realm.population.food = self.get_num(0)
-            elif state == 1740:
-                army.food = self.get_num(0)
-            elif state == 1750:
-                realm.pop_support_bribe = self.get_num(0)
-            elif state == 1900:
-                realm.gold = self.get_num(0)
-                realm.food.units = self.get_num(1)
-            elif state == 1510 : 
-                realm.gold = self.get_num(0)
-                realm.bank.gold = self.get_num(1)
+        self.parse(app,buf)
 
         if 'Do you wish to visit the Bank? (y/N)' in buf:
+            self.which_maint = "Money"
             app.send('n')
         elif 'How much will you give?' in buf:
             app.sendl()
         elif '[Food Unlimited]' in buf:
+            self.which_maint = "Food"
             app.send('0')
         elif '[Crazy Gold Bank]' in buf:
             app.send('0')
             return Spending()
+        elif self.which_maint == 'Money' and 'Would you like to reconsider? (Y/n)' in buf:
+            if self.money_reconsider_turn == app.data.realm.turns.current:
+                botlog.warn("Unable to prevent not paying bills")
+                app.send('n')
+            else:
+                app.send('y')
+                buf = app.read()
+                if 'Do you wish to visit the Bank? (y/N)' in buf:
+
+                    # maint cost
+                    maintcost = app.data.get_maint_cost()
+                    # maint minus current cold is ammount to withdraw
+                    withdraw = maintcost - app.data.realm.gold 
+                    # don't try to withdraw more than we have or it will take 
+                    #   two enter's to get through the prompt
+                    if withdraw > app.data.realm.bank.gold:
+                        withdraw = app.data.realm.bank.gold
+
+                    # withdraw the money and get back to the maintenance sequence
+                    app.send_seq(['y','w',str(withdraw),'\r','0'])
+
+                    self.money_reconsider_turn = app.data.realm.turns.current
+                    
+        elif self.which_maint == 'Food' and 'Would you like to reconsider? (Y/n)' in buf:
+            if self.food_reconsider_turn == app.data.realm.turns.current:
+                botlog.warn("Unable to prevent not feeding realm")
+                app.send('n')
+            else:
+                app.send_seq(['y','b','\r','0'])
+                self.food_reconsider_turn =  app.data.realm.turns.current
 
 
+
+from bbot.TurnStatsParser import TurnStatsParser
 class TurnStats(StatsState):
                 
-    def get_patterns(self):
-        return {
-        re.escape('-=<Paused>=-')    :   0,
-        re.escape('Sorry, you have used all of your turns today.')  :   1,
-        N+' gold was earned in taxes.'  :   500,
-        N+' gold was produced from the Ore Mines.'  :   510,
-        N+' gold was earned in Tourism.'    :   520,
-        N+' gold was earned by Solar Power Generators.' :   530,
-        N+' gold was created by Hydropower.'    :   540,
-        N+' Food units were grown.' :   550,
-
-        N+' Troopers were manufactured by Industrial Zones.'    :   560,
-        N+' Turrets were manufactured by Industrial Zones.' :   570,
-        N+' Jets were manufactured by Industrial Zones.'    :   580,
-        N+' Carriers were manufactured by Industrial Zones.'    :   590,
-        N+' Bombers were manufactured by Industrial Zones.' :   600,
-        N+' Tanks were manufactured by Industrial Zones.'   :   610,
-        N+' gold was earned from investment returns.'   :   620,
-        "\-\*(.+)\*\-"  :   200,
-        "Turns: "+N :   210,
-        "Score: "+N :   220,
-        "Gold: "+N  :   230,
-        "Bank: "+N  :   240,
-        "Population: "+N+" Million \(Tax Rate: "+N+"\%" :   250,
-        "Popular Support: "+N+"\%"  :   260,
-        "Food: "+N  :   270,
-        "Agents: "+N    :   280,
-        "Headquarters: "+N+"\% Complete"    :   290,
-        "SDI Strength: "+N+"\%" :   300,
-        "This is year "+N+" of your freedom."   :   310,
-        "You have "+N+" Years of Protection Left."  :   320,
-        }
-
+    def __init__(self):
+        StatsState.__init__(self,statsParser=TurnStatsParser())
 
     def transition(self,app,buf):
-        lines = buf.splitlines()
-        realm=app.data.realm
-        army=realm.army
-        regions=realm.regions
 
-        
-        for line in lines:
-            state = self.get_match(line)
-            
-            if state == 200 : realm.name=self.get_str()
-            elif state == 210: realm.turns.current = self.get_num()
-            elif state == 220: realm.turns.score = self.get_num()
-            elif state == 230: realm.turns.gold = self.get_num()
-            elif state == 240: realm.bank.gold = self.get_num()
-            elif state == 250:
-                realm.population.size = self.get_num(0)
-                realm.population.rate = self.get_num(1)
-            elif state == 260: realm.population.pop_support = self.get_num()
-            elif state == 270: realm.food.units = self.get_num()
-            elif state == 280: army.agents.number = self.get_num()
-            elif state == 290: army.headquarters.number = self.get_num()
-            elif state == 300: army.sdi = self.get_num()
-            elif state == 500: realm.population.taxearnings = self.get_num()
-            elif state == 510: regions.mountain.earnings = self.get_num()
-            elif state == 520: regions.coastal.earnings = self.get_num()
-            elif state == 530: regions.desert.earnings = self.get_num()
-            elif state == 540: regions.river.earnings = self.get_num()
-            elif state == 550: regions.agricultural.foodyield = self.get_num()
-            elif state == 0: app.sendl()
-            elif state == 1: 
-                app.sendl()
-                return ExitGame()
-            elif state == 310: 
-                realm.turns.years_freedom = self.get_num()
-                return Maint()
-            elif state == 320: 
-                realm.turns.years_protection = self.get_num()
-                return Maint()
+        self.parse(app,buf)
+
+        if '-=<Paused>=-' in buf:
+            app.sendl()
+        elif 'Sorry, you have used all of your turns today.' in buf: 
+            app.sendl()
+            return ExitGame()
+        elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf: 
+            return Maint()
 
         #TODO river producing food
 
-class PreTurns(State):
-    
+from bbot.PreTurnsParser import PreTurnsParser
+class PreTurns(StatsState):
+                
+    def __init__(self):
+        StatsState.__init__(self,statsParser=PreTurnsParser())
+
     def transition(self,app,buf):
+
+        self.parse(app,buf)
 
         if 'Would you like to buy a lottery ticket?' in buf:
             # play the lottery
@@ -250,6 +187,7 @@ class PreTurns(State):
             app.send('i')
 
         elif '[Industrial Production]' in buf:
+            app.on_industry_menu()
             app.send('n')
 
             return TurnStats()
@@ -312,7 +250,9 @@ class BBSMenus(State):
 
         if "Enter number of bulletin to view or press (ENTER) to continue:" in buf:
             app.sendl()
-            buf = app.read_until('Last few callers:')
+            # there is a decent pause here sometimes, so just use the read until
+            # function
+            buf = app.read_until('caller')
             buf = app.read()
 
         if '[+] Read your mail now?' in buf:

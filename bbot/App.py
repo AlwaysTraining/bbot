@@ -75,6 +75,7 @@ class App:
         self.wait_time = 0
         self.telnet = None
         self.strategies = None
+        self.EOF = False
 
         level=botlog.DEBUG
         self.logfile=None
@@ -168,6 +169,7 @@ class App:
                 break
             except pexpect.EOF:
                 botlog.info("No more data can be read from telnet")
+                self.EOF = True
                 break
 
        
@@ -217,6 +219,9 @@ class App:
     def on_spending_menu(self):
         for s in self.strategies:
             s.on_spending_menu()
+    def on_industry_menu(self):
+        for s in self.strategies:
+            s.on_industry_menu()
 
     def run_loop(self):
 
@@ -251,7 +256,7 @@ class App:
         state = State.Login()
         botlog.cur_state = state.get_name()
 
-        while state.get_name() != exitState:
+        while state.get_name() != exitState and not self.EOF:
 
             buf = self.read()
 
@@ -265,11 +270,9 @@ class App:
                 state = nextstate
                 botlog.cur_state = state.get_name()
 
-        if 'Connection closed by foreign host.' not in self.buf:
+        if not self.EOF:
             botlog.debug("Performing final read")
             self.read()
-
-            
 
 
     def send_notification(self, game_exception):

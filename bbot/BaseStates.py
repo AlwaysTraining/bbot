@@ -46,7 +46,7 @@ class StatsState(State):
         return self.statsParse.get_str(matchIndex)
 
     def parse(self,app,buf):
-        return self.statsParse.parse(self,app,buf)
+        return self.statsParse.parse(app,buf)
     
             
 

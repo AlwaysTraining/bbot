@@ -16,6 +16,21 @@ class IndMtn(Strategy):
     def __init__(self,app):
         Strategy.__init__(self,app)
 
+    def on_industry_menu(self):
+
+        if self.app.data.realm.regions.industrial.zonemanufacturing.tanks.allocation == 100:
+            return
+
+        # set industries
+        self.app.send('y')
+        # troopers, jets, turret, bombers at 0
+        for i in range(4):
+            self.app.sendl()
+        # tanks at 100%
+        self.app.sendl('>')
+        # carreirs at 0
+        self.app.sendl()
+
     def on_spending_menu(self):
         # sell all tanks and return to buy menu
         self.app.send('s')
@@ -43,7 +58,7 @@ class IndMtn(Strategy):
         # 5:1:1 is 5+1+1 = 7 is 5/7,1/7,1/7
         r = int(a/7)
         # Sequence for buying regions, return to buy menu
-        self.app.send_seq(['t',r,'m',r,'i','>','\r'])
+        self.app.send_seq(['t',r,'\r','m',r,'\r','i','>','\r'])
         sp.parse(self.app, self.app.read())
         
 
