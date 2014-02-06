@@ -144,11 +144,11 @@ class TurnStats(StatsState):
 
         self.parse(app,buf)
 
-        if '-=<Paused>=-' in buf:
-            app.sendl()
-        elif 'Sorry, you have used all of your turns today.' in buf: 
+        if 'Sorry, you have used all of your turns today.' in buf: 
             app.sendl()
             return ExitGame()
+        elif '-=<Paused>=-' in buf:
+            app.sendl()
         elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf: 
             return Maint()
 
@@ -215,10 +215,6 @@ class NewRealm(State):
         return MainMenu()
 
             
-        
-    
-MENU_REGEX = re.compile('.*'+re.escape('(1) Play Game             (7) Send Messages')+'.*')
-NEW_EMPIRE_REGEX = re.compile('.*'+re.escape('Name your Realm')+'.*')
 
 class StartGame(State):
     def transition(self,app,buf):
@@ -226,22 +222,12 @@ class StartGame(State):
             app.sendl()
         elif 'Do you want ANSI Graphics? (Y/n)' in buf:
             app.send('n')
-            buf = app.read(stop_patterns=[MENU_REGEX,NEW_EMPIRE_REGEX])        
-
-            if 'Continue? (Y/n)' in buf:
-                app.send('y')
-                buf = app.read(stop_patterns=[MENU_REGEX,NEW_EMPIRE_REGEX])        
-            
-            if app.match_re == NEW_EMPIRE_REGEX:
-                return NewRealm()
-            elif app.match_re == MENU_REGEX:
-                return MainMenu()
-
-
-
-        
-
-
+        elif 'Continue? (Y/n)' in buf:
+            app.send('y')
+        elif 'Name your Realm' in buf:
+            return NewRealm()
+        elif '(1) Play Game             (7) Send Messages' in buf:
+            return MainMenu()
 
 
 class BBSMenus(State):

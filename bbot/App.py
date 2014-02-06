@@ -76,6 +76,8 @@ class App:
         self.telnet = None
         self.strategies = None
         self.EOF = False
+        self.adaptive_timeout = 1
+        self.timeout_alpha = 0.1
 
         level=botlog.DEBUG
         self.logfile=None
@@ -117,7 +119,7 @@ class App:
     def get_close_float(self,x):
         return random.uniform(x*0.75,x*1.25)
 
-    def read_until(self,stop_text,timeout=1,maxwait=20):
+    def read_until(self,stop_text,timeout=-1,maxwait=20):
         
         while True:
             b = self.read(timeout,stop_patterns=[re.compile(
@@ -131,12 +133,18 @@ class App:
                 raise Exception("Could not read '" + str(stop_text) + 
                     "' in " + str(maxwait) + " seconds")
 
-    def read(self,timeout=1,stop_patterns=None):
-        botlog.debug("Reading...")
+    def read(self,timeout=-1,stop_patterns=None):
         txt=[]
         self.match = None
         self.match_index = None
         self.match_re = None
+
+        adaptive = False
+        if timeout == -1:
+            timeout = self.adaptive_timeout
+            adaptive=True
+
+        botlog.debug("Reading with " + str(round(timeout,1)) + " second timeout...")
         
         while True:
             #todo infinte guard
@@ -176,8 +184,14 @@ class App:
         newbuf =  ''.join(txt)
         if len(newbuf) > 0:
             self.wait_time = 0
+            if adaptive:
+                self.adaptive_timeout = (1-self.timeout_alpha/5.0) * timeout
+                if self.adaptive_timeout < 0.5: self.adaptive_timeout = 0.5
         else:
             self.wait_time = self.wait_time + timeout
+            if adaptive:
+                self.adaptive_timeout = (1+self.timeout_alpha*5.0) * timeout
+                if self.adaptive_timeout > 10: self.adaptive_timeout = 10.0
 
         self.buf = newbuf
         
@@ -185,7 +199,7 @@ class App:
         return self.buf
 
 
-    def send(self, msg, eol=False, sleep=0):
+    def send(self, msg, eol=False, sleep=0.1):
         """
         Send a message to the client use some rudemantry random delay to 
         semi similate a human's typing
@@ -212,9 +226,35 @@ class App:
         self.send(msg,eol=True,sleep=sleep)
 
     def send_seq(self,seq):
-        for msg in seq:
+        botlog.debug("Begin Macro: " + str(seq))
+        for i in range(len(seq)):
+            msg=seq[i]
             self.send(msg)
-            self.read()
+
+            # do not read after the last char in the sequence
+            if i < len(seq) - 1:
+
+                # the sequencing is problematic, because the programmer isn't 
+                #   explicitly waiting to be sure he is at a prompt, he is 
+                #   just sending seperate chars and blindly reading for some
+                #   time in between.  We try to be smart and read until we get
+                #   at least one char, then do another read for good measure
+                while not self.EOF:
+                    # do not allow sequence to manipulate the adaptive timing
+                    #   because it is a wierd case and can throw it off. we do
+                    #   however use the time as a good default timeout to use
+                    b = self.read(timeout=self.adaptive_timeout)
+                    if self.wait_time > 20:
+                        raise Exception("Waited for about 20 seconds and nothing happened")
+                    if len(b) > 0:
+                        # double extra sure we read to a prompt in sequence as tehre is no
+                        #   state checking, we allow a double timeout after reading at least
+                        #   some data to ensure that we are at a prompt
+                        b = self.read(self.adaptive_timeout)
+                        break
+                    
+                    
+        botlog.debug("End Macro: " + str(seq))
         return self.buf
 
     def on_spending_menu(self):
