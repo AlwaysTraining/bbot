@@ -140,9 +140,11 @@ class App:
         self.match_re = None
 
         adaptive = False
-        if timeout == -1:
+        if timeout < -0:
             timeout = self.adaptive_timeout
             adaptive=True
+
+        timeout = self.get_close_float(timeout)
 
         botlog.debug("Reading with " + str(round(timeout,1)) + " second timeout...")
         
@@ -185,12 +187,12 @@ class App:
         if len(newbuf) > 0:
             self.wait_time = 0
             if adaptive:
-                self.adaptive_timeout = (1-self.timeout_alpha/5.0) * timeout
+                self.adaptive_timeout = (1-self.timeout_alpha/2.0) * self.adaptive_timeout
                 if self.adaptive_timeout < 0.5: self.adaptive_timeout = 0.5
         else:
             self.wait_time = self.wait_time + timeout
             if adaptive:
-                self.adaptive_timeout = (1+self.timeout_alpha*5.0) * timeout
+                self.adaptive_timeout = (1+self.timeout_alpha*2.0) * self.adaptive_timeout
                 if self.adaptive_timeout > 10: self.adaptive_timeout = 10.0
 
         self.buf = newbuf
@@ -211,6 +213,7 @@ class App:
             botlog.info('Sending {' + msg + '}')
             for c in msg:
                 if sleep > 0:
+                    sleep = self.get_close_float(sleep)
                     time.sleep(sleep)
                 if 1 != self.telnet.send(c):
                     raise Exception ("1 char not sent")
@@ -218,6 +221,7 @@ class App:
         if eol:
             botlog.info('Sending {\\r}')
             if sleep > 0:
+                sleep = self.get_close_float(sleep)
                 time.sleep(sleep)
             if 1 != self.telnet.send('\r'):
                 raise Exception ("1 char not sent")
@@ -246,13 +250,10 @@ class App:
                     b = self.read(timeout=self.adaptive_timeout)
                     if self.wait_time > 20:
                         raise Exception("Waited for about 20 seconds and nothing happened")
+
                     if len(b) > 0:
-                        # double extra sure we read to a prompt in sequence as tehre is no
-                        #   state checking, we allow a double timeout after reading at least
-                        #   some data to ensure that we are at a prompt
-                        b = self.read(self.adaptive_timeout)
                         break
-                    
+
                     
         botlog.debug("End Macro: " + str(seq))
         return self.buf
@@ -285,7 +286,7 @@ class App:
             raise Exception("No Strategies provided")
 
         # union with the default strategy handlers
-        default=[]                                                                                                                                                                                 
+        default=[]
         strats = list (set(strats) |  set(default))
 
         # compile the strategies into indicators sorted by priority
@@ -297,27 +298,26 @@ class App:
         state = State.Login()
         botlog.cur_state = state.get_name()
 
-        skip_read = False
+        self.skip_next_read = False
 
         while state.get_name() != exitState and not self.EOF:
 
-            if skip_read:
-                skip_read = False
+            if self.skip_next_read:
+                self.skip_next_read = False
             else:
-                buf = self.read()
+                self.read()
              
 
             if self.wait_time > 20:
                 raise Exception("Waited for about 20 seconds and nothing happened")
 
-            nextstate = state.transition(self,buf)
+            nextstate = state.transition(self,self.buf)
             
             transitioned = nextstate is not None and nextstate != state
 
             if transitioned:
                 state = nextstate
                 botlog.cur_state = state.get_name()
-                skip_read = True
 
         if not self.EOF:
             botlog.debug("Performing final read")

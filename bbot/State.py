@@ -30,7 +30,6 @@ class LogOff(State):
             app.send('q')
             buf = app.read(stop_patterns=MAIN_MENUS)
             if app.match_re != None:
-                app.send('o')
                 app.send_seq(['o','y'])
                 return BailOut()
 
@@ -150,6 +149,11 @@ class TurnStats(StatsState):
         elif '-=<Paused>=-' in buf:
             app.sendl()
         elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf: 
+            # this buffer also contains the do you want to visit the bank
+            #   question which is handled by the Maint state.  we must skip
+            #   the next read, as the line would be eaten with noone to hanlde
+            #   it
+            app.skip_next_read = True
             return Maint()
 
         #TODO river producing food
