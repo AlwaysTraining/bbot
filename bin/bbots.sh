@@ -72,10 +72,10 @@ bbot-cli.py IndMtn \
 
 
 bbot-cli.py IndMtn \
-        --username                ‘Bob Falooley’ \
+        --username                Bob\ Falooley \
         --password                karpet \
         --address                tnsoa.strangled.net \
-        --realm                ‘Skull House’ \
+        --realm                Skull\ House \
         --game                6 \
         --smtp-server        smtp.gmail.com \
         --smtp-port        587 \
