@@ -60,7 +60,7 @@ class TurnStatsParser(StatsParser):
         if which == 200 : realm.name=self.get_str()
         elif which == 210: realm.turns.current = self.get_num()
         elif which == 220: realm.turns.score = self.get_num()
-        elif which == 230: realm.turns.gold = self.get_num()
+        elif which == 230: realm.gold = self.get_num()
         elif which == 240: realm.bank.gold = self.get_num()
         elif which == 250:
             realm.population.size = self.get_num(0)
