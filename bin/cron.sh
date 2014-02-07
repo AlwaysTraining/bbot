@@ -1,5 +1,8 @@
 #!/bin/bash
+
+#one argument must be passed, the maximum numnber of minutes to randomly sleep
 echo "bbots cron job begins: $(date)"
+
 
 # Grab a random value between 0-3600
 SLEEPSECS=$(($1*60))
@@ -25,7 +28,7 @@ dos2unix bbots.sh
 chmod +x bbots.sh
 echo "Adding latest file from google docs to source control"
 git add .
-git commit -m "Latest command file from google doc"
+git commit -m "Automated checkin triggered by cron job"
 git push
 ./bbots.sh
 logger "Finished bbots"
