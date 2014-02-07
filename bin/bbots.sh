@@ -3,9 +3,4 @@
 
 
 
-echo "begin runing bots"
-
-
-
-
-echo "end runing bots"
+bbot-cli.py
