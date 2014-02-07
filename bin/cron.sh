@@ -8,7 +8,7 @@ echo "bbots cron job begins: $(date)"
 SLEEPSECS=$(($1*60))
 value=$(($RANDOM%$SLEEPSECS))
 # Sleep for that time.
-echo Sleeping for $(($RANDOM%3600/60)) minutes
+echo Sleeping for $(($value/60)) minutes
 sleep $value
 
 echo "Starting bbots: $(date)"
