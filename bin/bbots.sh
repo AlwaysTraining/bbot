@@ -33,7 +33,7 @@
 
 
 
-bbot-cli.py \
+bbot-cli.py IndMtn \
         --username                Randy32 \
         --password                RANDYPAS \
         --address                tnsoa.strangled.net \
@@ -43,5 +43,4 @@ bbot-cli.py \
         --smtp-port        587 \
         --smtp-user        dr.randy.myers \
         --smtp-password        dr.randy.myers.password \
-        --notify                derrick.karimi@gmail.com \
-        --strategies        IndMtn
+        --notify                derrick.karimi@gmail.com
