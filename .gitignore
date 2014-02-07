@@ -1,4 +1,5 @@
 *.py[cod]
+*.swp
 
 # Installer logs
 pip-log.txt
