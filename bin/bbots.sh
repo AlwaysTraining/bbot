@@ -43,5 +43,5 @@ bbot-cli.py \
         --smtp-port        587 \
         --smtp-user        dr.randy.myers \
         --smtp-password        dr.randy.myers.password \
-        --notify                derrick.karimi@gmail.com
+        --notify                derrick.karimi@gmail.com \
         --strategies        IndMtn
