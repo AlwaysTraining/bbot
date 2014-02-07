@@ -38,7 +38,7 @@ bbot-cli.py \
         --password                RANDYPAS \
         --address                tnsoa.strangled.net \
         --realm                Randyland \
-        --game                10 \
+        --game                6 \
         --smtp-server        smtp.gmail.com \
         --smtp-port        587 \
         --smtp-user        dr.randy.myers \

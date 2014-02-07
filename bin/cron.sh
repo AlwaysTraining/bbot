@@ -2,7 +2,8 @@
 echo "bbots cron job begins: $(date)"
 
 # Grab a random value between 0-3600
-value=$(($RANDOM%3600))
+SLEEPSECS=30
+value=$(($RANDOM%$SLEEPSECS))
 # Sleep for that time.
 echo Sleeping for $(($RANDOM%3600/60)) minutes
 sleep $value
