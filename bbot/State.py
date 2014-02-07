@@ -106,22 +106,21 @@ class Maint(StatsState):
                 app.send('n')
             else:
                 app.send('y')
-                buf = app.read()
-                if 'Do you wish to visit the Bank? (y/N)' in buf:
+                buf = app.read_until('Do you wish to visit the Bank? (y/N)')
 
-                    # maint cost
-                    maintcost = app.data.get_maint_cost()
-                    # maint minus current cold is ammount to withdraw
-                    withdraw = maintcost - app.data.realm.gold 
-                    # don't try to withdraw more than we have or it will take 
-                    #   two enter's to get through the prompt
-                    if withdraw > app.data.realm.bank.gold:
-                        withdraw = app.data.realm.bank.gold
+                # maint cost
+                maintcost = app.data.get_maint_cost()
+                # maint minus current cold is ammount to withdraw
+                withdraw = maintcost - app.data.realm.gold 
+                # don't try to withdraw more than we have or it will take 
+                #   two enter's to get through the prompt
+                if withdraw > app.data.realm.bank.gold:
+                    withdraw = app.data.realm.bank.gold
 
-                    # withdraw the money and get back to the maintenance sequence
-                    app.send_seq(['y','w',str(withdraw),'\r','0'])
+                # withdraw the money and get back to the maintenance sequence
+                app.send_seq(['y','w',str(withdraw),'\r','0'])
 
-                    self.money_reconsider_turn = app.data.realm.turns.current
+                self.money_reconsider_turn = app.data.realm.turns.current
                     
         elif self.which_maint == 'Food' and 'Would you like to reconsider? (Y/n)' in buf:
             if self.food_reconsider_turn == app.data.realm.turns.current:
