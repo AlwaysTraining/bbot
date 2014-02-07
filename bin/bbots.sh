@@ -46,11 +46,36 @@ bbot-cli.py IndMtn \
         --notify                derrick.karimi@gmail.com 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 bbot-cli.py IndMtn \
         --username                Tester0 \
         --password                RANDYPAS \
         --address                tnsoa.strangled.net \
-        --realm                Funk \
+        --realm                Funkshak \
+        --game                6 \
+        --smtp-server        smtp.gmail.com \
+        --smtp-port        587 \
+        --smtp-user        dr.randy.myers \
+        --smtp-password        dr.randy.myers.password \
+        --notify                derrick.karimi@gmail.com 
+
+
+bbot-cli.py IndMtn \
+        --username                “Bob Falooley” \
+        --password                karpet \
+        --address                tnsoa.strangled.net \
+        --realm                “Skull House” \
         --game                6 \
         --smtp-server        smtp.gmail.com \
         --smtp-port        587 \
