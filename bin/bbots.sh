@@ -26,7 +26,7 @@
 #         --smtp-password SMTP_PASSWORD
 #                               Outgoing Mail Server user password
 #         -n [NOTIFY], --notify [NOTIFY]
-#                               email addresses for recipiants of
+#                               email addresses for recipients of
 #                                                notifications
 #         -d, --debug           enable debug mode
 #
