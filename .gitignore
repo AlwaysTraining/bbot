@@ -1,6 +1,8 @@
 *.py[cod]
 *.swp
 
+cron.lock
+
 # Installer logs
 pip-log.txt
 
