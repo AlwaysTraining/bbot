@@ -29,6 +29,13 @@
 #                               email addresses for recipiants of
 #                                                notifications
 #         -d, --debug           enable debug mode
+#
+# bot sandbox:         http://botbox.strangled.net/bbot
+# bot cron Log:         http://botbox.strangled.net/bbot/cron_log.txt
+# source code:         https://github.com/AlwaysTraining/bbot
+# ec2 console:         https://console.aws.amazon.com/ec2/v2/#Instances:
+
+
 
 
 
@@ -43,7 +50,8 @@ bbot-cli.py IndMtn \
         --smtp-port        587 \
         --smtp-user        dr.randy.myers \
         --smtp-password        dr.randy.myers.password \
-        --notify                derrick.karimi@gmail.com 
+        --notify                derrick.karimi@gmail.com \
+        --notify                mrkauffman@gmail.com
 
 
 
@@ -68,7 +76,8 @@ bbot-cli.py IndMtn \
         --smtp-port        587 \
         --smtp-user        dr.randy.myers \
         --smtp-password        dr.randy.myers.password \
-        --notify                derrick.karimi@gmail.com 
+        --notify                derrick.karimi@gmail.com \
+        --notify                mrkauffman@gmail.com
 
 
 bbot-cli.py IndMtn \
@@ -81,4 +90,5 @@ bbot-cli.py IndMtn \
         --smtp-port        587 \
         --smtp-user        dr.randy.myers \
         --smtp-password        dr.randy.myers.password \
-        --notify                derrick.karimi@gmail.com
+        --notify                derrick.karimi@gmail.com \
+        --notify                mrkauffman@gmail.com
