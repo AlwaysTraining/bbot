@@ -7,6 +7,7 @@
 from bbot.Utils import *
 from bbot.Strategy import Strategy
 from bbot.SpendingParser import SpendingParser
+from bbot.Data import *
 
 S = SPACE_REGEX
 N = NUM_REGEX
@@ -31,14 +32,19 @@ class IndMtn(Strategy):
         # carreirs at 0
         self.app.sendl()
 
+    
     def on_spending_menu(self):
+
+
+#        if self.data.realm.turns.years_freedom is not None:
+
         # sell all tanks and return to buy menu
         self.app.send('s')
         # perform a read and through a spending state to parse all the data
         sp = SpendingParser()
         sp.parse(self.app, self.app.read())
 
-        sellItems = ['8']
+        sellItems = []
         # sell all the items specified
         for saleItem in sellItems:
             if str(saleItem) != '6':

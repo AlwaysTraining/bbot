@@ -8,6 +8,8 @@ import re
 import botlog
 from bbot.Utils import *
 from bbot.BaseStates import *
+from bbot.Data import *
+from bbot.Data import *
 
 #rom BaseStates.State import State
 #rom BaseStates.StatsState import StatsState
@@ -63,6 +65,7 @@ class EndTurn(StatsState):
 from bbot.SpendingParser import SpendingParser
 class Spending(StatsState):
 
+
     def __init__(self):
         StatsState.__init__(self,statsParser=SpendingParser())
     
@@ -70,6 +73,18 @@ class Spending(StatsState):
         
         self.parse(app,buf)
 
+        if app.data.setup is None:
+            app.data.setup=Setup()
+            app.send_seq(['*','g'])
+            buf = app.read()
+            self.parse(app,buf)
+            if '-=<Paused>=-' in buf:
+                app.sendl()
+                buf = app.read()
+            app.send('0')
+            buf = app.read()
+            self.parse(app,buf)
+            
         app.on_spending_menu()
         app.sendl()
         return EndTurn()

@@ -14,6 +14,7 @@ ENVIRON_PREFIX="bbot_"
 
 NUM_REGEX='([0-9][,0-9]*)'
 SPACE_REGEX='[ \t]+'
+STR_REGEX='(.+)'
 
 VERYHIGH_PRIORITY = 100 * 6
 HIGH_PRIORITY =     100 * 5

@@ -11,6 +11,7 @@ from bbot.StatsParser import StatsParser
 
 S = SPACE_REGEX
 N = NUM_REGEX
+STR = STR_REGEX
 
 class SpendingParser(StatsParser):
 
@@ -42,13 +43,35 @@ class SpendingParser(StatsParser):
             "\(8\) Tanks"+S+N+S+N  : 880,
             "\(9\) Carriers"+S+N+S+N  : 890,
             "You have "+N+" gold and "+N+" turns\." : 900,
-            }
 
+           "Game Started:"+S+STR:           1800,
+           "Turns per day:"+S+N:            1810,
+           "Protection Turns:"+S+N:         1820,
+           "Daily Land Creation:"+S+N:      1830,
+           "Planetary Tax Rate:"+S+N+"\%":  1840,
+           "Maximum Players:"+S+N:          1850,
+           "Bank Interest Rate:"+S+N+"\%":  1860,
+           "Maintenance Costs:"+S+STR+S+"Region Cost Change:"+S+STR :   1870,
+           "Trade Deal Costs:"+S+STR+S+"Attack Damage:"+S+STR   :       1880,
+           "Attack Rewards:"+S+STR  :       1890,
+           "Military purchasing:" + S + STR :   1900,
+           "This game is setup for Local mode only\."           :   1910,
+           "This game is setup in InterBBS mode with "+N+" boards in the game\."    :1920,
+           "Attack Costs:"+S+STR+S+"Terrorism Costs:"+S+STR     :   1930,
+           "Maximum Individual Attacks Per Day:"+S+N            :   1940,
+           "Maximum Group Attacks Per Day:"+S+N                 :   1950,
+           "Maximum Terrorist Ops Per Day:"+S+N                 :   1960,
+           "Maximum Bombing Operations Per Day:"+S+N            :   1970,
+           "Days before \"lost\" forces returned:"+S+N            :   1980,
+           "Gooie Kablooies:"+S+STR+S+"Bombing Ops:"+S+STR+S+"Missile Ops:"+S+STR   :   1990
+
+            }
     
     def on_match(self,app,line,which):
         realm=app.data.realm
         army=realm.army
         regions=realm.regions
+        setup=app.data.setup
 
         if which == 0: self.buymenu = True
         elif which == 0: self.buymenu = False
@@ -100,5 +123,37 @@ class SpendingParser(StatsParser):
         elif which == 900 :
             realm.gold = self.get_num(0)
             realm.turns.remaining = self.get_num(1)
-            
+
+        elif which == 1800 : setup.game_start_date=self.get_str()
+        elif which == 1810 : setup.turns_per_day=self.get_num()
+        elif which == 1820 : setup.protection_turns=self.get_num()
+        elif which == 1830 : setup.daily_land_creation=self.get_num()
+        elif which == 1840 : setup.planetary_tax_rate=self.get_num()
+        elif which == 1850 : setup.max_players=self.get_num()
+        elif which == 1860 : setup.interest_rate=self.get_num()
+        elif which == 1870 :     
+            setup.maint_costs=self.get_str()
+            setup.region_cost=self.get_str(1)
+        elif which == 1880 :     
+            setup.trade_cost=self.get_str()
+            setup.attack_damage=self.get_str(1)
+        elif which == 1890 : setup.attack_rewards=self.get_str()
+        elif which == 1900 : setup.army_purchase=self.get_str()=="Enabled"
+        elif which == 1910 : setup.local_game=True
+        elif which == 1920 : 
+            setup.interbbs_game=True
+            setup.num_boards=self.get_num()
+        elif which == 1930:
+            setup.attack_cost=self.get_str()
+            setup.terror_cost=self.get_str(1)
+        elif which == 1940: setup.num_indie_attacks = self.get_num()
+        elif which == 1950: setup.num_group_attacks = self.get_num()
+        elif which == 1960: setup.num_tops = self.get_num()
+        elif which == 1970: setup.num_bops = self.get_num()
+        elif which == 1980: setup.days_for_mit = self.get_num()
+        elif which == 1990: 
+            setup.gooies = self.get_str() == "Enabled"
+            setup.bombing_ops = self.get_str(1) == "Enabled"
+            setup.missle_ops = self.get_str(2) == "Enabled"
+
 
