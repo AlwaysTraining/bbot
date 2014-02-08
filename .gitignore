@@ -2,6 +2,7 @@
 *.swp
 
 cron.lock
+bbots.sh
 
 # Installer logs
 pip-log.txt
