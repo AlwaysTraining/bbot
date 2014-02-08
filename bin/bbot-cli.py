@@ -89,6 +89,20 @@ defaults={
             'debug'     :   False,
             'strategies':   ['IndMtn',],
             },
+
+        'tnsoa4' : {
+            'username'  :   'Tester1',
+            'password'  :   'RANDYPAS',
+            'address'   :   'tnsoa.strangled.net',
+            'realm'     :   'Crankles',
+            'game'      :   '6',
+            'smtp_server':  'smtp.gmail.com',
+            'smtp_port' :   587,
+            'smtp_user' :   'derrick.karimi',
+            'notify'    :   'derrick.karimi@gmail.com',
+            'debug'     :   False,
+            'strategies':   ['IndMtn',],
+            },
         }
 
 
@@ -140,10 +154,9 @@ parser.add_argument("--smtp-password",
                   action="store", 
                   help="Outgoing Mail Server user password",
                   default=get_default('smtp_password'))
-parser.add_argument("-n","--notify",
-                  nargs="?",
-                  help="email addresses for recipiants of notifications",
-                  default=get_default('notify'))
+parser.add_argument("-n","--notify", action='append',
+                  help="comma seperated email addresses for recipients of notifications")
+                  
 parser.add_argument("-d","--debug",
                   action="store_true",
                   help="enable debug mode",
