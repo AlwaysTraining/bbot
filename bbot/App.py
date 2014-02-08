@@ -31,21 +31,21 @@ class App:
         a = a.split('.')
         a = a[0]
         s = joiner.join([
-                "bbot",a,
+                a,
                 self.get_app_value('game'),
                 self.get_app_value('realm')])
-        s = Utils.clean_string(s)
-
        
         return s
 
     def file_roll(self,suffix):
 
         name = self.get_tag_str() + '_' + suffix + ".txt"
+        name = Utils.clean_string(name)
         logfile = os.path.join(self.get_data_dir(), name)
 
         if os.path.exists(logfile):
             name = self.get_tag_str() + suffix + ".txt"
+            name = Utils.clean_string(name)
             logdir = os.path.join(self.get_data_dir(),'old')
 
             if not os.path.exists(logdir):
@@ -55,6 +55,7 @@ class App:
 
             oldname = (self.get_tag_str() + '_' +  moddate + '_'
                         + suffix + ".txt")
+            oldname = Utils.clean_string(oldname)
 
 
             oldlogfile = os.path.join(logdir, oldname)
@@ -356,7 +357,7 @@ class App:
 
         Utils.send_mail(
             to,
-            '[' + self.get_tag_str(' ') + '] ' + subject,
+            '[bbot] ' + self.get_tag_str(' ') + ' ' + subject,
             body,
             _from='bbot@' + self.get_app_value('address'),
             files=files,
