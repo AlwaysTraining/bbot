@@ -191,7 +191,7 @@ class IndMtn(Strategy):
 
         # determine the proper region ratio for buy
         r = self.get_region_ratio()
-        botlog.debug("ratio: " + str(r))
+        # botlog.debug("ratio: " + str(r))
         
         self.sp.parse(self.app, self.app.read())
         # the number of regions we can afford
@@ -202,11 +202,11 @@ class IndMtn(Strategy):
 
         # the regions to buy
         r.ratio_to_buy(a)
-        botlog.debug("to buy: " + str(r))
+        # botlog.debug("to buy: " + str(r))
 
         # maps menu option to number of regions
         r = r.get_menu_number_dict()
-        botlog.debug("buy dict: " + str(r))
+        # botlog.debug("buy dict: " + str(r))
 
         # Sequence for buying regions, return to buy menu
         seq = []
