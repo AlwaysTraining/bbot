@@ -46,7 +46,7 @@ class IndMtn(Strategy):
 
         # When there are less than 1k regions, concectrate
         #   on liquidating army
-        if self.data.regions.number < 1000:
+        if self.data.realm.regions.number < 1000:
             return 0.75
 
         # If investments are not full, we will sell a portion
@@ -103,6 +103,13 @@ class IndMtn(Strategy):
         num_to_buy = 1.0
         # visit civilian advisor and buy ag regions until he is happy
         while True:
+            self.app.read()
+
+            # cap the number of regions to buy at the limit we can afford
+            if num_to_buy > self.data.realm.regions.number_affordable:
+                num_to_buy = self.data.realm.regions.number_affordable
+
+            # visit the ag  minister
             self.app.send('*')
             self.app.read()
             self.app.send(1)
@@ -113,14 +120,24 @@ class IndMtn(Strategy):
                 self.app.sendl()
                 self.app.read()
 
-            # if we no longer have a deficit we have bought enough ag
-            if self.data.realm.advisors.civilian.food_deficit is None:
+            # if we no longer have a deficit we have bought enough ag, or
+            #   we can't afford any more regions
+            if (self.data.realm.advisors.civilian.food_deficit is None or 
+                    self.data.realm.regions.number_affordable is None or
+                    self.data.realm.regions.number_affordable <= 0):
                 # this returns us to the buy region menu
                 self.app.send('0')
                 break
 
-            self.app.send_seq(['0','a',str(int(round(num_to_buy))),'0'])
+            # TODO, in some kind of o shit situation we might not be able to buy 
+            #   this small ammount of regions
+
+            self.app.send_seq(['0','a',str(int(round(num_to_buy))),'\r'])
+            self.data.realm.regions.number_affordable = (
+                    self.data.realm.regions.number_affordable - num_to_buy)
             num_to_buy = num_to_buy * 1.25
+
+
         
 
 

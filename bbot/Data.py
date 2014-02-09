@@ -416,10 +416,10 @@ class Data(dict):
         return c
 
     def is_oop(self):
-        return self.realm.turns.years_freedom is not None
+        return self.realm.turns.years_freedom is None
 
     def has_full_investments(self):
-        return False
+        return True
 
     def get_number(self, item):
         army = self.realm.army
