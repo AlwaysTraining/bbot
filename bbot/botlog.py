@@ -13,15 +13,15 @@ tracefile=sys.stdout
 traceid=0
 
 cur_state=None
-cur_prefix=None
+cur_strat=None
 
 def formattrace(msg):
     global traceid
     traceid = traceid + 1
 
     s = "<"+str(traceid)
-    if cur_prefix is not None:
-        s+=":"+cur_prefix
+    if cur_strat is not None:
+        s+=":"+cur_strat
     if cur_state is not None:
         s+=":"+cur_state
     s+=">  " + str(msg)

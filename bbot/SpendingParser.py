@@ -63,7 +63,25 @@ class SpendingParser(StatsParser):
            "Maximum Terrorist Ops Per Day:"+S+N                 :   1960,
            "Maximum Bombing Operations Per Day:"+S+N            :   1970,
            "Days before \"lost\" forces returned:"+S+N            :   1980,
-           "Gooie Kablooies:"+S+STR+S+"Bombing Ops:"+S+STR+S+"Missile Ops:"+S+STR   :   1990
+           "Gooie Kablooies:"+S+STR+S+"Bombing Ops:"+S+STR+S+"Missile Ops:"+S+STR   :   1990,
+
+           "We occasionally produce an additional "+N+" units from rivers\."    : 2500,
+           "The empire consumes "+N+" units of food yearly\."   :   2510,
+           "This gives the empire a minimum food surplus of "+N+" units per year\."  :   2520,
+           "This gives the empire a maximum food deficit of "+N+" units per year\." :   2523,
+           "At our current population, we can survive for at least "+N+" years\."   :   2527,
+            
+           "Your yearly income was "+N+" Gold, "+N+"\% of the world total\."    :   2530,
+           "Your barony's efficiency is approximately "+N+" Gold per Region\."  :   2540,
+           "The global average is approximately "+N+" Gold per Region\."        :   2550,
+
+           "Our military forces are functioning at "+N+"\% strength."                       :2560,
+           "Our gold producing regions are at "+N+"\% of normal production."                :2570,
+           "Our food production techniques increased efficiency to "+N+"\%."                :2580,
+           "Our industries are running at "+N+"\% efficiency."                              :2590,
+           "Our maintenance costs have been reduced to "+N+"\% of standard costs."          :2600,
+           "Our SDI yearly funding needs have been lowered to "+N+"\% normal expenses."     :2610,
+           "Food decay is at "+N+"\% of standard levels."                                   :2620,
 
             }
     
@@ -72,6 +90,7 @@ class SpendingParser(StatsParser):
         army=realm.army
         regions=realm.regions
         setup=app.data.setup
+        advisors=realm.advisors
 
         if which == 0: self.buymenu = True
         elif which == 0: self.buymenu = False
@@ -155,5 +174,23 @@ class SpendingParser(StatsParser):
             setup.gooies = self.get_str() == "Enabled"
             setup.bombing_ops = self.get_str(1) == "Enabled"
             setup.missle_ops = self.get_str(2) == "Enabled"
+        
+        elif which == 2500: advisors.civilian.river_food_production = self.get_num()
+        elif which == 2510: advisors.civilian.food_consumption = self.get_num()
+        elif which == 2520: advisors.civilian.food_surplus = self.get_num()
+        elif which == 2523: advisors.civilian.food_deficit = self.get_num()
+        elif which == 2527: advisors.civilian.years_survival = self.get_num()
+        elif which == 2530: 
+            advisors.economic.income = self.get_num()
+            advisors.economic.world_income_ratio = self.get_num(1)
+        elif which == 2540: advisors.economic.efficiency = self.get_num()
+        elif which == 2550: advisors.economic.global_avg_efficiency = self.get_num()
+        elif which == 2560: advisors.technology.mil_tech = self.get_num()
+        elif which == 2570: advisors.technology.gold_tech = self.get_num()
+        elif which == 2580: advisors.technology.food_tech = self.get_num()
+        elif which == 2590: advisors.technology.industry_tech = self.get_num()
+        elif which == 2600: advisors.technology.maint_tech = self.get_num()
+        elif which == 2610: advisors.technology.sdi_tech = self.get_num()
+        elif which == 2620: advisors.technology.food_decay_tech = self.get_num()
 
 
