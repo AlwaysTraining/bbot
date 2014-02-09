@@ -145,23 +145,21 @@ class Regions(object):
     def normalize(self):
         length = 0
         if self.coastal.number is not None: 
-            length = length + self.coastal.number * self.coastal.number
+            length = length + self.coastal.number 
         if self.river.number is not None: 
-            length = length + self.river.number * self.river.number
+            length = length + self.river.number 
         if self.agricultural.number is not None: 
-            length = length + self.agricultural.number * self.agricultural.number
+            length = length + self.agricultural.number
         if self.desert.number is not None: 
-            length = length + self.desert.number * self.desert.number
+            length = length + self.desert.number
         if self.industrial.number is not None: 
-            length = length + self.industrial.number * self.industrial.number
+            length = length + self.industrial.number
         if self.urban.number is not None: 
-            length = length + self.urban.number * self.urban.number
+            length = length + self.urban.number
         if self.mountain.number is not None: 
-            length = length + self.mountain.number * self.mountain.number
+            length = length + self.mountain.number
         if self.technology.number is not None: 
-            length = length + self.technology.number * self.technology.number
-
-        length = math.sqrt(length)
+            length = length + self.technology.number
 
         self.multiply(1.0/length)
 

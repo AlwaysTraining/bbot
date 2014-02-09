@@ -218,17 +218,15 @@ class IndMtn(Strategy):
         # buy the regions
         self.app.send_seq(seq)
 
-        # re parse region menu
+        # re parse region menu/buy meny
         self.sp.parse(self.app, self.app.read())
 
+        # no need to 
         # return to the spending menu
-        self.app.sendl()
+        # because we bought all the regions we could afford
+        # it automatically gets back to the buy menu
 
         
-        
-
-
-
         
 
 
