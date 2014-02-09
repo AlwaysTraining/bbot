@@ -71,21 +71,46 @@ class Spending(StatsState):
     
     def transition(self,app,buf):
         
+        # parse the buy menu
         self.parse(app,buf)
 
-        if app.data.setup is None:
-            app.data.setup=Setup()
-            app.send_seq(['*','g'])
-            buf = app.read()
-            self.parse(app,buf)
-            if '-=<Paused>=-' in buf:
-                app.sendl()
-                buf = app.read()
-            app.send('0')
-            buf = app.read()
-            self.parse(app,buf)
+# commentin out this because we don't really need it until we heavily start to mine data
+
+#       # if game setup has not been read, # parse it
+#       if app.data.setup is None:
+#           app.data.setup=Setup()
+#           app.send_seq(['*','g'])
+#           buf = app.read()
+#           self.parse(app,buf)
+#           if '-=<Paused>=-' in buf:
+#               app.sendl()
+#               buf = app.read()
+#           app.send('0')
+#           buf = app.read()
+#           self.parse(app,buf)
+
+#       # parse the information from the advisors
+#       app.send_seq(['*','a'])
+#       for advisor in range(1,5):
+#           app.data.realm.advisors.reset_advisor(advisor)
+#           app.send(advisor)
+#           buf = app.read()
+#           self.parse(app,buf)
+#           if '-=<Paused>=-' in buf:
+#               app.sendl()
+#               buf = app.read()
+
+#       # return to the buy menu and parse it again for good measure
+#       app.send_seq(['0','0'])
+#       buf = app.read()
+#       self.parse(app,buf)
+        
             
+        # based on the strategies registered with the app we do differnt 
+        #   things, tell the app we are ready for the strategies to act
         app.on_spending_menu()
+
+        # exit buy menu
         app.sendl()
         return EndTurn()
 

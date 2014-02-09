@@ -77,8 +77,10 @@ class App:
         self.telnet = None
         self.strategies = None
         self.EOF = False
-        self.adaptive_timeout = 1
+        self.adaptive_timeout = 1.5
         self.timeout_alpha = 0.1
+        self.min_timeout = 1.5
+        self.max_timeout = 10.0
 
         level=botlog.DEBUG
         self.logfile=None
@@ -118,7 +120,7 @@ class App:
         return self.query_func(key)
 
     def get_close_float(self,x):
-        return random.uniform(x*0.75,x*1.25)
+        return random.uniform(x*0.9,x*1.1)
 
     def read_until(self,stop_text,timeout=-1,maxwait=20):
         
@@ -189,12 +191,12 @@ class App:
             self.wait_time = 0
             if adaptive:
                 self.adaptive_timeout = (1-self.timeout_alpha/2.0) * self.adaptive_timeout
-                if self.adaptive_timeout < 0.5: self.adaptive_timeout = 0.5
+                if self.adaptive_timeout < self.min_timeout: self.adaptive_timeout = self.min_timeout
         else:
             self.wait_time = self.wait_time + timeout
             if adaptive:
                 self.adaptive_timeout = (1+self.timeout_alpha*2.0) * self.adaptive_timeout
-                if self.adaptive_timeout > 10: self.adaptive_timeout = 10.0
+                if self.adaptive_timeout > self.max_timeout: self.adaptive_timeout = self.max_timeout
 
         self.buf = newbuf
         
@@ -202,7 +204,7 @@ class App:
         return self.buf
 
 
-    def send(self, msg, eol=False, sleep=0.1):
+    def send(self, msg, eol=False, sleep=0.5):
         """
         Send a message to the client use some rudemantry random delay to 
         semi similate a human's typing
@@ -261,10 +263,14 @@ class App:
 
     def on_spending_menu(self):
         for s in self.strategies:
+            botlog.cur_strat = s.get_name()
             s.on_spending_menu()
+        botlog.cur_strat = ''
     def on_industry_menu(self):
         for s in self.strategies:
+            botlog.cur_strat = s.get_name()
             s.on_industry_menu()
+        botlog.cur_strat = ''
 
     def run_loop(self):
 
