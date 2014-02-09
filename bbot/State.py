@@ -240,17 +240,19 @@ class PreTurns(StatsState):
 
 class MainMenu(State):
         
-    playing = False
 
     def transition(self,app,buf):
-        if not MainMenu.playing:
-            MainMenu.playing = True
+
+        if "Choice> Quit" in buf:
+            # we have already played today, don't send emails
+            app.no_email_reason = "We already played today"
+            app.skip_next_read=True
+            return ExitGame()
+        else:
             app.send(1)
             return PreTurns()
-        else:
-            app.send(0)
+            
         
-        return BailOut()
 
 class NewRealm(State):
     def transition(self,app,buf):
@@ -270,6 +272,7 @@ class StartGame(State):
         elif 'Name your Realm' in buf:
             return NewRealm()
         elif '(1) Play Game             (7) Send Messages' in buf:
+            app.skip_next_read = True
             return MainMenu()
 
 
@@ -277,7 +280,6 @@ class BBSMenus(State):
     def transition(self,app,buf):
 
 
-        looking_for_main = False
         if "Enter number of bulletin to view or press (ENTER) to continue:" in buf:
             app.sendl()
             # there is a decent pause here sometimes, so just use the read until
@@ -285,7 +287,6 @@ class BBSMenus(State):
 
         elif '[+] Read your mail now?' in buf:
             app.send('n')
-            looking_for_main = True
             
         elif 'Search all groups for new messages' in buf:
             app.send('n')

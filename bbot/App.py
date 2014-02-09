@@ -81,6 +81,7 @@ class App:
         self.timeout_alpha = 0.1
         self.min_timeout = 1.5
         self.max_timeout = 10.0
+        self.no_email_reason = None
 
         level=botlog.DEBUG
         self.logfile=None
@@ -332,6 +333,11 @@ class App:
 
 
     def send_notification(self, game_exception):
+
+        if self.no_email_reason is not None and self.no_email_reason != '':
+            botlog.info("No notification email sent because: " + self.no_email_reason)
+            return
+
         if (self.get_app_value('debug')):
             botlog.debug("No notification email is sent in debug mode")
             return
@@ -339,6 +345,7 @@ class App:
         if "notify" not in self.options or self.options['notify'] is None:
             botlog.info("No notification email address provided")
             return
+
 
         to = self.get_app_value('notify')
         if isinstance(to, basestring):

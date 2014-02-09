@@ -60,11 +60,8 @@ class IndMtn(Strategy):
     def sell(self, sellItems, sellRatio):
 
         # we start at the buy menu
+        in_buy=True
 
-        # sell all tanks and return to buy menu
-        self.app.send('s')
-        # perform a read and through a spending state to parse all the data
-        self.sp.parse(self.app, self.app.read())
 
         # sell all the items specified
         for saleItem in sellItems:
@@ -80,14 +77,21 @@ class IndMtn(Strategy):
                     ammount = int(round(ammount * sellRatio,0))
                     ammount = str(ammount)
                 
+                if in_buy:
+                    # sell all tanks and return to buy menu
+                    self.app.send('s')
+                    # perform a read and through a spending state to parse all the data
+                    self.sp.parse(self.app, self.app.read())
+                    in_buy = False
                 self.app.send_seq( [ str(saleItem),ammount,'\r' ] )
 
             else:
                 raise Exception("Do not know how to drop regions yet")
 
         # return to buy menu
-        self.app.send('b')
-        self.sp.parse(self.app, self.app.read())
+        if not in_buy:
+            self.app.send('b')
+            self.sp.parse(self.app, self.app.read())
 
             
     def buy_ag_regions(self):
