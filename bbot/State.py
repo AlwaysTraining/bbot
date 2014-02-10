@@ -235,6 +235,14 @@ class PreTurns(StatsState):
 
             return TurnStats()
 
+        # if a game gets hung up on, you can come out into almost any arbitary 
+        #   state of the game, we will have to add them here one by one as we
+        #   discover them
+        elif '[Attack Menu]' in buf:
+            app.skip_next_read = True
+            return EndTurn()
+           
+
         
 
 

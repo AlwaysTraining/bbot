@@ -132,9 +132,10 @@ class IndMtn(Strategy):
             # TODO, in some kind of o shit situation we might not be able to buy 
             #   this small ammount of regions
 
-            self.app.send_seq(['0','a',str(int(round(num_to_buy))),'\r'])
+            int_num_to_buy=int(round(num_to_buy))
+            self.app.send_seq(['0','a',str(int_num_to_buy),'\r'])
             self.data.realm.regions.number_affordable = (
-                    self.data.realm.regions.number_affordable - num_to_buy)
+                    self.data.realm.regions.number_affordable - int_num_to_buy)
             num_to_buy = num_to_buy * 1.25
 
 
