@@ -338,9 +338,9 @@ class App:
             botlog.info("No notification email sent because: " + self.no_email_reason)
             return
 
-        if (self.get_app_value('debug')):
-            botlog.debug("No notification email is sent in debug mode")
-            return
+#       if (self.get_app_value('debug')):
+#           botlog.debug("No notification email is sent in debug mode")
+#           return
 
         if "notify" not in self.options or self.options['notify'] is None:
             botlog.info("No notification email address provided")
@@ -362,11 +362,16 @@ class App:
             files.append(self.tracefile)
 
         subject = "Success"
-        body = str(self.data) 
         if game_exception is not None:
-            subject = "Failure"
-            body = str(game_exception)
+            subject = "Failure : " + str(game_exception)
 
+        changes = Utils.try_get_recent_changes()
+        body = (
+                self.data.planettext + "\n\n" +
+                self.data.msgtext + "\n\n" +
+                self.data.statstext + "\n\n" + 
+                self.data.spendtext + "\n\n" + 
+                changes )
 
         Utils.send_mail(
             to,

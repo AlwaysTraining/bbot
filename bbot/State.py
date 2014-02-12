@@ -71,6 +71,9 @@ class Spending(StatsState):
     
     def transition(self,app,buf):
         
+        # store the spending menu as we can include it in a status email
+        app.data.spendtext=app.buf
+
         # parse the buy menu
         self.parse(app,buf)
 
@@ -109,6 +112,10 @@ class Spending(StatsState):
         # based on the strategies registered with the app we do differnt 
         #   things, tell the app we are ready for the strategies to act
         app.on_spending_menu()
+
+        # any strategy is required to leave the state back in the buy menu
+        #   so the current app's buf should be the most recent buy data
+        app.data.spendtext=app.buf
 
         # exit buy menu
         app.sendl()
@@ -177,21 +184,29 @@ class TurnStats(StatsState):
                 
     def __init__(self):
         StatsState.__init__(self,statsParser=TurnStatsParser())
+        self.reset_statstext = True
 
     def transition(self,app,buf):
+
+        if self.reset_statstext:
+            self.reset_statstext=False
+            app.data.statstext = ''
 
         self.parse(app,buf)
 
         if 'Sorry, you have used all of your turns today.' in buf: 
+            app.data.planettext += "\n" + buf + "\n"
             app.sendl()
             return ExitGame()
         elif '-=<Paused>=-' in buf:
+            app.data.statstext += "\n"+buf+"\n"
             app.sendl()
         elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf: 
             # this buffer also contains the do you want to visit the bank
             #   question which is handled by the Maint state.  we must skip
             #   the next read, as the line would be eaten with noone to hanlde
             #   it
+            app.data.statstext += "\n"+ buf+"\n"
             app.skip_next_read = True
             return Maint()
 
@@ -227,6 +242,7 @@ class PreTurns(StatsState):
             app.send('i')
 
         elif '[R] Reply, [D] Delete, [I] Ignore, or [Q] Quit>' in buf:
+            app.data.msgtext += buf + "\n"
             app.send('i')
 
         elif '[Industrial Production]' in buf:
@@ -241,8 +257,6 @@ class PreTurns(StatsState):
         elif '[Attack Menu]' in buf:
             app.skip_next_read = True
             return EndTurn()
-           
-
         
 
 

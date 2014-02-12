@@ -394,6 +394,10 @@ class Data(dict):
 
     realm=Realm()
     setup=None
+    statstext=''
+    spendtext=''
+    msgtext=''
+    planettext=''
 
 
     def __str__(self):

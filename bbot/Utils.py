@@ -179,3 +179,25 @@ def clean_string(s):
             s2.append('_')
     return ''.join(s2)
     
+
+
+from subprocess import Popen
+from subprocess import PIPE
+def try_get_recent_changes():
+    try:
+        codedir = os.path.dirname(__file__)
+        gitcmd = "$(which git) log --pretty=format:'%cr:  %s' --abbrev-commit --date=short --branches -n 10"
+        # with author name, but really who else will work on this project?
+        # gitcmd = "$(which git) log --pretty=format:'%cr:  %s <%an>%Creset' --abbrev-commit --date=short --branches -n 10"
+        cmd = "cd " + codedir + " && " + gitcmd
+        botlog.debug("Running: " + cmd)
+        
+        output = Popen(cmd, stdout=PIPE, shell=True).communicate()[0]
+
+        return "Recent source code changes: \n" + output
+
+    except Exception, e:
+        botlog.exception(e)
+        botlog.warn("Could not git changes")
+
+        return "Could not get recent source code changes"
