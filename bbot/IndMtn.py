@@ -98,6 +98,7 @@ class IndMtn(Strategy):
         # we start at the region menu
 
         regions = self.data.realm.regions
+        advisors = self.data.realm.advisors
         
 
         num_to_buy = 1.0
@@ -106,25 +107,32 @@ class IndMtn(Strategy):
             self.app.read()
 
             # cap the number of regions to buy at the limit we can afford
-            if num_to_buy > self.data.realm.regions.number_affordable:
-                num_to_buy = self.data.realm.regions.number_affordable
+            if num_to_buy > regions.number_affordable:
+                num_to_buy = regions.number_affordable
 
             # visit the ag  minister
             self.app.send('*')
             self.app.read()
             self.app.send(1)
-            self.data.realm.advisors.reset_advisor(1)
-            buf = self.app.read()
+            advisors.reset_advisor(1)
+            buf = self.app.read_until("-=<Paused>=-")
             self.sp.parse(self.app, buf)
-            if '-=<Paused>=-' in buf:
-                self.app.sendl()
-                self.app.read()
+            self.app.sendl()
+            self.app.read()
 
-            # if we no longer have a deficit we have bought enough ag, or
-            #   we can't afford any more regions
-            if (self.data.realm.advisors.civilian.food_deficit is None or 
-                    self.data.realm.regions.number_affordable is None or
-                    self.data.realm.regions.number_affordable <= 0):
+            # no_deficit = advisors.civilian.food_deficit is None
+            deficit_but_ok = (advisors.civilian.years_survival is not None and 
+                    advisors.civilian.years_survival > 2)
+            big_enough_surplus = (advisors.civilian.food_surplus >= 
+                    self.app.data.try_get_needed_surplus())
+            not_enough_regions = (
+                    regions.number_affordable is None or
+                    regions.number_affordable <= 0)
+
+            # if we no longer are able to buy regions, or have enough food
+            if (    not_enough_regions or
+                    deficit_but_ok or
+                    big_enough_surplus):
                 # this returns us to the buy region menu
                 self.app.send('0')
                 break
@@ -133,9 +141,13 @@ class IndMtn(Strategy):
             #   this small ammount of regions
 
             int_num_to_buy=int(round(num_to_buy))
+            if int_num_to_buy > regions.number_affordable:
+                int_num_to_buy = regions.number_affordable
+
             self.app.send_seq(['0','a',str(int_num_to_buy),'\r'])
-            self.data.realm.regions.number_affordable = (
-                    self.data.realm.regions.number_affordable - int_num_to_buy)
+
+            regions.number_affordable = (
+                    regions.number_affordable - int_num_to_buy)
             num_to_buy = num_to_buy * 1.25
 
 

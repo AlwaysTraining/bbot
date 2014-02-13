@@ -338,9 +338,9 @@ class App:
             botlog.info("No notification email sent because: " + self.no_email_reason)
             return
 
-#       if (self.get_app_value('debug')):
-#           botlog.debug("No notification email is sent in debug mode")
-#           return
+        if (self.get_app_value('debug')):
+            botlog.debug("No notification email is sent in debug mode")
+            return
 
         if "notify" not in self.options or self.options['notify'] is None:
             botlog.info("No notification email address provided")

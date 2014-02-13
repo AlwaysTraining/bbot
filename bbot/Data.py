@@ -273,6 +273,7 @@ class Population(object):
         self.pop_support_bribe = None
         self.pop_support = None
         self.rate = None
+        self.size=None
     
 
 class Bank(object):
@@ -435,6 +436,57 @@ class Data(dict):
         if item == Bombers.menu_option: return army.bombers.number
         if item == Carriers.menu_option: return army.carriers.number
         raise Exception("I don't know about option " + str(item))
+
+    def try_get_needed_surplus(self):
+        """Guess at how much food we will need for the next turn"""
+
+        p = self.realm.population
+        a = self.realm.advisors
+
+        if p.growth is not None and p.size is not None:
+            g = p.growth / p.size
+        else:
+            g = 0.05
+
+        r = a.civilian.food_consumption
+
+        if r is not None:
+            r = int(round(g * r,0))
+        
+        botlog.debug("try_get_needed_surplus: " + str(r))
+        return r
+
+#       # But the time we need to buy ag, we should have paid maintenance, and
+#       #   read stats, so the following should always normally happen
+#       if p.size is not None and p.food is not None:
+#           # determine how much food each person was eating
+#           foodPerPerson = p.food/p.size
+
+#           # default to assuming popoulation will increase 5%
+#           newsize = p.size * 1.05
+
+#           # if this is at least the second turn, we should know how many
+#           #   people came or left last year, which will hopefully be similar
+#           #   to this year, so use it to calculate a new size
+#           if p.growth is not None:
+#               newsize = p.size + p.growth
+
+#           # use this years food per person rate to guess how much food we need
+#           #   to produce next year
+#           r = newsize * foodPerPerson
+
+#       # Add in what the army ate if they ate 
+#       if a.food is not None and r is not None:
+
+#           # there is no easy way to guess how much the army grew last year
+#           #   to apply to next year, we just use 5%
+#           r = r + (a.food * 1.05)
+
+
+
+
+
+
         
         
  
