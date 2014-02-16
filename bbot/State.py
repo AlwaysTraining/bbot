@@ -54,11 +54,11 @@ class EndTurn(StatsState):
         
         self.parse(app,buf)
         if '[Attack Menu]' in buf or '[Trading]' in buf:
-            app.send('0')
+            app.send('0',comment='Exiting attack or Trading menu')
         elif 'Do you wish to send a message? (y/N)' in buf:
-            app.send('n')
+            app.send('n',comment='Not sending a message')
         elif 'Do you wish to continue? (Y/n)' in buf:
-            app.send('y')
+            app.send('y',comment='Yes I wish to continue')
             botlog.info(str(app.data))
             return TurnStats() 
 
@@ -186,11 +186,14 @@ class TurnStats(StatsState):
         StatsState.__init__(self,statsParser=TurnStatsParser())
         self.reset_statstext = True
 
-    def transition(self,app,buf):
-
+    def append_stats_text(self, app, buf):
         if self.reset_statstext:
             self.reset_statstext=False
             app.data.statstext = ''
+        app.data.statstext += "\n"+buf+"\n"
+
+    def transition(self,app,buf):
+
 
         self.parse(app,buf)
 
@@ -199,16 +202,18 @@ class TurnStats(StatsState):
             app.sendl()
             return ExitGame()
         elif '-=<Paused>=-' in buf:
-            app.data.statstext += "\n"+buf+"\n"
+            self.append_stats_text(app,buf)
             app.sendl()
         elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf: 
             # this buffer also contains the do you want to visit the bank
             #   question which is handled by the Maint state.  we must skip
             #   the next read, as the line would be eaten with noone to hanlde
             #   it
-            app.data.statstext += "\n"+ buf+"\n"
+            self.append_stats_text(app,buf)
             app.skip_next_read = True
             return Maint()
+        else:
+            self.append_stats_text(app,buf)
 
         #TODO river producing food
 

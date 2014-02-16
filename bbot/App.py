@@ -82,6 +82,9 @@ class App:
         self.min_timeout = 1.5
         self.max_timeout = 10.0
         self.no_email_reason = None
+        self.last_full_buf=None
+        self.last_buf=None
+        self.buf=''
 
         level=botlog.DEBUG
         self.logfile=None
@@ -199,13 +202,16 @@ class App:
                 self.adaptive_timeout = (1+self.timeout_alpha*2.0) * self.adaptive_timeout
                 if self.adaptive_timeout > self.max_timeout: self.adaptive_timeout = self.max_timeout
 
+        self.last_buf = self.buf
+        if len(self.last_buf) > 0:
+            self.last_full_buf = self.last_buf
         self.buf = newbuf
         
         
         return self.buf
 
 
-    def send(self, msg, eol=False, sleep=0.5):
+    def send(self, msg, eol=False, sleep=0.5, comment=''):
         """
         Send a message to the client use some rudemantry random delay to 
         semi similate a human's typing
@@ -214,7 +220,7 @@ class App:
         msg = str(msg)
 
         if msg is not None and len(msg) > 0:
-            botlog.info('Sending {' + msg + '}')
+            botlog.info('Sending {' + msg + '} #' + str(comment))
             for c in msg:
                 if sleep > 0:
                     sleep = self.get_close_float(sleep)
@@ -223,7 +229,7 @@ class App:
                     raise Exception ("1 char not sent")
 
         if eol:
-            botlog.info('Sending {\\r}')
+            botlog.info('Sending {\\r} # '+ str(comment))
             if sleep > 0:
                 sleep = self.get_close_float(sleep)
                 time.sleep(sleep)
@@ -237,7 +243,10 @@ class App:
         botlog.debug("Begin Macro: " + str(seq))
         for i in range(len(seq)):
             msg=seq[i]
-            self.send(msg)
+            if msg=='\r':
+                self.sendl()
+            else:
+                self.send(msg)
 
             # do not read after the last char in the sequence
             if i < len(seq) - 1:
@@ -246,14 +255,15 @@ class App:
                 #   explicitly waiting to be sure he is at a prompt, he is 
                 #   just sending seperate chars and blindly reading for some
                 #   time in between.  We try to be smart and read until we get
-                #   at least one char, then do another read for good measure
+                #   something
                 while not self.EOF:
                     # do not allow sequence to manipulate the adaptive timing
                     #   because it is a wierd case and can throw it off. we do
                     #   however use the time as a good default timeout to use
                     b = self.read(timeout=self.adaptive_timeout)
                     if self.wait_time > 20:
-                        raise Exception("Waited for about 20 seconds and nothing happened")
+                        logging.warn("Last full buffer:\n" + str(self.last_full_buf))
+                        raise Exception("Waited for about 20 seconds when sending macro and nothing happened")
 
                     if len(b) > 0:
                         break
@@ -317,7 +327,8 @@ class App:
              
 
             if self.wait_time > 20:
-                raise Exception("Waited for about 20 seconds and nothing happened")
+                logging.warn("Last full buffer:\n" + str(self.last_full_buf))
+                raise Exception("Waited for about 20 seconds in main loop and nothing happened")
 
             nextstate = state.transition(self,self.buf)
             
