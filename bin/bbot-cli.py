@@ -115,13 +115,13 @@ defaults={
             'smtp_user' :   'derrick.karimi',
             'notify'    :   'derrick.karimi@gmail.com',
             'debug'     :   False,
-            'strategies':   ['IndMtn',],
+            'strategies':   ['IndMtn','AntiPirate'],
             },
         }
 
 
 def get_default(key):
-    superkey = 'tnsoa4'
+    superkey = 'tnsoa5'
     ans = None
     if superkey in defaults:
         d = defaults[superkey]

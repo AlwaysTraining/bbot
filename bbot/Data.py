@@ -375,6 +375,9 @@ class Advisors(object):
         elif TechnologyAdvisor.menu_option == str(menu_option): self.technology = TechnologyAdvisor()
         else: raise Exception("Unkown menu options for advisor")
     
+class Pirates(object):
+    def __init__(self):
+        self.regions=None
 
 class Realm(object):
     def __init__(self):
@@ -389,7 +392,10 @@ class Realm(object):
         self.queen_taxes=None
         self.score=None
         self.advisors=Advisors()
+        self.pirates=Pirates()
 
+    def reset_pirates(self):
+        self.pirates=Pirates()
 
 class Data(dict):
 
@@ -421,7 +427,7 @@ class Data(dict):
         return c
 
     def is_oop(self):
-        return self.realm.turns.years_freedom is None
+        return self.realm.turns.years_freedom is not None
 
     def has_full_investments(self):
         return True

@@ -12,6 +12,7 @@ import time
 import botlog
 import Utils
 import Data
+import MetaData
 import Strategy
 from bbot import *
 import botlog
@@ -69,6 +70,7 @@ class App:
         self.query_func = query_func
         self.secret_query_func = secret_query_func
         self.data = Data.Data()
+        self.metadata = MetaData.MetaData(self.data)
         self.cur_state = None
         self.match = None
         self.match_index = None
@@ -236,8 +238,8 @@ class App:
             if 1 != self.telnet.send('\r'):
                 raise Exception ("1 char not sent")
 
-    def sendl(self,msg='',sleep=0.5):
-        self.send(msg,eol=True,sleep=sleep)
+    def sendl(self,msg='',sleep=0.5,comment=''):
+        self.send(msg,eol=True,sleep=sleep,comment=comment)
 
     def send_seq(self,seq):
         botlog.debug("Begin Macro: " + str(seq))
@@ -272,6 +274,11 @@ class App:
         botlog.debug("End Macro: " + str(seq))
         return self.buf
 
+    def on_attack_menu(self):
+        for s in self.strategies:
+            botlog.cur_strat = s.get_name()
+            s.on_attack_menu()
+        botlog.cur_strat = ''
     def on_spending_menu(self):
         for s in self.strategies:
             botlog.cur_strat = s.get_name()

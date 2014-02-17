@@ -35,6 +35,8 @@ class Strategy:
     def on_industry_menu(self):
         return UNHANDLED
 
+    def on_attack_menu(self):
+        return UNHANDLED
 
 
 class Strategies(list):

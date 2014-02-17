@@ -53,8 +53,11 @@ class EndTurn(StatsState):
     def transition(self,app,buf):
         
         self.parse(app,buf)
-        if '[Attack Menu]' in buf or '[Trading]' in buf:
-            app.send('0',comment='Exiting attack or Trading menu')
+        if '[Attack Menu]' in buf:
+            app.on_attack_menu()
+            app.send('0',comment='Exiting attack menu')
+        if '[Trading]' in buf:
+            app.send('0',comment='Exiting Trading menu')
         elif 'Do you wish to send a message? (y/N)' in buf:
             app.send('n',comment='Not sending a message')
         elif 'Do you wish to continue? (Y/n)' in buf:
