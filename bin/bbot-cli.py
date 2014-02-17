@@ -115,13 +115,13 @@ defaults={
             'smtp_user' :   'derrick.karimi',
             'notify'    :   'derrick.karimi@gmail.com',
             'debug'     :   False,
-            'strategies':   ['IndMtn','AntiPirate'],
+            'strategies':   ['IndMtn',],
             },
         }
 
 
 def get_default(key):
-    superkey = 'tnsoa5'
+    superkey = 'tnsoa4'
     ans = None
     if superkey in defaults:
         d = defaults[superkey]
@@ -178,7 +178,7 @@ parser.add_argument("-d","--debug",
 
 
 
-parser.add_argument("strategies", nargs='?',
+parser.add_argument("strategies", nargs='*',
                   help="list of actions to perform",
                   default=get_default('strategies')
                   )
