@@ -264,7 +264,7 @@ class App:
                     #   however use the time as a good default timeout to use
                     b = self.read(timeout=self.adaptive_timeout)
                     if self.wait_time > 20:
-                        logging.warn("Last full buffer:\n" + str(self.last_full_buf))
+                        botlog.warn("Last full buffer:\n" + str(self.last_full_buf))
                         raise Exception("Waited for about 20 seconds when sending macro and nothing happened")
 
                     if len(b) > 0:
@@ -334,7 +334,7 @@ class App:
              
 
             if self.wait_time > 20:
-                logging.warn("Last full buffer:\n" + str(self.last_full_buf))
+                botlog.warn("Last full buffer:\n" + str(self.last_full_buf))
                 raise Exception("Waited for about 20 seconds in main loop and nothing happened")
 
             nextstate = state.transition(self,self.buf)
