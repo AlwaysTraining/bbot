@@ -315,14 +315,14 @@ class BBSMenus(State):
             # there is a decent pause here sometimes, so just use the read until
             # function
 
-        elif '[+] Read your mail now?' in buf:
-            app.send('n')
+        elif ' Read your mail now?' in buf:
+            app.send('n', comment="No I will not read mail, I am a fucking robot")
             
         elif 'Search all groups for new messages' in buf:
-            app.send('n')
+            app.send('n', comment="No I will not search for new messages, who uses a bbs for messages?")
 
         elif 'Search all groups for un-read messages to you' in buf:
-            app.send('n')
+            app.send('n', comment="No messsages, how many fucking times do I ahve to tell you")
 
         elif 'TNSOA' in buf and " Main " in buf and " Notices:" in buf:
             app.send_seq(['x','2',app.get_app_value('game')])

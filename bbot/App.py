@@ -222,7 +222,7 @@ class App:
         msg = str(msg)
 
         if msg is not None and len(msg) > 0:
-            botlog.info('Sending {' + msg + '} #' + str(comment))
+            botlog.info('Sending {' + msg + '} # ' + str(comment))
             for c in msg:
                 if sleep > 0:
                     sleep = self.get_close_float(sleep)
