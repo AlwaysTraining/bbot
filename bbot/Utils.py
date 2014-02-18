@@ -133,7 +133,8 @@ def send_mail(to, subject, text, _from="", files=[], cc=[], bcc=[],
     message['Subject'] = subject
     message['Cc'] = COMMASPACE.join(cc)
     
-    message.attach(MIMEText(text))
+    html = "<html><body><pre>" + text + "</html></body></pre>"
+    message.attach(MIMEText(html,'html'))
     
     for f in files:
         part = MIMEBase('application', 'octet-stream')
