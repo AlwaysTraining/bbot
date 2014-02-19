@@ -115,7 +115,7 @@ defaults={
             'smtp_user' :   'derrick.karimi',
             'notify'    :   'derrick.karimi@gmail.com',
             'debug'     :   False,
-            'strategies':   ['IndMtn',],
+            'strategies':   ['IndMtn','AntiPirate'],
             },
         }
 

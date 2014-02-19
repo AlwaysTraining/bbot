@@ -10,6 +10,7 @@ from bbot.Data import *
 from bbot.PirateParser import PirateParser
 from random import randint
 from bbot.RegionBuy import RegionBuy
+from bbot.AutoTuner import AutoTuner
 
 S = SPACE_REGEX
 N = NUM_REGEX
@@ -19,11 +20,9 @@ class AntiPirate(Strategy):
     def __init__(self,app):
         Strategy.__init__(self,app)
         self.data = self.app.data
-        self.attack_ratio=0.5
-        self.pirateloss=0
-        self.piratewins=0
-        self.piratebattles=0
+        self.attack_tuner=AutoTuner(True,0.25,0.0001,0.5)
         self.pp=PirateParser()
+        self.last_result = None
 
     def on_attack_menu(self):
 
@@ -36,36 +35,31 @@ class AntiPirate(Strategy):
         self.app.send(randint(1,9),comment='from pirate menu to randomly chosen pirate')
         buf = self.app.read()
 
-        troopers = int(self.app.data.realm.army.troopers.number * self.attack_ratio)
+        ratio = self.attack_tuner.get_next_value(self.last_result)
+
+        troopers = int(self.app.data.realm.army.troopers.number * ratio)
 
         self.app.sendl(troopers,comment='troopers for pirate attack')
         buf = self.app.read()
 
-        jets = int(self.app.data.realm.army.jets.number * self.attack_ratio)
+        jets = int(self.app.data.realm.army.jets.number * ratio)
 
         self.app.sendl(jets,comment='jets for pirate attack')
         buf = self.app.read()
 
-        tanks = int(self.app.data.realm.army.tanks.number * self.attack_ratio)
+        tanks = int(self.app.data.realm.army.tanks.number * ratio)
 
         self.app.sendl(tanks,comment='tanks for pirate attack')
 
         buf = self.app.read()
         self.pp.parse(self.app, buf)
 
-        self.piratebattles = self.piratebattles + 1
         if 'You could not successfully raid' in buf:
-            self.attack_ratio = self.attack_ratio * 2
-            self.pirateloss = self.pirateloss + 1
+            self.last_result = False
         elif 'have brought you success' in buf:
-            self.attack_ratio = self.attack_ratio / 4
-            self.piratewins = self.piratewins + 1
+            self.last_result = True
 
-        botlog.info("Pirate record: " + 
-                str(round(self.piratewins/self.piratebattles,1))+"% "+
-                str(self.piratewins)+"-"+
-                str(self.pirateloss)+"-"+
-                str(self.piratebattles-(self.piratewins+self.pirateloss)))
+        botlog.info("Pirate record: " + str(self.attack_tuner))
 
         if ' Regions left] Your choice?' in buf:
             RegionBuy(self.app,self.app.data.realm.pirates.regions)
