@@ -81,7 +81,7 @@ class App:
         self.EOF = False
         self.adaptive_timeout = 1.5
         self.timeout_alpha = 0.1
-        self.min_timeout = 1.5
+        self.min_timeout = self.adaptive_timeout
         self.max_timeout = 10.0
         self.no_email_reason = None
         self.last_full_buf=None
