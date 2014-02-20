@@ -16,6 +16,7 @@ class RegionBuy(Strategy):
         self.realm = self.app.data.realm
         self.regions = self.app.data.realm.regions
         self.sp = SpendingParser()
+        self.last_ag_buy = 1
 
 
         
@@ -74,8 +75,9 @@ class RegionBuy(Strategy):
         advisors = self.data.realm.advisors
         
 
-        num_to_buy = 1.0
+        num_to_buy = self.last_ag_buy
         # visit civilian advisor and buy ag regions until he is happy
+        num_bought = 0
         while True:
             self.app.read()
 
@@ -120,8 +122,16 @@ class RegionBuy(Strategy):
             self.app.send_seq(['0','a',str(int_num_to_buy),'\r'])
 
             self.a = ( self.a - int_num_to_buy)
-            num_to_buy = num_to_buy * 1.25
+            num_bought = num_bought + int_num_to_buy
+            # for ultimate efficiny you could just always buy one region and
+            #   until the adviso says it is okay.  This makes the logs a pain
+            #   to read.
+            num_to_buy = num_to_buy * 2
 
+        # next time we have to buy ag regions
+        #   we will start buying the number we
+        #   ended up having to buy this time
+        self.last_ag_buy = num_bought
 
 
 

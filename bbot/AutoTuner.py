@@ -126,10 +126,11 @@ class AutoTuner():
     def __str__(self):
         ratio = 0
         if (self.wins + self.losses + self.ties != 0):
-            ratio = self.wins / self.losses
+            ratio = self.wins / (self.wins + self.losses + self.ties)
+            
         return ("Value: " + str(self.value) + ", record: " + 
                 str(self.wins) + "-" + str(self.losses) +"-" + str(self.ties)
-                + ": " + str(round(ratio,3)))
+                + ": " + str(round(ratio,3)) + "%" )
 
    
 if __name__ == "__main__":

@@ -60,6 +60,8 @@ class EndTurn(StatsState):
             app.send('0',comment='Exiting Trading menu')
         elif 'Do you wish to send a message? (y/N)' in buf:
             app.send('n',comment='Not sending a message')
+        elif 'Do you wish to attack a Gooie Kablooie? (y/N)' in buf:
+            app.send('n',comment='Not attacking gooie')
         elif 'Do you wish to continue? (Y/n)' in buf:
             app.send('y',comment='Yes I wish to continue')
             botlog.info(str(app.data))
