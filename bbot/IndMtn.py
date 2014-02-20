@@ -40,7 +40,7 @@ def get_region_ratio(app, context):
         r.mountain.number=1
         r.industrial.number=3
         r.technology.number=1
-    elif app.realm.regions.number < 4000:
+    elif app.data.realm.regions.number < 4000:
         r.mountain.number=1
         r.industrial.number=4
         r.technology.number=1
