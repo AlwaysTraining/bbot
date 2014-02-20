@@ -20,8 +20,8 @@ class AntiPirate(Strategy):
     def __init__(self,app):
         Strategy.__init__(self,app)
         self.data = self.app.data
-        self.ratio = 0.25
-        self.attack_tuner=AutoTuner(True,self.ratio,0.0001,0.5)
+        self.ratio = 0.10
+        self.attack_tuner=AutoTuner(True,self.ratio,0.00001,0.25)
         self.pp=PirateParser()
         self.last_result = None
 
