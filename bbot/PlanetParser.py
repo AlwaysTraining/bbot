@@ -34,18 +34,21 @@ class PlanetParser(StatsParser):
             self.myrealm = app.get_app_value("realm")
         
         if which == 909 : 
-            r = RealmStats()
-            r.menu_option = self.get_str(0)
+            menu_option = self.get_str(0)
+            r = app.data.planet.realms.find(lambda x: x.menu_option == menu_option)
+            if r is None: 
+                r = RealmStats()
+                app.data.planet.realms.append(r)
+
+            r.menu_option = menu_option
             r.name = self.get_str(1).strip()
-            print 'adding', r.name
             r.regions = self.get_num(2)
             r.score = self.get_num(3)
             r.networth = self.get_num(4)
 
             if r.name == self.myrealm:
                 regions.number = r.regions
-
-            app.data.planet.realms.append(r)
+    
 
 
 

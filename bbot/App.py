@@ -289,6 +289,16 @@ class App:
             botlog.cur_strat = s.get_name()
             s.on_industry_menu()
         botlog.cur_strat = ''
+    def on_trading_menu(self):
+        for s in self.strategies:
+            botlog.cur_strat = s.get_name()
+            s.on_trading_menu()
+        botlog.cur_strat = ''
+    def on_diplomacy_menu(self):
+        for s in self.strategies:
+            botlog.cur_strat = s.get_name()
+            s.on_diplomacy_menu()
+        botlog.cur_strat = ''
 
     def run_loop(self):
 

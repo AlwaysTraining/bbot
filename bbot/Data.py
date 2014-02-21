@@ -432,6 +432,7 @@ class RealmStats(object):
         self.score=None
         self.regions=None
         self.networth=None
+        self.treaty=None
 
 class Planet(object):
     def __init__(self):
@@ -452,7 +453,7 @@ class Data(dict):
 
 
     def __str__(self):
-        return _printvisitor(self.realm,0)
+        return _printvisitor(self.realm,0) + "\n" + _printvisitor(self.planet,0)
 
 
     def set(self, key, value):

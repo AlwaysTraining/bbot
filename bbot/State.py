@@ -249,6 +249,7 @@ class PreTurns(StatsState):
                 return ExitGame()
 
         elif '[Diplomacy Menu]' in buf:
+            app.on_diplomacy_menu()
             # exit the diplomicy meny
             app.send('0')
 
@@ -257,7 +258,7 @@ class PreTurns(StatsState):
 
         elif '[R] Reply, [D] Delete, [I] Ignore, or [Q] Quit>' in buf:
             app.data.msgtext += buf + "\n"
-            app.send('i')
+            app.send('d',comment="Deleting received message"))
 
         elif '[Industrial Production]' in buf:
             app.on_industry_menu()

@@ -38,6 +38,15 @@ class Strategy:
     def on_attack_menu(self):
         return UNHANDLED
 
+    def on_trading_menu(self):
+        return UNHANDLED
+
+    def on_diplomacy_menu(self):
+        return UNHANDLED
+
+    def get_strategy_option(self,name):
+        option = self.get_name() + "_" + name
+        return self.app.get_app_value(option)
 
 class Strategies(list):
 
