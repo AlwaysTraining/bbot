@@ -29,6 +29,7 @@ class MaintParser(StatsParser):
             NUM_REGEX + ' gold is requested to boost popular support\.' :   1750,
             'You have ' + NUM_REGEX + ' gold and ' + NUM_REGEX + ' units of food.' : 1900,
             'You have '+NUM_REGEX+' gold in hand and '+NUM_REGEX+' gold in the bank.' : 1510,
+            '\['+N+' Regions left\] Your choice\?'  :   521
             }
 
     
@@ -49,6 +50,8 @@ class MaintParser(StatsParser):
         elif which == 1510 : 
             realm.gold = self.get_num(0)
             realm.bank.gold = self.get_num(1)
+        elif which == 521: realm.regions.waste.number = self.get_num(0)
+
 
 
 

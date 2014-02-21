@@ -19,11 +19,10 @@ class RegionBuy(Strategy):
         self.last_ag_buy = 1
 
 
+        # we should be at the region menu here loaded into the current buffer
         
-        # enter region buying menu
-        self.app.send('6')
-        # the number of regions we can afford
-        self.sp.parse(self.app, self.app.read())
+        # the number of regions we can afforAd
+        self.sp.parse(self.app, self.app.buf)
         self.a = num_regions
         if num_regions is None:
             self.a = self.app.data.realm.regions.number_affordable
@@ -67,7 +66,7 @@ class RegionBuy(Strategy):
         # no need to 
         # return to the spending menu
         # because we bought all the regions we could afford
-        # it automatically gets back to the buy menu
+        # it automatically gets out of region menu
             
     def buy_ag_regions(self):
         # we start at the region menu
