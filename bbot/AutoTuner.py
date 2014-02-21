@@ -75,8 +75,8 @@ class AutoTuner():
             initial_value, 
             min_clamp, 
             max_clamp, 
-            alpha=0.1,
-            beta=2.0):
+            alpha=0.4,
+            beta=4.0):
 
         self.min_clamp = min_clamp
         self.max_clamp = max_clamp
@@ -128,7 +128,7 @@ class AutoTuner():
         if (self.wins + self.losses + self.ties != 0):
             ratio = self.wins / (self.wins + self.losses + self.ties)
             
-        return ("Value: " + str(self.value) + ", record: " + 
+        return ("Value: " + str(round(self.value,3)) + ", record: " + 
                 str(self.wins) + "-" + str(self.losses) +"-" + str(self.ties)
                 + ": " + str(round(ratio,3)) + "%" )
 

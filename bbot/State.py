@@ -10,6 +10,7 @@ from bbot.Utils import *
 from bbot.BaseStates import *
 from bbot.Data import *
 from bbot.Data import *
+from bbot.RegionBuy import RegionBuy
 
 #rom BaseStates.State import State
 #rom BaseStates.StatsState import StatsState
@@ -152,6 +153,9 @@ class Maint(StatsState):
         elif '[Crazy Gold Bank]' in buf:
             app.send('0')
             return Spending()
+        elif ' Regions left] Your choice?' in buf:
+            RegionBuy(app, app.data.realm.regions.waste.number)
+            app.skip_next_read = True
         elif self.which_maint == 'Money' and 'Would you like to reconsider? (Y/n)' in buf:
             if self.money_reconsider_turn == app.data.realm.turns.current:
                 botlog.warn("Unable to prevent not paying bills")
@@ -270,10 +274,15 @@ class PreTurns(StatsState):
         
 
 
-class MainMenu(State):
+from bbot.PlanetParser import PlanetParser
+class MainMenu(StatsState):
         
 
+    def __init__(self):
+        StatsState.__init__(self,statsParser=PlanetParser())
+
     def transition(self,app,buf):
+
 
         if "Choice> Quit" in buf:
             # we have already played today, don't send emails
@@ -281,7 +290,16 @@ class MainMenu(State):
             app.skip_next_read=True
             return ExitGame()
         else:
-            app.send(1)
+            # in the main menu, check the scores
+            app.send(3,comment="Checking scores")
+            buf = app.read()
+            app.data.planet = Planet()
+            # read in the scores and stats of all the realms
+            self.parse(app,buf)
+            if '-=<Paused>=-' in buf:
+                app.sendl()
+            buf = app.read()
+            app.send(1,comment="Comencing to play the game")
             return PreTurns()
             
         

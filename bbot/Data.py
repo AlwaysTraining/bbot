@@ -32,6 +32,13 @@ def _printvisitor(o,d):
 
         if isinstance(v, basestring) or isinstance(v, int) or isinstance(v, float) or isinstance(v,bool):
             t += indent + n + ": " + str(v)
+        elif isinstance(v, list):
+            t += indent + n + "[" + str(len(v)) + "]:"
+            for i in range(len(v)):
+                t += indent+str(i)+")"+_printvisitor(v[i],d+1)
+
+
+            
         else:
             t += indent + n + ":" + _printvisitor(v,d+1)
     return t
@@ -133,11 +140,32 @@ class Regions(object):
         self.urban=Urban()
         self.mountain=Earner()
         self.technology=Technology()
+        self.waste=Region()
 
         self.number_affordable=None
         self.price=None
         self.number=None
         self.maintenance=None
+
+    def clone(self):
+        r = Regions()
+
+        r.coastal.number            =  self.coastal.number
+        r.river.number               =  self.river.number
+        r.agricultural.number =  self.agricultural.number
+        r.desert.number             =  self.desert.number
+        r.industrial.number     =  self.industrial.number
+        r.urban.number               =  self.urban.number
+        r.mountain.number           =  self.mountain.number
+        r.technology.number     =  self.technology.number
+        r.waste.number              =  self.waste.number
+        r.number_affordable      =  self.number_affordable
+        r.price                  =  self.price
+        r.number                 =  self.number
+        r.maintenance            =  self.maintenance
+
+        return r
+
 
     def __str__(self):
         return _printvisitor(self,0)
@@ -397,6 +425,21 @@ class Realm(object):
     def reset_pirates(self):
         self.pirates=Pirates()
 
+class RealmStats(object):
+    def __init__(self):
+        self.menu_option=None
+        self.name=None
+        self.score=None
+        self.regions=None
+        self.networth=None
+
+class Planet(object):
+    def __init__(self):
+        self.realms=[]
+
+    def __str__(self):
+        return _printvisitor(self,0)
+
 class Data(dict):
 
     realm=Realm()
@@ -405,6 +448,7 @@ class Data(dict):
     spendtext=''
     msgtext=''
     planettext=''
+    planet=None
 
 
     def __str__(self):
