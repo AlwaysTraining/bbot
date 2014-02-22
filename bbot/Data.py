@@ -438,6 +438,12 @@ class Planet(object):
     def __init__(self):
         self.realms=[]
 
+    def get_realm_by_name(self,name):
+        for r in self.realms:
+            if r.name == name:
+                return name
+        return None
+
     def __str__(self):
         return _printvisitor(self,0)
 

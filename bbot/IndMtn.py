@@ -13,6 +13,9 @@ from bbot.RegionBuy import RegionBuy
 S = SPACE_REGEX
 N = NUM_REGEX
 
+def get_priority(self):
+    return MED_PRIORITY
+
 def get_region_ratio(app, context):
     
     r = Regions()
