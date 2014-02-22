@@ -75,14 +75,15 @@ class AutoTuner():
             initial_value, 
             min_clamp, 
             max_clamp, 
-            alpha=0.4,
-            beta=4.0):
+            alpha=0.5,
+            beta=5.0):
 
         self.min_clamp = min_clamp
         self.max_clamp = max_clamp
         self.alpha = alpha
         self.beta = beta
         self.value = initial_value
+        self.old_value = initial_value
         self.aggressive_increase = aggressive_increase
         self.wins = 0
         self.losses = 0
@@ -126,9 +127,9 @@ class AutoTuner():
     def __str__(self):
         ratio = 0
         if (self.wins + self.losses + self.ties != 0):
-            ratio = self.wins / (self.wins + self.losses + self.ties)
+            ratio = self.wins / float(self.wins + self.losses + self.ties)
             
-        return ("Value: " + str(round(self.value,3)) + ", record: " + 
+        return ("Old Value: " + str(round(self.old_value,3)) +"-> New Value: " + str(round(self.value,3)) + ", record: " + 
                 str(self.wins) + "-" + str(self.losses) +"-" + str(self.ties)
                 + ": " + str(round(ratio,3)) + "%" )
 
