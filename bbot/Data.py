@@ -56,9 +56,9 @@ class ArmyUnits(Units):
 class Troopers(ArmyUnits):
     menu_option='1'
 class Turrets(ArmyUnits):
-    menu_option='2'
-class Jets(ArmyUnits):
     menu_option='3'
+class Jets(ArmyUnits):
+    menu_option='2'
 class Tanks(ArmyUnits):
     menu_option='8'
 class Bombers(ArmyUnits):
