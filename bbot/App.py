@@ -79,7 +79,7 @@ class App:
         self.telnet = None
         self.strategies = None
         self.EOF = False
-        self.adaptive_timeout = 1.5
+        self.adaptive_timeout = 2.5
         self.timeout_alpha = 0.1
         self.min_timeout = self.adaptive_timeout
         self.max_timeout = 10.0

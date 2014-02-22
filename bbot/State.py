@@ -260,6 +260,9 @@ class PreTurns(StatsState):
             app.data.msgtext += buf + "\n"
             app.send('d',comment="Deleting received message"))
 
+        elif 'Accept? (Y/n)' in buf:
+            app.send('y', comment="Accepting offer for a treaty")
+
         elif '[Industrial Production]' in buf:
             app.on_industry_menu()
             app.send('n')
