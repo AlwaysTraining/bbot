@@ -121,8 +121,10 @@ class App:
         
         # otherwise call query function, or secretquery Func
         if secret:
+            if not self.debug: raise Exception("can not use query function in non debug mode, must provide value for: " + key)
             return self.secret_query_func('Please enter ' + key)
 
+        if not self.debug: raise Exception("can not use query function in non debug mode, must provide value for: " + key)
         return self.query_func(key)
 
     def get_close_float(self,x):

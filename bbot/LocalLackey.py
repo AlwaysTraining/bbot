@@ -20,7 +20,8 @@ class LocalLackey(Strategy):
     def __init__(self,app):
         Strategy.__init__(self,app)
         self.data = self.app.data
-        self.tradeItems = [1,2,3,4,6,7,8,9]
+        # send everything but gold. agents, and carriers
+        self.tradeItems = [1,2,3,4,8]
         self.pp=TreatyParser()
         self.can_send_trade = True
         # get the destination realm from the application
@@ -54,7 +55,7 @@ class LocalLackey(Strategy):
             self.app.send('N',comment="not attaching message to treaty request")
             buf = self.app.read()
             self.can_send_trade = False
-            self.notTradingReason = "we sent relations request with no response yet"
+            self.notTradingReason += "we sent relations request with no response yet, "
 
         # we are still in diplomacy menu at this point
 
@@ -76,22 +77,22 @@ class LocalLackey(Strategy):
         #   total day out of protection, we will always
         #   sell 100% of regions
         if not self.data.is_oop():
-            self.notTradingReason += "Empire is still in protection,"
+            self.notTradingReason += "Empire is still in protection, "
             return 0.0
 
         # grow fat before giving up the goods
         if self.data.realm.regions.number < 1000:
-            self.notTradingReason += "Empire has too few regions,"
+            self.notTradingReason += "Empire has too few regions, "
             return 0.0
 
         # If investments are not full, we will will focus on that
         if not self.data.has_full_investments:
-            self.notTradingReason += "Empire does not have full investments,"
+            self.notTradingReason += "Empire does not have full investments, "
             return 0.0
 
-        # in general we will give up a small portion to the master
+        # in general we will give up a quarter of all assets
         #   each turn
-        return 0.025
+        return 0.25
 
     def on_spending_menu(self):
         army = self.app.data.realm.army
@@ -119,6 +120,7 @@ class LocalLackey(Strategy):
             if num_to_buy > can_afford:
                 botlog.warn("We can not afford enough carriers to send " + 
                         self.masterName + " his goods")
+                # TODO, should we make a partial purchase here?
                 return
             else:
                 self.app.send_seq([Carriers.menu_option, 
@@ -184,8 +186,11 @@ class LocalLackey(Strategy):
                 #   however, shit happens, if this becomes an issue we can deal with
                 #   it.
                 botlog.warn("Did not buy enough carriers")
-
-            self.app.send_seq(["\r","\r",'y',2,"\r"], comment="Send the deal out")
+                self.app.send_seq(["\r","\r",'n'], comment="just quit from trade deal, not enough carriers")
+            else:
+                self.app.send_seq(["\r","\r",'y',2,"\r"], comment="Send the deal out")
+                self.can_send_trade = False
+                self.notTradingReason = "Already sent trade deal today, "
 
         self.app.send_seq([0,0],comment="Exit from trading menu to buy menu")
 
