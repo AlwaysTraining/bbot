@@ -10,6 +10,8 @@ from bbot.Strategy import Strategy
 from bbot.SpendingParser import SpendingParser
 
 class RegionBuy(Strategy):
+    last_ag_buy_turn = None
+
     def __init__(self,app,num_regions=None,region_ratio=None):
         Strategy.__init__(self,app)
         self.data = self.app.data
@@ -17,6 +19,7 @@ class RegionBuy(Strategy):
         self.regions = self.app.data.realm.regions
         self.sp = SpendingParser()
         self.last_ag_buy = 1
+
 
 
         # we should be at the region menu here loaded into the current buffer
@@ -30,8 +33,14 @@ class RegionBuy(Strategy):
         if self.a is None:
             raise Exception("Not known how many regions there are")
 
-        # buy just enough ag
-        self.buy_ag_regions()
+        # we could call buy_ag_regions multiple times per turn, but there is usually no
+        #   point to doing it, it takes a lot of time when debugging.  If it is ever
+        #   shown necessarry, just call it every time (in non debug mode)
+        if RegionBuy.last_ag_buy_turn != self.data.realm.turns.current:
+            # buy just enough ag
+            self.buy_ag_regions()
+            RegionBuy.last_ag_buy_turn = self.data.realm.turns.current
+
         self.sp.parse(self.app, self.app.read())
 
         if region_ratio is None:

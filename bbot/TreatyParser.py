@@ -29,15 +29,20 @@ class TreatyParser(StatsParser):
 
     
     def on_match(self,app,line,which):
-        realm=app.data.realm
-        menu_option = self.get_str(0)
-        r = app.data.planet.realms.find(lambda x: x.menu_option == menu_option)
-        if r is None: 
-            r = RealmStats()
-            app.data.planet.realms.append(r)
 
-        r.name = self.get_str(1).strip()
-        r.treaty = self.get_str(2).strip()
+        if which == 832:
+            menu_option = self.get_str(0)
+            r = None
+            for x in app.data.planet.realms:
+                if x.menu_option == menu_option:
+                    r = x
+                    break
+            if r is None: 
+                r = RealmStats()
+                app.data.planet.realms.append(r)
+
+            r.name = self.get_str(1).strip()
+            r.treaty = self.get_str(2).strip()
 
 
 

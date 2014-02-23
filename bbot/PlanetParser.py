@@ -35,7 +35,12 @@ class PlanetParser(StatsParser):
         
         if which == 909 : 
             menu_option = self.get_str(0)
-            r = app.data.planet.realms.find(lambda x: x.menu_option == menu_option)
+            r = None
+            for x in app.data.planet.realms:
+                if x.menu_option == menu_option:
+                    r = x
+                    break
+
             if r is None: 
                 r = RealmStats()
                 app.data.planet.realms.append(r)

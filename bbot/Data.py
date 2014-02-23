@@ -55,18 +55,25 @@ class ArmyUnits(Units):
         self.production=None
 class Troopers(ArmyUnits):
     menu_option='1'
+    num_per_carrier=1000
 class Turrets(ArmyUnits):
     menu_option='3'
+    num_per_carrier=1000
 class Jets(ArmyUnits):
     menu_option='2'
+    num_per_carrier=100
 class Tanks(ArmyUnits):
     menu_option='8'
+    num_per_carrier=5000
 class Bombers(ArmyUnits):
     menu_option='4'
+    num_per_carrier=None
 class Carriers(ArmyUnits):
     menu_option='9'
+    num_per_carrier=None
 class Agents(Units):
     menu_option='7'
+    num_per_carrier=None
 class Headquarters(Units):
     menu_option='5'
 
@@ -303,6 +310,9 @@ class Population(object):
         self.rate = None
         self.size=None
     
+class Gold(object):
+    menu_option='6'
+    num_per_carrier=100000
 
 class Bank(object):
     def __init__(self):
@@ -316,6 +326,8 @@ class Turns(object):
         self.years_freedom = None
 
 class Food(object):
+    menu_option='5'
+    num_per_carrier=None
     def __init__(self):
         self.spoilage=None
         self.units=None
@@ -438,12 +450,6 @@ class Planet(object):
     def __init__(self):
         self.realms=[]
 
-    def get_realm_by_name(self,name):
-        for r in self.realms:
-            if r.name == name:
-                return name
-        return None
-
     def __str__(self):
         return _printvisitor(self,0)
 
@@ -492,7 +498,36 @@ class Data(dict):
         if item == Tanks.menu_option: return army.tanks.number
         if item == Bombers.menu_option: return army.bombers.number
         if item == Carriers.menu_option: return army.carriers.number
-        raise Exception("I don't know about option " + str(item))
+        if item == Agents.menu_option: return army.agents.number
+        if item == Food.menu_option: return self.realm.food.units
+        if item == Gold.menu_option: return self.realm.gold
+        raise Exception("get_number() don't know about option " + str(item))
+
+    def get_num_per_carrier(self, item):
+# my experiements indicate:
+# 1k troopers
+# 100 jets
+# 1k turrets
+# 100k gold
+# 5k tanks
+        army = self.realm.army
+        item = str(item)
+        if item == Troopers.menu_option: return army.troopers.num_per_carrier
+        if item == Turrets.menu_option: return army.turrets.num_per_carrier
+        if item == Jets.menu_option: return army.jets.num_per_carrier
+        if item == Tanks.menu_option: return army.tanks.num_per_carrier
+        if item == Bombers.menu_option: return army.bombers.num_per_carrier
+        if item == Carriers.menu_option: return army.carriers.num_per_carrier
+        if item == Agents.menu_option: return army.agents.num_per_carrier
+        if item == Food.menu_option: return Food.num_per_carrier
+        if item == Gold.menu_option: return Gold.num_per_carrier
+        raise Exception("get_num_per_carrier() don't know about option " + str(item))
+
+    def get_realm_by_name(self,name):
+        for r in self.planet.realms:
+            if r.name == name:
+                return r
+        return None
 
     def try_get_needed_surplus(self):
         """Guess at how much food we will need for the next turn"""

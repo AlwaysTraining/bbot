@@ -115,13 +115,14 @@ defaults={
             'smtp_user' :   'derrick.karimi',
             'notify'    :   'derrick.karimi@gmail.com',
             'debug'     :   False,
-            'strategies':   ['IndMtn','AntiPirate'],
+            'strategies':   ['IndMtn','AntiPirate','LocalLackey'],
+            'LocalLackey_master'    :   'Crankles'
             },
         }
 
 
 def get_default(key):
-    superkey = 'tnsoa5'
+    superkey = 'tnsoa4'
     ans = None
     if superkey in defaults:
         d = defaults[superkey]
@@ -170,6 +171,13 @@ parser.add_argument("--smtp-password",
                   default=get_default('smtp_password'))
 parser.add_argument("-n","--notify", action='append',
                   help="comma seperated email addresses for recipients of notifications")
+
+
+parser.add_argument("--LocalLackey-master",
+                  action="store", 
+                  help="Name of the realm who a LocalLackey will send trade deals to",
+                  default=get_default('LocalLackey_master'))
+
                   
 parser.add_argument("-d","--debug",
                   action="store_true",

@@ -241,14 +241,15 @@ class App:
     def sendl(self,msg='',sleep=0.5,comment=''):
         self.send(msg,eol=True,sleep=sleep,comment=comment)
 
-    def send_seq(self,seq):
+    def send_seq(self,seq,comment=''):
         botlog.debug("Begin Macro: " + str(seq))
         for i in range(len(seq)):
             msg=seq[i]
+            newcomment = comment + " (" + str(i+1) + " of " + str(len(seq)) + ")"
             if msg=='\r':
-                self.sendl()
+                self.sendl(comment=newcomment)
             else:
-                self.send(msg)
+                self.send(msg,comment=newcomment)
 
             # do not read after the last char in the sequence
             if i < len(seq) - 1:
@@ -274,31 +275,27 @@ class App:
         botlog.debug("End Macro: " + str(seq))
         return self.buf
 
+    def call_strategies(self, func_name):
+        ret = Strategy.UNHANDLED
+        for s in self.strategies:
+            botlog.cur_strat = s.get_name()
+            curret = eval("s."+func_name+"()")
+            if curret != Strategy.UNHANDLED:
+                ret = curret
+        botlog.cur_strat = ''
+        return ret
+
+
     def on_attack_menu(self):
-        for s in self.strategies:
-            botlog.cur_strat = s.get_name()
-            s.on_attack_menu()
-        botlog.cur_strat = ''
+        return self.call_strategies("on_attack_menu")
     def on_spending_menu(self):
-        for s in self.strategies:
-            botlog.cur_strat = s.get_name()
-            s.on_spending_menu()
-        botlog.cur_strat = ''
+        return self.call_strategies("on_spending_menu")
     def on_industry_menu(self):
-        for s in self.strategies:
-            botlog.cur_strat = s.get_name()
-            s.on_industry_menu()
-        botlog.cur_strat = ''
+        return self.call_strategies("on_industry_menu")
     def on_trading_menu(self):
-        for s in self.strategies:
-            botlog.cur_strat = s.get_name()
-            s.on_trading_menu()
-        botlog.cur_strat = ''
+        return self.call_strategies("on_trading_menu")
     def on_diplomacy_menu(self):
-        for s in self.strategies:
-            botlog.cur_strat = s.get_name()
-            s.on_diplomacy_menu()
-        botlog.cur_strat = ''
+        return self.call_strategies("on_diplomacy_menu")
 
     def run_loop(self):
 

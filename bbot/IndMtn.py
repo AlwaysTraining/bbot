@@ -13,8 +13,6 @@ from bbot.RegionBuy import RegionBuy
 S = SPACE_REGEX
 N = NUM_REGEX
 
-def get_priority(self):
-    return MED_PRIORITY
 
 def get_region_ratio(app, context):
     
@@ -60,6 +58,9 @@ class IndMtn(Strategy):
         self.data = self.app.data
         self.app.metadata.get_region_ratio_func = get_region_ratio
         self.sp = SpendingParser()
+
+    def get_priority(self):
+        return MED_PRIORITY
 
     def on_industry_menu(self):
 

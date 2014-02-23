@@ -55,9 +55,17 @@ class EndTurn(StatsState):
         
         self.parse(app,buf)
         if '[Attack Menu]' in buf:
-            app.on_attack_menu()
-            app.send('0',comment='Exiting attack menu')
+            ret = app.on_attack_menu()
+            # I havn't tested every attack, but, in pirate attack, win or loose
+            #   the attack menu is automatically exited from afterwards, and
+            #   pirate attack is the only one implmented right now
+            if ret == Strategy.UNHANDLED:
+                app.send('0',comment='Exiting attack menu')
+            else:
+                app.skip_next_read = True
+
         if '[Trading]' in buf:
+            app.on_trading_menu()
             app.send('0',comment='Exiting Trading menu')
         elif 'Do you wish to send a message? (y/N)' in buf:
             app.send('n',comment='Not sending a message')
@@ -213,6 +221,11 @@ class TurnStats(StatsState):
         elif '-=<Paused>=-' in buf:
             self.append_stats_text(app,buf)
             app.sendl()
+        elif 'Do you wish to accept? [Yes, No, or Ignore for now]' in buf:
+            app.send('y',comment="accepting mid day trade deal")
+        elif 'Do you wish to accept?' in buf:
+            # TODO check what the text really is when a trade deal for ignore shows up
+            app.send('i',comment="ignoring mid day trade deal")
         elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf: 
             # this buffer also contains the do you want to visit the bank
             #   question which is handled by the Maint state.  we must skip
@@ -253,12 +266,16 @@ class PreTurns(StatsState):
             # exit the diplomicy meny
             app.send('0')
 
+        elif 'Do you wish to accept? [Yes, No, or Ignore for now]' in buf:
+            app.send('y',comment="accepting trade deal")
+
         elif 'Do you wish to accept?' in buf:
+#TODO this might be wronf, needd to look what it says if they send an unacceptable trade deal
             app.send('i')
 
         elif '[R] Reply, [D] Delete, [I] Ignore, or [Q] Quit>' in buf:
             app.data.msgtext += buf + "\n"
-            app.send('d',comment="Deleting received message"))
+            app.send('d',comment="Deleting received message")
 
         elif 'Accept? (Y/n)' in buf:
             app.send('y', comment="Accepting offer for a treaty")
