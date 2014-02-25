@@ -66,7 +66,7 @@ class IndMtn(Strategy):
     def on_industry_menu(self):
 
         if "Specialized" not in self.app.buf:
-            self.do_specialize = True:
+            self.do_specialize = True
         
         if self.data.realm.regions.industrial.zonemanufacturing.tanks.allocation == 100:
             return
