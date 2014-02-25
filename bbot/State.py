@@ -292,6 +292,11 @@ class PreTurns(StatsState):
         elif '[Attack Menu]' in buf:
             app.skip_next_read = True
             return EndTurn()
+
+	# Hung up game can emerge in bank
+	elif 'Do you wish to visit the Bank? (y/N)' in buf:
+            app.skip_next_read = True
+            return Maint()
         
 
 
