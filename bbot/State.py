@@ -365,7 +365,13 @@ class BBSMenus(State):
         elif 'Search all groups for un-read messages to you' in buf:
             app.send('n', comment="No messsages, how many fucking times do I ahve to tell you")
 
+        # sequence for TNSOA
         elif 'TNSOA' in buf and " Main " in buf and " Notices:" in buf:
+            app.send_seq(['x','2',app.get_app_value('game')])
+            return StartGame()
+
+        # sequence for shenks
+        elif 'Main' in buf and 'fidonet' in buf and 'AFTERSHOCK' in buf:
             app.send_seq(['x','2',app.get_app_value('game')])
             return StartGame()
  

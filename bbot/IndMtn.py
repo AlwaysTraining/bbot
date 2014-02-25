@@ -58,12 +58,16 @@ class IndMtn(Strategy):
         self.data = self.app.data
         self.app.metadata.get_region_ratio_func = get_region_ratio
         self.sp = SpendingParser()
+        self.do_specialize = False
 
     def get_priority(self):
         return MED_PRIORITY
 
     def on_industry_menu(self):
 
+        if "Specialized" not in self.app.buf:
+            self.do_specialize = True:
+        
         if self.data.realm.regions.industrial.zonemanufacturing.tanks.allocation == 100:
             return
 
@@ -143,6 +147,9 @@ class IndMtn(Strategy):
 
     def on_spending_menu(self):
 
+        # specialize if we have not hyet
+        if self.do_specialize:
+            self.app.send_seq(['*',3,5,0],comment="Specializing industry on tanks")
 
         # Sell items         
         
