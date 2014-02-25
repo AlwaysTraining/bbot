@@ -150,6 +150,7 @@ class IndMtn(Strategy):
         # specialize if we have not hyet
         if self.do_specialize:
             self.app.send_seq(['*',3,5,0],comment="Specializing industry on tanks")
+            self.do_specialize = False
 
         # Sell items         
         
