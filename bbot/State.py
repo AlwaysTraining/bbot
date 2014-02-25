@@ -375,10 +375,11 @@ class BBSMenus(State):
             app.send_seq(['x','2',app.get_app_value('game')])
             return StartGame()
  
+        # sequence for xbit
+        elif 'Main' in buf and ' Xbit Local Echo ' in buf:
+            app.send_seq(['x','4',app.get_app_value('game')])
+            return StartGame()
 
-        
-        
-        
 
         
         
