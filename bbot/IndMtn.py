@@ -95,10 +95,12 @@ class IndMtn(Strategy):
         #   on liquidating army
         if self.data.realm.regions.number < 1000:
             return 0.75
-
-        # If investments are not full, we will sell a portion
-        if not self.data.has_full_investments:
+        if self.data.realm.regions.number < 2000:
             return 0.5
+        if self.data.realm.regions.number < 4000:
+            return 0.25
+        if self.data.realm.regions.number < 8000:
+            return 0.125
 
         # in general, we will sell a small portion of our army to suppliment 
         #   region growth

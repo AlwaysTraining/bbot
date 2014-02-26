@@ -116,7 +116,12 @@ defaults={
             'notify'    :   'derrick.karimi@gmail.com',
             'debug'     :   False,
             'strategies':   ['IndMtn','AntiPirate','LocalLackey'],
-            'LocalLackey_master'    :   'Crankles'
+            'LocalLackey_master'    :   'Crankles',
+            'LocalLackey_trade_items'   :   ['Troopers', 'Turrets', 'Jets',
+                                             'Tanks', 'Bombers', 'Agents',
+                                             'Gold'],
+            'LocalLackey_regions_required'  :   3000,
+            'LocalLackey_tribute_ratio'     :   0.25,
             },
         }
 
@@ -170,14 +175,30 @@ parser.add_argument("--smtp-password",
                   help="Outgoing Mail Server user password",
                   default=get_default('smtp_password'))
 parser.add_argument("-n","--notify", action='append',
-                  help="comma seperated email addresses for recipients of notifications")
+                  help="comma separated email addresses for recipients of "
+                       "notifications")
 
 
 parser.add_argument("--LocalLackey-master",
                   action="store", 
                   help="Name of the realm who a LocalLackey will send trade deals to",
                   default=get_default('LocalLackey_master'))
-
+parser.add_argument("--LocalLackey-trade-items",
+                    nargs="*",
+                    help="Items to include in trade deal: [ Troopers. "
+                         "Turrets, Jets, Tanks, Bombers, Carriers, Agents, "
+                         "Food, Gold ]",
+                    default=get_default('LocalLackey_trade_items'))
+parser.add_argument("--LocalLackey-regions-required",
+                    action="store",
+                    help="The number of regions required before sending out "
+                         "trade deals",
+                    default=get_default('LocalLackey_regions_required'))
+parser.add_argument("--LocalLackey-tribute-ratio",
+                    action="store",
+                    help="The ratio of owned resources to give in tribute to "
+                         "the master realm each day: [0.0 - 1.0]",
+                    default=get_default('LocalLackey_tribute_ratio'))
                   
 parser.add_argument("-d","--debug",
                   action="store_true",

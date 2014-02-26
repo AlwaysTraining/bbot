@@ -159,6 +159,7 @@ class Maint(StatsState):
             self.which_maint = "Food"
             app.send('0')
         elif '[Crazy Gold Bank]' in buf:
+            app.on_bank_menu()
             app.send('0')
             return Spending()
         elif ' Regions left] Your choice?' in buf:

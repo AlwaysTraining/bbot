@@ -288,6 +288,8 @@ class App:
         return ret
 
 
+    def on_bank_menu(self):
+        return self.call_strategies("on_bank_menu")
     def on_attack_menu(self):
         return self.call_strategies("on_attack_menu")
     def on_spending_menu(self):
