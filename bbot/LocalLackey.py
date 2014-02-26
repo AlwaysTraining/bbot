@@ -20,8 +20,16 @@ class LocalLackey(Strategy):
     def __init__(self,app):
         Strategy.__init__(self,app)
         self.data = self.app.data
-        # send everything but gold. agents, and carriers
-        self.tradeItems = [1,2,3,4,8]
+        self.tribute_ratio=self.get_strategy_option("tribute_ratio")
+        if self.tribute_ratio > 1.0: self.tribute_ratio = 1.0
+        if self.tribute_ratio < 0.0: self.tribute_ratio = 0.0
+
+        # determine what to trade
+        tradeItemStrings = self.get_strategy_option("trade_items")
+        self.tradeItems = []
+        for tradeItemString in tradeItemStrings:
+            self.tradeItems.append(eval(tradeItemString+".menu_option"))
+
         self.pp=TreatyParser()
         self.can_send_trade = True
         # get the destination realm from the application
@@ -63,12 +71,12 @@ class LocalLackey(Strategy):
         if ammount is None or ammount == 0:
             return 0
 
-        num_per_carrier=float(self.app.data.get_num_per_carrier(
+        num_per_carrier = (self.app.data.get_num_per_carrier(
                 item))
         if num_per_carrier is None:
             return 0
         
-        needed = ceil(ammount/num_per_carrier)
+        needed = ceil(ammount/ float(num_per_carrier) )
         return needed
 
     def get_trade_ratio(self):
@@ -85,14 +93,9 @@ class LocalLackey(Strategy):
             self.notTradingReason += "Empire has too few regions, "
             return 0.0
 
-        # If investments are not full, we will will focus on that
-        if not self.data.has_full_investments:
-            self.notTradingReason += "Empire does not have full investments, "
-            return 0.0
-
         # in general we will give up a quarter of all assets
         #   each turn
-        return 0.25
+        return self.tribute_ratio
 
     def on_spending_menu(self):
         army = self.app.data.realm.army

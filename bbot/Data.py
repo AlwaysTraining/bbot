@@ -314,9 +314,16 @@ class Gold(object):
     menu_option='6'
     num_per_carrier=100000
 
+class Investment(object):
+    def __init__(self):
+        self.date=None
+        self.gold=None
+
 class Bank(object):
     def __init__(self):
         self.gold=None
+        self.investments=[]
+
 
 class Turns(object):
     def __init__(self):
@@ -528,6 +535,11 @@ class Data(dict):
             if r.name == name:
                 return r
         return None
+
+    def get_attack_strength(self):
+        army = self.realm.army
+        return (army.troopers.number + (army.jets.number * 2) +
+                (army.tanks.number * 4))
 
     def try_get_needed_surplus(self):
         """Guess at how much food we will need for the next turn"""

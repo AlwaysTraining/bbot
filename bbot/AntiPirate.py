@@ -27,6 +27,10 @@ class AntiPirate(Strategy):
 
     def on_attack_menu(self):
 
+        # if we have no army, don't attack
+        if self.data.get_attack_strength() <= 0:
+            return Strategy.UNHANDLED
+
         self.data.realm.reset_pirates()
 
         self.app.send('p',comment='go from attack menu to pirate menu')

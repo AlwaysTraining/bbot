@@ -14,3 +14,6 @@ pip-log.txt
 
 sweng/bbot_*
 
+# ignore all pycharm files
+.idea
+idea/*
