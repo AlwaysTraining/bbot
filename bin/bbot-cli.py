@@ -119,7 +119,7 @@ defaults={
             'LocalLackey_master'    :   'Crankles',
             'LocalLackey_trade_items'   :   ['Troopers', 'Turrets', 'Jets',
                                              'Tanks', 'Bombers', 'Agents',
-                                             'Food', 'Gold'],
+                                             'Gold'],
             'LocalLackey_regions_required'  :   3000,
             'LocalLackey_tribute_ratio'     :   0.25,
             },

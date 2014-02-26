@@ -28,6 +28,8 @@ class LocalLackey(Strategy):
         tradeItemStrings = self.get_strategy_option("trade_items")
         self.tradeItems = []
         for tradeItemString in tradeItemStrings:
+            if tradeItemString == "Food":
+                raise Exception("There is a bug, we can't reliably trade food at this time, fix the problem if you care")
             self.tradeItems.append(eval(tradeItemString+".menu_option"))
 
         self.pp=TreatyParser()
@@ -183,6 +185,7 @@ class LocalLackey(Strategy):
                 seq = seq + [ item, ammount, '\r' ]
 
             buf = self.app.send_seq(seq, "Loading up trade deal")
+            buf = self.app.read()
 
             if "WARNING: You do not have enough carriers." in buf:
                 # our logic and math should gaurantee we bought enough carriers
@@ -194,6 +197,9 @@ class LocalLackey(Strategy):
                 self.app.send_seq(["\r","\r",'y',2,"\r"], comment="Send the deal out")
                 self.can_send_trade = False
                 self.notTradingReason = "Already sent trade deal today, "
+
+            buf = self.app.read()
+                
 
         self.app.send_seq([0,0],comment="Exit from trading menu to buy menu")
 
