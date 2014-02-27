@@ -47,6 +47,9 @@ class Strategy:
     def on_bank_menu(self):
         return UNHANDLED
 
+    def on_interplanetary_menu(self):
+        return UNHANDLED
+
 
     def get_strategy_option(self,name):
         option = self.get_name() + "_" + name

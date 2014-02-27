@@ -141,7 +141,7 @@ defaults={
 
 
 def get_default(key):
-    superkey = 'xbit1'
+    superkey = 'tnsoa5'
     ans = None
     if superkey in defaults:
         d = defaults[superkey]

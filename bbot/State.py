@@ -50,9 +50,9 @@ class EndTurn(StatsState):
 
     def __init__(self):
         StatsState.__init__(self,statsParser=EndTurnParser())
-    
+
     def transition(self,app,buf):
-        
+
         self.parse(app,buf)
         if '[Attack Menu]' in buf:
             ret = app.on_attack_menu()
@@ -71,10 +71,13 @@ class EndTurn(StatsState):
             app.send('n',comment='Not sending a message')
         elif 'Do you wish to attack a Gooie Kablooie? (y/N)' in buf:
             app.send('n',comment='Not attacking gooie')
+        elif '[InterPlanetary Operations]' in buf:
+            app.on_interplanetary_menu()
+            app.send('0', comment='Exiting Inter Planetary menu')
         elif 'Do you wish to continue? (Y/n)' in buf:
             app.send('y',comment='Yes I wish to continue')
             botlog.info(str(app.data))
-            return TurnStats() 
+            return TurnStats()
 
 from bbot.SpendingParser import SpendingParser
 class Spending(StatsState):
@@ -82,9 +85,9 @@ class Spending(StatsState):
 
     def __init__(self):
         StatsState.__init__(self,statsParser=SpendingParser())
-    
+
     def transition(self,app,buf):
-        
+
         # store the spending menu as we can include it in a status email
         app.data.spendtext=app.buf
 
@@ -121,9 +124,9 @@ class Spending(StatsState):
 #       app.send_seq(['0','0'])
 #       buf = app.read()
 #       self.parse(app,buf)
-        
-            
-        # based on the strategies registered with the app we do differnt 
+
+
+        # based on the strategies registered with the app we do differnt
         #   things, tell the app we are ready for the strategies to act
         app.on_spending_menu()
 
@@ -144,7 +147,7 @@ class Maint(StatsState):
         self.money_reconsider_turn = None
         self.food_reconsider_turn = None
         self.which_maint = None
-        
+
 
     def transition(self,app,buf):
 
@@ -176,8 +179,8 @@ class Maint(StatsState):
                 # maint cost
                 maintcost = app.data.get_maint_cost()
                 # maint minus current cold is ammount to withdraw
-                withdraw = maintcost - app.data.realm.gold 
-                # don't try to withdraw more than we have or it will take 
+                withdraw = maintcost - app.data.realm.gold
+                # don't try to withdraw more than we have or it will take
                 #   two enter's to get through the prompt
                 if withdraw > app.data.realm.bank.gold:
                     withdraw = app.data.realm.bank.gold
@@ -186,7 +189,7 @@ class Maint(StatsState):
                 app.send_seq(['y','w',str(withdraw),'\r','0'])
 
                 self.money_reconsider_turn = app.data.realm.turns.current
-                    
+
         elif self.which_maint == 'Food' and 'Would you like to reconsider? (Y/n)' in buf:
             if self.food_reconsider_turn == app.data.realm.turns.current:
                 botlog.warn("Unable to prevent not feeding realm")
@@ -199,7 +202,7 @@ class Maint(StatsState):
 
 from bbot.TurnStatsParser import TurnStatsParser
 class TurnStats(StatsState):
-                
+
     def __init__(self):
         StatsState.__init__(self,statsParser=TurnStatsParser())
         self.reset_statstext = True
@@ -215,7 +218,7 @@ class TurnStats(StatsState):
 
         self.parse(app,buf)
 
-        if 'Sorry, you have used all of your turns today.' in buf: 
+        if 'Sorry, you have used all of your turns today.' in buf:
             app.data.planettext += "\n" + buf + "\n"
             app.sendl()
             return ExitGame()
@@ -227,7 +230,7 @@ class TurnStats(StatsState):
         elif 'Do you wish to accept?' in buf:
             # TODO check what the text really is when a trade deal for ignore shows up
             app.send('i',comment="ignoring mid day trade deal")
-        elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf: 
+        elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf:
             # this buffer also contains the do you want to visit the bank
             #   question which is handled by the Maint state.  we must skip
             #   the next read, as the line would be eaten with noone to hanlde
@@ -242,7 +245,7 @@ class TurnStats(StatsState):
 
 from bbot.PreTurnsParser import PreTurnsParser
 class PreTurns(StatsState):
-                
+
     def __init__(self):
         StatsState.__init__(self,statsParser=PreTurnsParser())
 
@@ -287,7 +290,7 @@ class PreTurns(StatsState):
 
             return TurnStats()
 
-        # if a game gets hung up on, you can come out into almost any arbitary 
+        # if a game gets hung up on, you can come out into almost any arbitary
         #   state of the game, we will have to add them here one by one as we
         #   discover them
         elif '[Attack Menu]' in buf:
