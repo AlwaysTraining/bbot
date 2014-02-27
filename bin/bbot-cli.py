@@ -222,7 +222,7 @@ parser.add_argument("-d","--debug",
 
 
 parser.add_argument("strategies", nargs='*',
-                  help="list of actions to perform",
+                  help="a list of strategies to govern gameplay",
                   default=get_default('strategies')
                   )
 
