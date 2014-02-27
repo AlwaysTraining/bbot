@@ -356,6 +356,8 @@ class BBSMenus(State):
             app.sendl()
             # there is a decent pause here sometimes, so just use the read until
             # function
+        elif "[Hit a key]" in buf:
+            app.sendl(comment="Yet another any key")
 
         elif ' Read your mail now?' in buf:
             app.send('n', comment="No I will not read mail, I am a fucking robot")
@@ -383,7 +385,12 @@ class Password(State):
         if "Password:" in buf:
             app.sendl(app.get_app_value('password'))
             buf = app.read_until("[Hit a key]")
-            app.sendl()
+            app.sendl(comment="Is this the any key?")
+#           if app.get_app_value("address") == "x-bit.org":
+#               app.read_until("Enter number of bulletin to view or press (ENTER) to continue:")
+#               app.sendl(comment="Enter to continue")
+#               buf = app.read_until("[Hit a key]")
+#               app.sendl(comment="I hate this damn spinning prompts")
             return BBSMenus()
        #elif "[Hit a key]" in buf:
        #    app.sendl()
@@ -394,5 +401,8 @@ class Login(State):
         if "Login:" in buf:
             app.sendl(app.get_app_value('username'))
             return Password()
+        elif 'Hit a key' in buf:
+            app.sendl(comment="Where is the any key?")
+
             
         

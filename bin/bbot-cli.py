@@ -124,10 +124,10 @@ defaults={
             'LocalLackey_tribute_ratio'     :   0.25,
             },
         'xbit1': {
-            'username': 'Hoss',
-            'password': 'beef',
+            'username': 'Bob Falooley',
+            'password': 'karpet',
             'address': 'x-bit.org',
-            'realm': 'Death Star',
+            'realm': 'Skull House',
             'game': '14',
             'smtp_server': 'smtp.gmail.com',
             'smtp_port': 587,
