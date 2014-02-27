@@ -66,6 +66,7 @@ class App:
         return logfile
 
     def __init__(self, options, query_func, secret_query_func):
+        self.debug=True
         self.options = options
         self.query_func = query_func
         self.secret_query_func = secret_query_func
@@ -98,7 +99,7 @@ class App:
             debug=False
 
         self.debug = debug
-            
+
         botlog.configure(
                 msglevel=level,
                 format='\n%(asctime)s:%(levelname)s::%(message)s',
@@ -300,6 +301,9 @@ class App:
         return self.call_strategies("on_trading_menu")
     def on_diplomacy_menu(self):
         return self.call_strategies("on_diplomacy_menu")
+    def on_interplanetary_menu(self):
+        return self.call_strategies("on_interplanetary_menu")
+
 
     def run_loop(self):
 

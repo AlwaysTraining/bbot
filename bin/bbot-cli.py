@@ -123,6 +123,20 @@ defaults={
             'LocalLackey_regions_required'  :   3000,
             'LocalLackey_tribute_ratio'     :   0.25,
             },
+        'xbit1': {
+            'username': 'Bob Falooley',
+            'password': 'karpet',
+            'address': 'x-bit.org',
+            'realm': 'Skull House',
+            'game': '14',
+            'smtp_server': 'smtp.gmail.com',
+            'smtp_port': 587,
+            'smtp_password':'dr.randy.myers.password',
+            'smtp_user': 'dr.randy.myers',
+            'notify': 'derrick.karimi@gmail.com',
+            'debug': False,
+            'strategies': ['IndMtn', 'AntiPirate'],
+        },
         }
 
 
