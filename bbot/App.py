@@ -66,6 +66,7 @@ class App:
         return logfile
 
     def __init__(self, options, query_func, secret_query_func):
+        self.debug=True
         self.options = options
         self.query_func = query_func
         self.secret_query_func = secret_query_func

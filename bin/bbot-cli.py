@@ -123,11 +123,25 @@ defaults={
             'LocalLackey_regions_required'  :   3000,
             'LocalLackey_tribute_ratio'     :   0.25,
             },
+        'xbit1': {
+            'username': 'Hoss',
+            'password': 'beef',
+            'address': 'x-bit.org',
+            'realm': 'Death Star',
+            'game': '14',
+            'smtp_server': 'smtp.gmail.com',
+            'smtp_port': 587,
+            'smtp_password':'dr.randy.myers.password',
+            'smtp_user': 'dr.randy.myers',
+            'notify': 'derrick.karimi@gmail.com',
+            'debug': False,
+            'strategies': ['IndMtn', 'AntiPirate'],
+        },
         }
 
 
 def get_default(key):
-    superkey = 'tnsoa5'
+    superkey = 'xbit1'
     ans = None
     if superkey in defaults:
         d = defaults[superkey]
