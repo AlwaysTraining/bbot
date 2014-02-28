@@ -2,3 +2,15 @@ bbot high level design strategy
 -------------------------------
 
 
+Local Testing
+    Test as whoever on TSOA
+Interplanetary Testing
+    Test as Randy on shenks
+    Local League
+        Just let it grow
+    and one IP League
+        Get banking/investments working
+
+    Test as Jake
+
+Interplanetary Deployment

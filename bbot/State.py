@@ -39,7 +39,7 @@ class LogOff(State):
 
 class ExitGame(State):
     def transition(self,app,buf):
-        if '(6) Read Messages         (0) Quit' in buf:
+        if '(1) Play Game' in buf:
             app.send('0')
             return LogOff()
         elif '-=<Paused>=-' in buf:
@@ -351,7 +351,7 @@ class StartGame(State):
             app.send('y')
         elif 'Name your Realm' in buf:
             return NewRealm()
-        elif '(1) Play Game             (7) Send Messages' in buf:
+        elif '(1) Play Game' in buf:
             app.skip_next_read = True
             return MainMenu()
 
