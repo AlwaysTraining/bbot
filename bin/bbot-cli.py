@@ -46,6 +46,7 @@ defaults={
             'notify'    :   'derrick.karimi@gmail.com',
             'debug'     :   False,
             'strategies':   ['IndMtn','AntiPirate'],
+            'data_dir'   :   '.',
             },
 
         'tnsoa' : {
@@ -60,6 +61,7 @@ defaults={
             'notify'    :   'derrick.karimi@gmail.com',
             'debug'     :   False,
             'strategies':   ['IndMtn',],
+            'data_dir': '.',
             },
 
         'tnsoa2' : {
@@ -74,6 +76,7 @@ defaults={
             'notify'    :   'derrick.karimi@gmail.com',
             'debug'     :   False,
             'strategies':   ['IndMtn',],
+            'data_dir'   : '.',
             },
 
         'tnsoa3' : {
@@ -88,6 +91,7 @@ defaults={
             'notify'    :   'derrick.karimi@gmail.com',
             'debug'     :   False,
             'strategies':   ['IndMtn',],
+            'data_dir': '.',
             },
 
         'tnsoa4' : {
@@ -102,6 +106,7 @@ defaults={
             'notify'    :   'derrick.karimi@gmail.com',
             'debug'     :   False,
             'strategies':   ['IndMtn',],
+            'data_dir': '.',
             },
 
         'tnsoa5' : {
@@ -122,6 +127,7 @@ defaults={
                                              'Gold'],
             'LocalLackey_regions_required'  :   3000,
             'LocalLackey_tribute_ratio'     :   0.25,
+            'data_dir': '.',
             },
         'xbit1': {
             'username': 'Bob Falooley',
@@ -136,6 +142,7 @@ defaults={
             'notify': 'derrick.karimi@gmail.com',
             'debug': False,
             'strategies': ['IndMtn', 'AntiPirate'],
+            'data_dir': '.',
         },
         }
 
@@ -213,13 +220,17 @@ parser.add_argument("--LocalLackey-tribute-ratio",
                     help="The ratio of owned resources to give in tribute to "
                          "the master realm each day: [0.0 - 1.0]",
                     default=get_default('LocalLackey_tribute_ratio'))
-                  
+
+
 parser.add_argument("-d","--debug",
                   action="store_true",
                   help="enable debug mode",
                   default=get_default('debug'))
 
-
+parser.add_argument("--data-dir",
+                    action="store",
+                    help="Set the directory used to store log files",
+                    default=get_default('data_dir'))
 
 parser.add_argument("strategies", nargs='*',
                   help="a list of strategies to govern gameplay",

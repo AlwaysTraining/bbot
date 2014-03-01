@@ -24,7 +24,9 @@ import re
 class App:
 
     def get_data_dir(self):
-        return "."
+        data_dir = self.get_app_value("data_dir")
+        data_dir = .path.expandvars(data_dir)
+        return data_dir
 
     
     def get_tag_str(self,joiner='_'):
