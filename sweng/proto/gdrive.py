@@ -6,7 +6,7 @@ import time
 import gdata.spreadsheet.service
 
 email = 'derrick.karimi@gmail.com'
-password = 'BootyPop!2'
+password = 'zzzzzzzzzzz'
 weight = '180'
 # Find this value in the url with 'key=XXX' and copy XXX below
 spreadsheet_key = '0AlItClzrqP_edHoxMmlOcTV3NHJTbU4wZDJGQXVTTXc'
