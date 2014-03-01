@@ -25,7 +25,7 @@ class App:
 
     def get_data_dir(self):
         data_dir = self.get_app_value("data_dir")
-        data_dir = .path.expandvars(data_dir)
+        data_dir = os.path.expandvars(data_dir)
         return data_dir
 
     
