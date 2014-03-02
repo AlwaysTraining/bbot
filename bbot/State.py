@@ -277,6 +277,11 @@ class PreTurns(StatsState):
 #TODO this might be wronf, needd to look what it says if they send an unacceptable trade deal
             app.send('i')
 
+        # not sure why, but in an IP game, there were more spaces
+        elif '[R]  Reply, [D]  Delete, [I]  Ignore, or [Q]  Quit>' in buf:
+            app.data.msgtext += buf + "\n"
+            app.send('d', comment="Deleting received message")
+
         elif '[R] Reply, [D] Delete, [I] Ignore, or [Q] Quit>' in buf:
             app.data.msgtext += buf + "\n"
             app.send('d',comment="Deleting received message")
@@ -329,7 +334,7 @@ class MainMenu(StatsState):
             if '-=<Paused>=-' in buf:
                 app.sendl()
             buf = app.read()
-            app.send(1,comment="Comencing to play the game")
+            app.send(1,comment="Commencing to play the game")
             return PreTurns()
             
         
