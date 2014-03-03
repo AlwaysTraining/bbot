@@ -34,9 +34,9 @@ class App:
         a = a.split('.')
         a = a[0]
         s = joiner.join([
-                a,
-                self.get_app_value('game'),
-                self.get_app_value('realm')])
+                str(a),
+                str(self.get_app_value('game')),
+                str(self.get_app_value('realm'))])
        
         return s
 
@@ -321,7 +321,10 @@ class App:
         # if one string is provided, someitmes they can just give it to us as one string,
         #   convert it to a list to implify 
         if isinstance(strats, basestring):
-            strats = [strats]
+            if ',' in strats:
+                strats = [x.strip() for x in strats.split(',')]
+            else:
+                strats = [strats]
 
         # shouldn't happen with cmd line checking
         if strats is None:

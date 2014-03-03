@@ -26,6 +26,12 @@ class LocalLackey(Strategy):
 
         # determine what to trade
         tradeItemStrings = self.get_strategy_option("trade_items")
+        if isinstance(tradeItemStrings, basestring):
+            if ',' in tradeItemStrings:
+                tradeItemStrings = [x.strip() for x in tradeItemStrings.split(',')]
+            else:
+                tradeItemStrings = [tradeItemStrings]
+
         self.tradeItems = []
         for tradeItemString in tradeItemStrings:
             if tradeItemString == "Food":
