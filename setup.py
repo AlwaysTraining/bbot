@@ -24,4 +24,4 @@ setup(name="bbot",
       description = ['bbot'],
       url = ['https://github.com/AlwaysTraining/bbot'],
       download_url = ['https://github.com/AlwaysTraining/bbot'],
-      install_requires=['pexpect <= 2.3'])
+      install_requires=['pexpect <= 2.4'])
