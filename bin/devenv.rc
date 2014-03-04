@@ -3,15 +3,15 @@
 # Path to your own script
 # http://stackoverflow.com/questions/4774054/reliable-way-for-a-bash-script-to-get-the-full-path-to-itself
 pushd . > /dev/null
-SCRIPT_PATH="${BASH_SOURCE[0]}";
-  while([ -h "${SCRIPT_PATH}" ]) do
-    cd "`dirname "${SCRIPT_PATH}"`"
-    SCRIPT_PATH="$(readlink "`basename "${SCRIPT_PATH}"`")";
+bbot_SCRIPT_PATH="${BASH_SOURCE[0]}";
+  while([ -h "${bbot_SCRIPT_PATH}" ]) do
+    cd "`dirname "${bbot_SCRIPT_PATH}"`"
+    bbot_SCRIPT_PATH="$(readlink "`basename "${bbot_SCRIPT_PATH}"`")";
   done
-cd "`dirname "${SCRIPT_PATH}"`" > /dev/null
-SCRIPT_PATH="`pwd`";
+cd "`dirname "${bbot_SCRIPT_PATH}"`" > /dev/null
+bbot_SCRIPT_PATH="`pwd`";
 popd  > /dev/null
 
-export bbot_ROOT=$(dirname $SCRIPT_PATH)
-export PYTHONPATH=$bbot_ROOT
+export bbot_ROOT=$(dirname $bbot_SCRIPT_PATH)
+export PYTHONPATH=$PYTHONPATH:$bbot_ROOT
 export PATH=$PATH:$bbot_ROOT/bin
