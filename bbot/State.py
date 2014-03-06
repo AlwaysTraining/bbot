@@ -314,6 +314,11 @@ class PreTurns(StatsState):
             app.skip_next_read = True
             return Maint()
 
+        # another hanger
+        elif '[Crazy Gold Bank]' in buf:
+            app.skip_next_read = True
+            return Maint
+
 
 from bbot.PlanetParser import PlanetParser
 class MainMenu(StatsState):
