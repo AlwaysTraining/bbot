@@ -317,7 +317,7 @@ class PreTurns(StatsState):
         # another hanger
         elif '[Crazy Gold Bank]' in buf:
             app.skip_next_read = True
-            return Maint
+            return Maint()
 
 
 from bbot.PlanetParser import PlanetParser
