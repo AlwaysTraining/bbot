@@ -272,9 +272,6 @@ class PreTurns(StatsState):
             # exit the diplomicy meny
             app.send('0')
 
-        elif '[Covert Operations]' in buf:
-            app.send('0')
-
         elif 'Do you wish to accept? [Yes, No, or Ignore for now]' in buf:
             app.send('y',comment="accepting trade deal")
 
@@ -312,6 +309,10 @@ class PreTurns(StatsState):
             app.skip_next_read = True
             return Maint()
 
+        # another hangup case
+        elif '[Covert Operations]' in buf:
+            app.skip_next_read = True
+            return Maint()
 
 
 from bbot.PlanetParser import PlanetParser
