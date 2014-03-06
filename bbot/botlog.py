@@ -9,6 +9,7 @@ WARN = logging.WARN
 level = WARN
 
 tracefile=sys.stdout
+tracefilepath=None
 
 traceid=0
 
@@ -59,6 +60,7 @@ def exception(msg):
 
 def configure(msglevel,format,logpath,tracepath):
     global tracefile
+    global tracefilepath
     global level
     level = msglevel
     logging.getLogger('').handlers = []
@@ -75,6 +77,7 @@ def configure(msglevel,format,logpath,tracepath):
         tracefile = sys.stdout
     else:
         tracefile = file(tracepath,'w')
+    tracefilepath = tracepath
 
 
 
