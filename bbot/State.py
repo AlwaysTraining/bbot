@@ -161,6 +161,8 @@ class Maint(StatsState):
         elif '[Food Unlimited]' in buf:
             self.which_maint = "Food"
             app.send('0')
+        elif '[Covert Operations]' in buf:
+            app.send('0')
         elif '[Crazy Gold Bank]' in buf:
             app.on_bank_menu()
             app.send('0')
@@ -270,6 +272,9 @@ class PreTurns(StatsState):
             # exit the diplomicy meny
             app.send('0')
 
+        elif '[Covert Operations]' in buf:
+            app.send('0')
+
         elif 'Do you wish to accept? [Yes, No, or Ignore for now]' in buf:
             app.send('y',comment="accepting trade deal")
 
@@ -277,7 +282,7 @@ class PreTurns(StatsState):
 #TODO this might be wronf, needd to look what it says if they send an unacceptable trade deal
             app.send('i')
 
-        # not sure why, but in an IP game, there were more spaces
+        # not sure why, but in an IP game, there were sm
         elif '[R]  Reply, [D]  Delete, [I]  Ignore, or [Q]  Quit>' in buf:
             app.data.msgtext += buf + "\n"
             app.send('d', comment="Deleting received message")
@@ -302,11 +307,11 @@ class PreTurns(StatsState):
             app.skip_next_read = True
             return EndTurn()
 
-	# Hung up game can emerge in bank
-	elif 'Do you wish to visit the Bank? (y/N)' in buf:
+        # Hung up game can emerge in bank
+        elif 'Do you wish to visit the Bank? (y/N)' in buf:
             app.skip_next_read = True
             return Maint()
-        
+
 
 
 from bbot.PlanetParser import PlanetParser
