@@ -280,6 +280,12 @@ class App:
         botlog.debug("End Macro: " + str(seq))
         return self.buf
 
+    def has_strategy(self, strategy_name):
+        for s in self.strategies:
+            if strategy_name == s.get_name():
+                return True
+        return False
+
     def call_strategies(self, func_name):
         ret = Strategy.UNHANDLED
         for s in self.strategies:
@@ -445,4 +451,7 @@ class App:
         
 
         self.send_notification(game_exception)
+
+        if game_exception is not None:
+            raise game_exception
         

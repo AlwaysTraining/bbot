@@ -91,6 +91,10 @@ class IndMtn(Strategy):
         if not self.data.is_oop():
             return 1.0
 
+        if (self.app.has_strategy("Investor") and
+                self.data.has_full_investments()):
+            return 0.75
+
         # When there are less than 1k regions, concectrate
         #   on liquidating army
         if self.data.realm.regions.number < 1000:

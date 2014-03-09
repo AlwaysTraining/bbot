@@ -67,8 +67,12 @@ class AntiPirate(Strategy):
         self.ratio = self.attack_tuner.get_next_value(self.last_result)
         botlog.info("Pirate record: " + str(self.attack_tuner))
 
+        # [1 Regions left] Your choice?
         if ' Regions left] Your choice?' in buf:
-            RegionBuy(self.app,self.app.data.realm.pirates.regions)
+            botlog.info("Allocating " +
+                        str(self.app.data.realm.pirates.regions) +
+                        " pirate booty regions")
+            RegionBuy(self.app, self.app.data.realm.pirates.regions)
             
 
         # self.sp.parse(self.app, self.app.read())

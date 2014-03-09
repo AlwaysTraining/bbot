@@ -115,6 +115,7 @@ class AutoTuner():
         else:
             raise Exception("What is wrong with the world")
 
+        self.old_value = self.value
         self.value = x * self.value
 
         if self.value < self.min_clamp:

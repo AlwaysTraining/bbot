@@ -92,7 +92,7 @@ defaults={
             'notify'    :   'derrick.karimi@gmail.com',
             'debug'     :   False,
             'strategies':   ['IndMtn','AntiPirate','LocalLackey'],
-            'LocalLackey_master'    :   'Crankles',
+            'LocalLackey_master'    :   'Funkshak',
             'LocalLackey_trade_items'   :   ['Troopers', 'Turrets', 'Jets',
                                              'Tanks', 'Bombers', 'Agents',
                                              'Gold'],
