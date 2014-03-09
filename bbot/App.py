@@ -357,6 +357,12 @@ class App:
                 botlog.warn("Last full buffer:\n" + str(self.last_full_buf))
                 raise Exception("Waited for about 20 seconds in main loop and nothing happened")
 
+            if not self.debug:
+                if random.random() < 0.05:
+                    rpause = random.random() * 30
+                    botlog.info("Random human pause for " +
+                                 str(round(rpause,0)) + " seconds")
+                    time.sleep(rpause)
             nextstate = state.transition(self,self.buf)
             
             transitioned = nextstate is not None and nextstate != state

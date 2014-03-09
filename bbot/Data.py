@@ -323,6 +323,7 @@ class Bank(object):
     def __init__(self):
         self.gold=None
         self.investments=[]
+        self.approx_return = None
 
 
 class Turns(object):
@@ -494,7 +495,9 @@ class Data(dict):
         return self.realm.turns.years_freedom is not None
 
     def has_full_investments(self):
-        return True
+        # 10'th day of investments may be partially returned, so consider 9
+        # days and some decent change, fully invested
+        return sum(self.realm.bank.investments) >= 2000000000 * 9 + 1000000
 
     def get_number(self, item):
         army = self.realm.army

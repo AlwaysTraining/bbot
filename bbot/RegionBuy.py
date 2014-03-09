@@ -19,6 +19,7 @@ class RegionBuy(Strategy):
         self.regions = self.app.data.realm.regions
         self.sp = SpendingParser()
         self.last_ag_buy = 1
+        enter_to_exit = False
 
 
 
@@ -29,6 +30,11 @@ class RegionBuy(Strategy):
         self.a = num_regions
         if num_regions is None:
             self.a = self.app.data.realm.regions.number_affordable
+
+            # We want some money for investments, but only out of protection
+            if self.data.is_oop() and not self.data.has_full_investments():
+                self.a = int(self.a * 0.125)
+                enter_to_exit = True
 
         if self.a is None:
             raise Exception("Not known how many regions there are")
@@ -71,11 +77,14 @@ class RegionBuy(Strategy):
         # re parse region menu/buy meny
         self.sp.parse(self.app, self.app.read())
 
-        # not yet handling exit from non maximal region purchas
-        # no need to 
+
         # return to the spending menu
         # because we bought all the regions we could afford
         # it automatically gets out of region menu
+        # unless we didn't
+        if enter_to_exit:
+            self.app.sendl(comment="Exiting region menu even though we could "
+                                   "buy more")
             
     def buy_ag_regions(self):
         # we start at the region menu

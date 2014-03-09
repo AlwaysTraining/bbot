@@ -23,6 +23,9 @@ LOW_PRIORITY =      100 * 3
 VERYLOW_PRIORITY =  100 * 2
 NO_PRIORITY =       100 * 1
 
+TWOBIL = 2000000000
+HUNMIL = 100000000
+
 def load_modules(
     modulePaths    # list of paths to python modules
     ):

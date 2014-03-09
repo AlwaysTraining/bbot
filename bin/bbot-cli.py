@@ -34,20 +34,6 @@ signal.signal(signal.SIGINT, signal_handler)
 
     
 defaults={
-        'shenks' : {
-            'username'  :   'Randy32',
-            'password'  :   'RANDYPAS',
-            'address'   :   'shenks.synchro.net',
-            'realm'     :   'Randyland',
-            'game'      :   '10',
-            'smtp_server':  'smtp.gmail.com',
-            'smtp_port' :   587,
-            'smtp_user' :   'derrick.karimi',
-            'notify'    :   'derrick.karimi@gmail.com',
-            'debug'     :   False,
-            'strategies':   ['IndMtn','AntiPirate'],
-            'data_dir'   :   '.',
-            },
 
         'tnsoa' : {
             'username'  :   'Randy32',
@@ -62,21 +48,6 @@ defaults={
             'debug'     :   False,
             'strategies':   ['IndMtn',],
             'data_dir': '.',
-            },
-
-        'tnsoa2' : {
-            'username'  :   'Bob Falooley',
-            'password'  :   None,
-            'address'   :   'tnsoa.strangled.net',
-            'realm'     :   'Skull House',
-            'game'      :   '6',
-            'smtp_server':  'smtp.gmail.com',
-            'smtp_port' :   587,
-            'smtp_user' :   'derrick.karimi',
-            'notify'    :   'derrick.karimi@gmail.com',
-            'debug'     :   False,
-            'strategies':   ['IndMtn',],
-            'data_dir'   : '.',
             },
 
         'tnsoa3' : {
@@ -129,21 +100,6 @@ defaults={
             'LocalLackey_tribute_ratio'     :   0.25,
             'data_dir': '.',
             },
-        'xbit1': {
-            'username': 'Bob Falooley',
-            'password': 'karpet',
-            'address': 'x-bit.org',
-            'realm': 'Skull House',
-            'game': '14',
-            'smtp_server': 'smtp.gmail.com',
-            'smtp_port': 587,
-            'smtp_password':'dr.randy.myers.password',
-            'smtp_user': 'dr.randy.myers',
-            'notify': 'derrick.karimi@gmail.com',
-            'debug': False,
-            'strategies': ['IndMtn', 'AntiPirate'],
-            'data_dir': '.',
-        },
         }
 
 

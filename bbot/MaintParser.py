@@ -29,7 +29,10 @@ class MaintParser(StatsParser):
             NUM_REGEX + ' gold is requested to boost popular support\.' :   1750,
             'You have ' + NUM_REGEX + ' gold and ' + NUM_REGEX + ' units of food.' : 1900,
             'You have '+NUM_REGEX+' gold in hand and '+NUM_REGEX+' gold in the bank.' : 1510,
-            '\['+N+' Regions left\] Your choice\?'  :   521
+            '\['+N+' Regions left\] Your choice\?'  :   521,
+            N + "/" + N + "/" + N + S + "\$" + N: 3254,
+            ('Returns expected to be approximately ' + N +' gold\.  Accept\? \(Y/n\) '): 3264,
+            'You have ' + NUM_REGEX + ' gold in hand and ' + NUM_REGEX + ' gold in the bank.': 1510,
             }
 
     
@@ -51,6 +54,10 @@ class MaintParser(StatsParser):
             realm.gold = self.get_num(0)
             realm.bank.gold = self.get_num(1)
         elif which == 521: realm.regions.waste.number = self.get_num(0)
+        elif which == 3254:
+            bank.investments.append(self.get_num(3))
+        elif which == 3256:
+            bank.investments.approx_return = self.get_num(1)
 
 
 

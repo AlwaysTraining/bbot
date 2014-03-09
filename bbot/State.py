@@ -6,11 +6,13 @@
 
 import re
 import botlog
+import pprint
 from bbot.Utils import *
 from bbot.BaseStates import *
 from bbot.Data import *
 from bbot.Data import *
 from bbot.RegionBuy import RegionBuy
+
 
 #rom BaseStates.State import State
 #rom BaseStates.StatsState import StatsState
@@ -164,6 +166,16 @@ class Maint(StatsState):
         elif '[Covert Operations]' in buf:
             app.send('0')
         elif '[Crazy Gold Bank]' in buf:
+            # list the investments, and parse them
+            app.send("l", comment="Checking investments")
+            buf = app.read()
+            app.data.realm.bank.investments = []
+            self.parse(app, buf)
+
+            botlog.info("Current Investments : $" +
+                         str(sum(app.data.realm.bank.investments)) +
+                         "\n" +
+                         pprint.pformat(app.data.realm.bank.investments))
             app.on_bank_menu()
             app.send('0')
             return Spending()
