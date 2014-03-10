@@ -161,13 +161,20 @@ class IndMtn(Strategy):
         # Sell items         
         
         sell_ratio = self.get_army_sell_ratio()
+
         sellItems = [
             Troopers.menu_option,
             Turrets.menu_option,
             Jets.menu_option,
             Tanks.menu_option,
             Bombers.menu_option,
-            Carriers.menu_option]
+            Carriers.menu_option
+        ]
+
+        # don't bother selling rinky dink pirate winnings if we arn't going
+        # whole hog liquidate
+        if sell_ratio < 0.5:
+            sellItems = [ Tanks.menu_option ]
 
         self.sell(sellItems, sell_ratio)
         self.sp.parse(self.app, self.app.read())

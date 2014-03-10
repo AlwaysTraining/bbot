@@ -56,16 +56,28 @@ class AntiPirate(Strategy):
 
         self.app.sendl(tanks,comment='tanks for pirate attack')
 
-        buf = self.app.read()
+        # I had a bug where pirate results were not returned in time, rather
+        # then resort to state based parsing, we will just wait for the results
+        # to come in.  This will get annoying if we ever decide to fully parse
+        # pirate attack results
+        buf = self.app.read_until_any([
+            'You could not successfully raid',
+            'have brought you success'])
         self.pp.parse(self.app, buf)
 
-        if 'You could not successfully raid' in buf:
+        if self.app.match_index == 0:
             self.last_result = False
-        elif 'have brought you success' in buf:
+        elif self.app.match_index == 1:
             self.last_result = True
+        else:
+            raise Exception('Error after waiting for pirate attack results')
 
         self.ratio = self.attack_tuner.get_next_value(self.last_result)
         botlog.info("Pirate record: " + str(self.attack_tuner))
+
+        # finish reading pirate results
+        buf = self.app.read()
+        self.pp.parse(self.app, buf)
 
         # [1 Regions left] Your choice?
         if ' Regions left] Your choice?' in buf:
@@ -73,8 +85,8 @@ class AntiPirate(Strategy):
                         str(self.app.data.realm.pirates.regions) +
                         " pirate booty regions")
             RegionBuy(self.app, self.app.data.realm.pirates.regions)
-            
 
+        botlog.info('AntiPirate strategy handler')
         # self.sp.parse(self.app, self.app.read())
 
         # no need to 

@@ -134,18 +134,25 @@ class App:
         return random.uniform(x*0.9,x*1.1)
 
     def read_until(self,stop_text,timeout=-1,maxwait=20):
-        
+        return self.read_until_any([stop_text],timeout=timeout,maxwait=maxwait)
+
+    def read_until_any(self, stop_text_list, timeout=-1, maxwait=20):
+
+        stop_patterns = []
+
+        for t in stop_text_list:
+            stop_patterns.append(re.compile('.*' + re.escape(t) + '.*') )
+
         while True:
-            b = self.read(timeout,stop_patterns=[re.compile(
-                '.*'+re.escape(stop_text)+'.*'
-                )])
+            b = self.read(timeout, stop_patterns=stop_patterns)
 
             if self.match_re is not None:
                 return b
-           
+
             if self.wait_time > maxwait:
-                raise Exception("Could not read '" + str(stop_text) + 
-                    "' in " + str(maxwait) + " seconds")
+                raise Exception("Could not read any of " + str(
+                    stop_text_list) + " in " + str(maxwait) + " seconds")
+
 
     def read(self,timeout=-1,stop_patterns=None):
         txt=[]
@@ -380,6 +387,10 @@ class App:
         if not self.EOF:
             botlog.debug("Performing final read")
             self.read()
+
+        if state.get_name() != exitState:
+            raise Exception("Unexpected end of session in state: " +
+                            state.get_name())
 
 
     def send_notification(self, game_exception):

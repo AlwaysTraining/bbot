@@ -344,6 +344,11 @@ class PreTurns(StatsState):
             app.skip_next_read = True
             return Maint()
 
+        # another hanger
+        elif '[Spending Menu]' in buf:
+            app.skip_next_read = True
+            return Spending()
+
 
 from bbot.PlanetParser import PlanetParser
 
