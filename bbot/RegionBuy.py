@@ -33,7 +33,7 @@ class RegionBuy(Strategy):
 
             # We want some money for investments, but only out of protection
             if self.data.is_oop() and not self.data.has_full_investments():
-                self.a = math.ceil(self.a * 0.125)
+                self.a = int(math.ceil(self.a * 0.125))
                 enter_to_exit = True
 
         if self.a is None:
