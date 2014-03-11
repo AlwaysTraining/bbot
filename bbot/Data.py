@@ -539,6 +539,11 @@ class Data(dict):
                 return r
         return None
 
+    def can_get_attack_strength(self):
+        army = self.realm.army
+        return not ( army.troopers.number is None or army.jets.number is None
+            or army.tanks.number is None)
+
     def get_attack_strength(self):
         army = self.realm.army
         return (army.troopers.number + (army.jets.number * 2) +

@@ -27,8 +27,14 @@ class AntiPirate(Strategy):
 
     def on_attack_menu(self):
 
+        if not self.data.can_get_attack_strength():
+            botlog.warn("Unable to determine attack strength, has spending "
+                        "menu been parsed?")
+            return Strategy.UNHANDLED
+
         # if we have no army, don't attack
         if self.data.get_attack_strength() <= 0:
+            botlog.info("No army, so not attacking pirates")
             return Strategy.UNHANDLED
 
         self.data.realm.reset_pirates()
@@ -59,7 +65,7 @@ class AntiPirate(Strategy):
         # I had a bug where pirate results were not returned in time, rather
         # then resort to state based parsing, we will just wait for the results
         # to come in.  This will get annoying if we ever decide to fully parse
-        # pirate attack results
+        # pirate attack resultsg31
         buf = self.app.read_until_any([
             'You could not successfully raid',
             'have brought you success'])
