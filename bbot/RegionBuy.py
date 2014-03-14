@@ -32,7 +32,8 @@ class RegionBuy(Strategy):
             self.a = self.app.data.realm.regions.number_affordable
 
             # We want some money for investments, but only out of protection
-            if self.data.is_oop() and not self.data.has_full_investments():
+            if (self.app.has_strategy("Investor") and self.data.is_oop() and
+                    not self.data.has_full_investments()):
                 self.a = int(math.ceil(self.a * 0.125))
                 enter_to_exit = True
 

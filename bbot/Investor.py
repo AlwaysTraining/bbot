@@ -28,24 +28,33 @@ class Investor(Strategy):
         #   15 years of playing I never saw the invest rate higher than the
         #   bank rate.
 
-        # also make sure we have a decent ammoutn of cash on hand, and we
+        # also make sure we have a decent ammount of cash on hand, and we
         # are not fully invested
-        if (self.data.realm.bank.gold < TWOBIL or
-            self.data.realm.gold < HUNMIL or
-            self.data.has_full_investments()):
+        realm = self.data.realm
+        if realm.bank.gold < TWOBIL:
+            botlog.info("Not investing because there is less than 2 Bil in "
+                        "the bank")
+            return
+        if self.gold < HUNMIL:
+            botlog.info("Not investing because there is less than 100 Mil on "
+                        "hand")
+            return
+        if self.data.has_full_investments():
+            botlog.info("Not investing because there is are already full "
+                        "investments")
             return
 
         max_iters = 11
 
-        while (self.data.realm.gold < HUNMIL and
+        while (realm.gold > HUNMIL and
                        self.day <= 10 and
-                       max_iters > 0):
+                       max_iters >= 0):
             self.app.send_seq(['i', self.day, '\r', '>'],
                               comment="investing " + str(
                                   self.day) + " days out")
 
             buf = self.app.read()
-            self.data.realm.bank.approx_return = None
+            realm.bank.approx_return = None
             self.ip.parse(buf)
             if "Accept? (Y/n)" in buf:
                 self.app.send('y', comment='Accepting investment')
@@ -53,7 +62,7 @@ class Investor(Strategy):
             buf = self.app.read()
             self.ip.parse(buf)
             botlog.info("After investing, " +
-                        str(self.data.realm.gold) +
+                        str(realm.gold) +
                         " gold remains")
 
             # if the day  is fully invested, go to next day
