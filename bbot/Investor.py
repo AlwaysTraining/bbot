@@ -35,7 +35,7 @@ class Investor(Strategy):
             botlog.info("Not investing because there is less than 2 Bil in "
                         "the bank")
             return
-        if self.gold < HUNMIL:
+        if realm.gold < HUNMIL:
             botlog.info("Not investing because there is less than 100 Mil on "
                         "hand")
             return
@@ -49,18 +49,18 @@ class Investor(Strategy):
         while (realm.gold > HUNMIL and
                        self.day <= 10 and
                        max_iters >= 0):
-            self.app.send_seq(['i', self.day, '\r', '>'],
+            self.app.send_seq(['i', self.day, '\r', '>', '\r'],
                               comment="investing " + str(
                                   self.day) + " days out")
 
             buf = self.app.read()
             realm.bank.approx_return = None
-            self.ip.parse(buf)
+            self.ip.parse(self.app, buf)
             if "Accept? (Y/n)" in buf:
                 self.app.send('y', comment='Accepting investment')
 
             buf = self.app.read()
-            self.ip.parse(buf)
+            self.ip.parse(self.app, buf)
             botlog.info("After investing, " +
                         str(realm.gold) +
                         " gold remains")
