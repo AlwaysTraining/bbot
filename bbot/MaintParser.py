@@ -55,9 +55,9 @@ class MaintParser(StatsParser):
             realm.bank.gold = self.get_num(1)
         elif which == 521: realm.regions.waste.number = self.get_num(0)
         elif which == 3254:
-            bank.investments.append(self.get_num(3))
+            realm.bank.investments.append(self.get_num(3))
         elif which == 3256:
-            bank.investments.approx_return = self.get_num(1)
+            realm.bank.investments.approx_return = self.get_num(1)
 
 
 

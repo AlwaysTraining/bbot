@@ -66,7 +66,7 @@ class Investor(Strategy):
                         " gold remains")
 
             # if the day  is fully invested, go to next day
-            if TWOBIL - data.realm.bank.approx_return <= 1:
+            if TWOBIL - self.data.realm.bank.approx_return <= 1:
                 self.day = self.day + 1
             max_iters = max_iters - 1
 
