@@ -92,7 +92,7 @@ class IndMtn(Strategy):
             return 1.0
 
         if (self.app.has_strategy("Investor") and
-                self.data.has_full_investments()):
+            not self.data.has_full_investments()):
             return 0.75
 
         # When there are less than 1k regions, concectrate
@@ -175,6 +175,9 @@ class IndMtn(Strategy):
         # whole hog liquidate
         if sell_ratio < 0.5:
             sellItems = [ Tanks.menu_option ]
+
+        botlog.info("Selling " + str(round(sell_ratio*100,1)) +  
+                "% of " + str(sellItems))
 
         self.sell(sellItems, sell_ratio)
         self.sp.parse(self.app, self.app.read())

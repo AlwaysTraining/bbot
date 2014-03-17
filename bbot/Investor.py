@@ -63,7 +63,7 @@ class Investor(Strategy):
             self.ip.parse(self.app, buf)
             botlog.info("After investing, " +
                         str(realm.gold) +
-                        " gold remains")
+                        " gold remains onhand")
 
             # if the day  is fully invested, go to next day
             if TWOBIL - self.data.realm.bank.approx_return <= 1:
