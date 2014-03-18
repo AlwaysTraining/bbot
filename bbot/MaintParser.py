@@ -30,7 +30,7 @@ class MaintParser(StatsParser):
             'You have ' + NUM_REGEX + ' gold and ' + NUM_REGEX + ' units of food.' : 1900,
             'You have '+NUM_REGEX+' gold in hand and '+NUM_REGEX+' gold in the bank.' : 1510,
             '\['+N+' Regions left\] Your choice\?'  :   521,
-            N + "/" + N + "/" + N + S + "\$" + N: 3254,
+            N + "/" + N + "/" + N + S + "\$[ ]*" + N: 3254,
             ('Returns expected to be approximately ' + N +' gold\.  Accept\? \(Y/n\) '): 3264,
             'You have ' + NUM_REGEX + ' gold in hand and ' + NUM_REGEX + ' gold in the bank.': 1510,
             }
