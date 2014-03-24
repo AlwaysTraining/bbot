@@ -31,18 +31,20 @@ class Investor(Strategy):
         # also make sure we have a decent ammount of cash on hand, and we
         # are not fully invested
         realm = self.data.realm
+
+        # returning UNHANDLED prevents investments from being re parsed when we know they didn't changed
         if realm.bank.gold < TWOBIL:
             botlog.info("Not investing because there is less than 2 Bil in "
                         "the bank")
-            return
+            return Strategy.UNHANDLED
         if realm.gold < HUNMIL:
             botlog.info("Not investing because there is less than 100 Mil on "
                         "hand")
-            return
+            return Strategy.UNHANDLED
         if self.data.has_full_investments():
             botlog.info("Not investing because there is are already full "
                         "investments")
-            return
+            return Strategy.UNHANDLED
 
         max_iters = 11
 

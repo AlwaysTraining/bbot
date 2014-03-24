@@ -495,9 +495,9 @@ class Data(dict):
         return self.realm.turns.years_freedom is not None
 
     def has_full_investments(self):
-        # 10'th day of investments may be partially returned, so consider 9
-        # days and some decent change, fully invested
-        return sum(self.realm.bank.investments) >= 2000000000 * 9 + 1000000
+        # it is common to see $1,999,999,998 investments, i
+        #   so subtract 10 of those off by 2's and you get 20
+        return self.realm.bank.investments >= 20000000000 - 20 
 
     def get_number(self, item):
         army = self.realm.army
