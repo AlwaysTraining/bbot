@@ -15,24 +15,22 @@ N = NUM_REGEX
 
 
 def get_region_ratio(app, context):
-    
     r = Regions()
-    r.coastal.number=50
-    r.river.number=0
-    r.agricultural.number=None
-    r.desert.number=0
-    r.industrial.number=1
-    r.urban.number=0
-    r.mountain.number=0
-    r.technology.number=1
+    r.coastal.number = 50
+    r.river.number = 0
+    r.agricultural.number = None
+    r.desert.number = 0
+    r.industrial.number = 1
+    r.urban.number = 0
+    r.mountain.number = 0
+    r.technology.number = 1
 
     return r
 
 
-
 class AgentRecruiter(Strategy):
-    def __init__(self,app):
-        Strategy.__init__(self,app)
+    def __init__(self, app):
+        Strategy.__init__(self, app)
         self.data = self.app.data
         self.app.metadata.get_region_ratio_func = get_region_ratio
         self.sp = SpendingParser()
@@ -48,7 +46,7 @@ class AgentRecruiter(Strategy):
             return
 
         # set to 100% turret production
-        self.app.send_seq(['y','\r','\r','>\r','\r','\r','\r'])
+        self.app.send_seq(['y', '\r', '\r', '>\r', '\r', '\r', '\r'])
 
 
     def get_buy_ratio(self):
@@ -101,7 +99,8 @@ class AgentRecruiter(Strategy):
             else:
                 # buy the items
                 self.app.send_seq([item, ammount], comment="Buying " +
-                    str(ammount) + " agents")
+                                                           str(
+                                                               ammount) + " agents")
 
 
         # enter region buying menu

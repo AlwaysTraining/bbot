@@ -9,11 +9,12 @@ from bbot.Data import *
 from bbot.Strategy import Strategy
 from bbot.SpendingParser import SpendingParser
 
+
 class RegionBuy(Strategy):
     last_ag_buy_turn = None
 
-    def __init__(self,app,num_regions=None,region_ratio=None):
-        Strategy.__init__(self,app)
+    def __init__(self, app, num_regions=None, region_ratio=None):
+        Strategy.__init__(self, app)
         self.data = self.app.data
         self.realm = self.app.data.realm
         self.regions = self.app.data.realm.regions
@@ -24,7 +25,7 @@ class RegionBuy(Strategy):
 
 
         # we should be at the region menu here loaded into the current buffer
-        
+
         # the number of regions we can afforAd
         self.sp.parse(self.app, self.app.buf)
         self.a = num_regions
@@ -86,12 +87,11 @@ class RegionBuy(Strategy):
         if enter_to_exit:
             self.app.sendl(comment="Exiting region menu even though we could "
                                    "buy more")
-            
+
     def buy_ag_regions(self):
         # we start at the region menu
 
         advisors = self.data.realm.advisors
-        
 
         num_to_buy = self.last_ag_buy
         # visit civilian advisor and buy ag regions until he is happy
@@ -114,18 +114,18 @@ class RegionBuy(Strategy):
             self.app.read()
 
             # no_deficit = advisors.civilian.food_deficit is None
-            deficit_but_ok = (advisors.civilian.years_survival is not None and 
-                    advisors.civilian.years_survival > 2)
-            big_enough_surplus = (advisors.civilian.food_surplus >= 
-                    self.app.data.try_get_needed_surplus())
+            deficit_but_ok = (advisors.civilian.years_survival is not None and
+                              advisors.civilian.years_survival > 2)
+            big_enough_surplus = (advisors.civilian.food_surplus >=
+                                  self.app.data.try_get_needed_surplus())
             not_enough_regions = (
-                    self.a is None or
-                    self.a <= 0)
+                self.a is None or
+                self.a <= 0)
 
             # if we no longer are able to buy regions, or have enough food
             if (    not_enough_regions or
-                    deficit_but_ok or
-                    big_enough_surplus):
+                        deficit_but_ok or
+                        big_enough_surplus):
                 # this returns us to the buy region menu
                 self.app.send('0')
                 break
@@ -133,11 +133,11 @@ class RegionBuy(Strategy):
             # TODO, in some kind of o shit situation we might not be able to buy 
             #   this small ammount of regions
 
-            int_num_to_buy=int(round(num_to_buy))
+            int_num_to_buy = int(round(num_to_buy))
             if int_num_to_buy > self.a:
                 int_num_to_buy = self.a
 
-            self.app.send_seq(['0','a',str(int_num_to_buy),'\r'])
+            self.app.send_seq(['0', 'a', str(int_num_to_buy), '\r'])
 
             self.a = ( self.a - int_num_to_buy)
             num_bought = num_bought + int_num_to_buy

@@ -5,30 +5,31 @@
 # Unclassified
 
 import imp
-import os,sys
+import os, sys
 import botlog
 import Strategy
 
-bbot_TOOL_VERSION="0.1"
-ENVIRON_PREFIX="bbot_"
+bbot_TOOL_VERSION = "0.1"
+ENVIRON_PREFIX = "bbot_"
 
-NUM_REGEX='([0-9][,0-9]*)'
-SPACE_REGEX='[ \t]+'
-STR_REGEX='(.+)'
+NUM_REGEX = '([0-9][,0-9]*)'
+SPACE_REGEX = '[ \t]+'
+STR_REGEX = '(.+)'
 
 VERYHIGH_PRIORITY = 100 * 6
-HIGH_PRIORITY =     100 * 5
-MED_PRIORITY =      100 * 4
-LOW_PRIORITY =      100 * 3
-VERYLOW_PRIORITY =  100 * 2
-NO_PRIORITY =       100 * 1
+HIGH_PRIORITY = 100 * 5
+MED_PRIORITY = 100 * 4
+LOW_PRIORITY = 100 * 3
+VERYLOW_PRIORITY = 100 * 2
+NO_PRIORITY = 100 * 1
 
 TWOBIL = 2000000000
 HUNMIL = 100000000
 
+
 def load_modules(
-    modulePaths    # list of paths to python modules
-    ):
+        modulePaths  # list of paths to python modules
+):
     """
     Dynamically load each module path in the list modulePaths
     return a dictionary where keys are the items in modulePaths and the
@@ -45,11 +46,11 @@ def load_modules(
         expandedModulePath = os.path.expandvars(modulePath)
 
         if not os.path.exists(expandedModulePath):
-            raise Exception("Module path " + str(expandedModulePath) + 
-                    " was not found") 
+            raise Exception("Module path " + str(expandedModulePath) +
+                            " was not found")
 
-        # split path into base path (module path) and file extension
-        mod_name,file_ext = os.path.splitext(os.path.split(modulePath)[-1])
+            # split path into base path (module path) and file extension
+        mod_name, file_ext = os.path.splitext(os.path.split(modulePath)[-1])
 
         # set loadFunction to None
         loadFunc = None
@@ -77,11 +78,12 @@ def load_modules(
     # return the dictinoary mapping modulePaths to loaded module objects
     return modules
 
+
 def create_instance(
-    modulePath,
-    srcMgrTypeName,
-    **kwargs
-    ):
+        modulePath,
+        srcMgrTypeName,
+        **kwargs
+):
     """
     string modulePath       the path to a python module (one .py file or a
                               package directory that contains an __init__.py
@@ -102,7 +104,7 @@ def create_instance(
     # get the type specified by the srcMgrTypeName from the loaded module
     if not hasattr(py_mod, srcMgrTypeName):
         raise Exception("Type " + str(srcMgrTypeName) +
-                " was not found in " + str(py_mod))
+                        " was not found in " + str(py_mod))
     type_ = getattr(py_mod, srcMgrTypeName)
 
     # call the tanstances constructor, unwrap the key word argument
@@ -111,9 +113,11 @@ def create_instance(
 
     return instance
 
+
 def ToNum(strNum):
-    strNum = strNum.replace(',','')
+    strNum = strNum.replace(',', '')
     return int(strNum)
+
 
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
@@ -122,12 +126,14 @@ from email.MIMEText import MIMEText
 from email.Utils import COMMASPACE, formatdate
 from email import Encoders
 
+
 def send_mail(to, subject, text, _from="", files=[], cc=[], bcc=[],
-        server="smtp.gmail.com",port=587,server_user=None, server_user_pass=None):
-    assert type(to)==list
-    assert type(files)==list
-    assert type(cc)==list
-    assert type(bcc)==list
+              server="smtp.gmail.com", port=587, server_user=None,
+              server_user_pass=None):
+    assert type(to) == list
+    assert type(files) == list
+    assert type(cc) == list
+    assert type(bcc) == list
 
     message = MIMEMultipart()
     message['From'] = _from
@@ -135,17 +141,18 @@ def send_mail(to, subject, text, _from="", files=[], cc=[], bcc=[],
     message['Date'] = formatdate(localtime=True)
     message['Subject'] = subject
     message['Cc'] = COMMASPACE.join(cc)
-    
+
     html = "<html><body><pre>" + text + "</html></body></pre>"
-    message.attach(MIMEText(html,'html'))
-    
+    message.attach(MIMEText(html, 'html'))
+
     for f in files:
         part = MIMEBase('application', 'octet-stream')
         part.set_payload(open(f, 'rb').read())
         Encoders.encode_base64(part)
-        part.add_header('Content-Disposition', 'attachment; filename="%s"' % os.path.basename(f))
+        part.add_header('Content-Disposition',
+                        'attachment; filename="%s"' % os.path.basename(f))
         message.attach(part)
-    
+
     addresses = []
     for x in to:
         addresses.append(x)
@@ -154,7 +161,7 @@ def send_mail(to, subject, text, _from="", files=[], cc=[], bcc=[],
     for x in bcc:
         addresses.append(x)
 
-    smtp =  smtplib.SMTP(server,port) 
+    smtp = smtplib.SMTP(server, port)
     if server_user is not None:
         smtp.ehlo()
         smtp.starttls()
@@ -165,16 +172,21 @@ def send_mail(to, subject, text, _from="", files=[], cc=[], bcc=[],
 
 
 import time
+
+
 def get_file_date_string(filename):
     return time.strftime("%Y_%m_%d-%H_%M_%S",
-            time.gmtime(os.path.getmtime(filename)))
+                         time.gmtime(os.path.getmtime(filename)))
+
 
 import string
-VALID_CHARS = "-_.%s%s" % (string.ascii_letters, string.digits) 
-def clean_string(s):
 
-#       Just remove chars
-#        s = ''.join(c for c in s if c in valid_chars)
+VALID_CHARS = "-_.%s%s" % (string.ascii_letters, string.digits)
+
+
+def clean_string(s):
+    #       Just remove chars
+    #        s = ''.join(c for c in s if c in valid_chars)
     s2 = []
     for c in s:
         if c in VALID_CHARS:
@@ -182,11 +194,12 @@ def clean_string(s):
         else:
             s2.append('_')
     return ''.join(s2)
-    
 
 
 from subprocess import Popen
 from subprocess import PIPE
+
+
 def try_get_recent_changes():
     try:
         codedir = os.path.dirname(__file__)
@@ -195,7 +208,7 @@ def try_get_recent_changes():
         # gitcmd = "$(which git) log --pretty=format:'%cr:  %s <%an>%Creset' --abbrev-commit --date=short --branches -n 10"
         cmd = "cd " + codedir + " && " + gitcmd
         botlog.debug("Running: " + cmd)
-        
+
         output = Popen(cmd, stdout=PIPE, shell=True).communicate()[0]
 
         return "Recent source code changes: \n" + output

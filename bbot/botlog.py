@@ -1,4 +1,3 @@
-
 import logging
 import sys
 
@@ -8,29 +7,32 @@ WARN = logging.WARN
 
 level = WARN
 
-tracefile=sys.stdout
-tracefilepath=None
+tracefile = sys.stdout
+tracefilepath = None
 
-traceid=0
+traceid = 0
 
-cur_state=None
-cur_strat=None
+cur_state = None
+cur_strat = None
+
 
 def formattrace(msg):
     global traceid
     traceid = traceid + 1
 
-    s = "<"+str(traceid)
+    s = "<" + str(traceid)
     if cur_strat is not None:
-        s+=":"+cur_strat
+        s += ":" + cur_strat
     if cur_state is not None:
-        s+=":"+cur_state
-    s+=">  " + str(msg)
+        s += ":" + cur_state
+    s += ">  " + str(msg)
     return s
+
 
 def trace(msg):
     tracefile.write("\n" + msg + "\n")
-    
+
+
 def info(msg):
     global level
     msg = formattrace(msg)
@@ -39,6 +41,8 @@ def info(msg):
     if level <= INFO:
         #print 'info message',traceid,'going to trace',level,'vs',INFO
         trace(msg)
+
+
 def debug(msg):
     global level
     msg = formattrace(msg)
@@ -47,6 +51,8 @@ def debug(msg):
     if level <= DEBUG:
         #print 'debug message',traceid,'going to trace',level,'vs',DEBUG
         trace(msg)
+
+
 def warn(msg):
     global level
     msg = formattrace(msg)
@@ -54,11 +60,13 @@ def warn(msg):
     if level <= WARN:
         trace(msg)
 
+
 def exception(msg):
     trace(formattrace(str(msg)))
     logging.exception(msg)
 
-def configure(msglevel,format,logpath,tracepath):
+
+def configure(msglevel, format, logpath, tracepath):
     global tracefile
     global tracefilepath
     global level
@@ -67,16 +75,16 @@ def configure(msglevel,format,logpath,tracepath):
 
     if logpath is not None:
         # when logging to file always go full debug
-        logmsglevel=DEBUG
+        logmsglevel = DEBUG
     else:
         logmsglevel = msglevel
 
-    logging.basicConfig(level=logmsglevel,format=format,filename=logpath)
+    logging.basicConfig(level=logmsglevel, format=format, filename=logpath)
 
     if tracepath is None:
         tracefile = sys.stdout
     else:
-        tracefile = file(tracepath,'w')
+        tracefile = file(tracepath, 'w')
     tracefilepath = tracepath
 
 

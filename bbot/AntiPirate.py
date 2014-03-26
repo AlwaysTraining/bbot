@@ -17,12 +17,12 @@ N = NUM_REGEX
 
 
 class AntiPirate(Strategy):
-    def __init__(self,app):
-        Strategy.__init__(self,app)
+    def __init__(self, app):
+        Strategy.__init__(self, app)
         self.data = self.app.data
         self.ratio = 0.02
-        self.attack_tuner=AutoTuner(True,self.ratio,0.00001,0.25)
-        self.pp=PirateParser()
+        self.attack_tuner = AutoTuner(True, self.ratio, 0.00001, 0.25)
+        self.pp = PirateParser()
         self.last_result = None
 
     def on_attack_menu(self):
@@ -39,28 +39,28 @@ class AntiPirate(Strategy):
 
         self.data.realm.reset_pirates()
 
-        self.app.send('p',comment='go from attack menu to pirate menu')
+        self.app.send('p', comment='go from attack menu to pirate menu')
 
         buf = self.app.read()
 
-        self.app.send(randint(1,9),comment='from pirate menu to randomly chosen pirate')
+        self.app.send(randint(1, 9),
+                      comment='from pirate menu to randomly chosen pirate')
         buf = self.app.read()
-
 
         ratio = self.ratio
         troopers = int(self.app.data.realm.army.troopers.number * ratio)
 
-        self.app.sendl(troopers,comment='troopers for pirate attack')
+        self.app.sendl(troopers, comment='troopers for pirate attack')
         buf = self.app.read()
 
         jets = int(self.app.data.realm.army.jets.number * ratio)
 
-        self.app.sendl(jets,comment='jets for pirate attack')
+        self.app.sendl(jets, comment='jets for pirate attack')
         buf = self.app.read()
 
         tanks = int(self.app.data.realm.army.tanks.number * ratio)
 
-        self.app.sendl(tanks,comment='tanks for pirate attack')
+        self.app.sendl(tanks, comment='tanks for pirate attack')
 
         # I had a bug where pirate results were not returned in time, rather
         # then resort to state based parsing, we will just wait for the results

@@ -14,26 +14,26 @@ S = STR_REGEX
 N = NUM_REGEX
 W = SPACE_REGEX
 
-class PlanetParser(StatsParser):
 
+class PlanetParser(StatsParser):
     def __init__(self):
         StatsParser.__init__(self)
-        self.buymenu=True
+        self.buymenu = True
         self.myrealm = None
 
     def get_patterns(self):
         return {
-            "\(([A-Z])\) "+S+W+N+W+N+W+N : 909
-            }
+            "\(([A-Z])\) " + S + W + N + W + N + W + N: 909
+        }
 
-    
-    def on_match(self,app,line,which):
-        realm=app.data.realm
-        regions=realm.regions
+
+    def on_match(self, app, line, which):
+        realm = app.data.realm
+        regions = realm.regions
         if self.myrealm is None:
             self.myrealm = app.get_app_value("realm")
-        
-        if which == 909 : 
+
+        if which == 909:
             menu_option = self.get_str(0)
             r = None
             for x in app.data.planet.realms:
@@ -41,7 +41,7 @@ class PlanetParser(StatsParser):
                     r = x
                     break
 
-            if r is None: 
+            if r is None:
                 r = RealmStats()
                 app.data.planet.realms.append(r)
 

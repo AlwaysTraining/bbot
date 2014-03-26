@@ -15,6 +15,9 @@ print 'ip address is: ', switch_ip_address
 t = pexpect.spawn('telnet ' + switch_ip_address,logfile=sys.stdout)
 t.delaybeforesend=1
 class state:
+    def __init__(self):
+        pass
+
     def get_tokens(self):
         return []
 

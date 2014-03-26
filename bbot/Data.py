@@ -7,213 +7,255 @@
 import botlog
 import math
 
+
 def _indent(d):
-    s='\n'
+    s = '\n'
     for i in range(d):
-        if i == len(range(d)) -1:
-            s+='  +- '
+        if i == len(range(d)) - 1:
+            s += '  +- '
         else:
-            s+='  |  '
+            s += '  |  '
     return s
-        
+
+
 def enumerate_attribs(obj):
     for attr in dir(obj):
-        if not callable(getattr(obj,attr)) and not attr.startswith("__"):
-            yield attr,getattr(obj,attr)
+        if not callable(getattr(obj, attr)) and not attr.startswith("__"):
+            yield attr, getattr(obj, attr)
 
-def _printvisitor(o,d):
-    indent=_indent(d)
+
+def _printvisitor(o, d):
+    indent = _indent(d)
     t = ''
 
-    for n,v in enumerate_attribs(o):
+    for n, v in enumerate_attribs(o):
 
         if v is None:
             continue
 
-        if isinstance(v, basestring) or isinstance(v, int) or isinstance(v, float) or isinstance(v,bool):
+        if isinstance(v, basestring) or isinstance(v, int) or isinstance(v,
+                                                                         float) or isinstance(
+                v, bool):
             t += indent + n + ": " + str(v)
         elif isinstance(v, list):
             t += indent + n + "[" + str(len(v)) + "]:"
             for i in range(len(v)):
-                t += indent+str(i)+")"+_printvisitor(v[i],d+1)
+                t += indent + str(i) + ")" + _printvisitor(v[i], d + 1)
 
 
-            
+
         else:
-            t += indent + n + ":" + _printvisitor(v,d+1)
+            t += indent + n + ":" + _printvisitor(v, d + 1)
     return t
+
 
 class Units(object):
     def __init__(self):
-        self.number=None
-        self.price=None
-        self.sellprice=None
+        self.number = None
+        self.price = None
+        self.sellprice = None
+
+
 class ArmyUnits(Units):
     def __init__(self):
         Units.__init__(self)
-        self.allocation=None
-        self.production=None
+        self.allocation = None
+        self.production = None
+
+
 class Troopers(ArmyUnits):
-    menu_option='1'
-    num_per_carrier=1000
+    menu_option = '1'
+    num_per_carrier = 1000
+
+
 class Turrets(ArmyUnits):
-    menu_option='3'
-    num_per_carrier=1000
+    menu_option = '3'
+    num_per_carrier = 1000
+
+
 class Jets(ArmyUnits):
-    menu_option='2'
-    num_per_carrier=100
+    menu_option = '2'
+    num_per_carrier = 100
+
+
 class Tanks(ArmyUnits):
-    menu_option='8'
-    num_per_carrier=5000
+    menu_option = '8'
+    num_per_carrier = 5000
+
+
 class Bombers(ArmyUnits):
-    menu_option='4'
-    num_per_carrier=None
+    menu_option = '4'
+    num_per_carrier = None
+
+
 class Carriers(ArmyUnits):
-    menu_option='9'
-    num_per_carrier=None
+    menu_option = '9'
+    num_per_carrier = None
+
+
 class Agents(Units):
-    menu_option='7'
-    num_per_carrier=None
+    menu_option = '7'
+    num_per_carrier = None
+
+
 class Headquarters(Units):
-    menu_option='5'
+    menu_option = '5'
+
 
 class ManufacturedArmy(object):
     def __init__(self):
-        self.troopers=Troopers()
-        self.turrets=Turrets()
-        self.jets=Jets()
-        self.tanks=Tanks()
-        self.bombers=Bombers()
-        self.carriers=Carriers()
+        self.troopers = Troopers()
+        self.turrets = Turrets()
+        self.jets = Jets()
+        self.tanks = Tanks()
+        self.bombers = Bombers()
+        self.carriers = Carriers()
+
 
 class Army(ManufacturedArmy):
     def __init__(self):
         ManufacturedArmy.__init__(self)
-        self.agents=Agents()
-        self.headquarters=Headquarters()
+        self.agents = Agents()
+        self.headquarters = Headquarters()
         self.maintenance = None
         self.food = None
         self.sdi = None
-    
-    
+
 
 class Region(object):
     def __init__(self):
-        self.number=None
+        self.number = None
+
 
 class Industrial(Region):
-    menu_option='i'
+    menu_option = 'i'
+
     def __init__(self):
         Region.__init__(self)
-        self.zonemanufacturing=ManufacturedArmy()
+        self.zonemanufacturing = ManufacturedArmy()
+
 
 class Agricultural(Region):
-    menu_option='a'
+    menu_option = 'a'
+
     def __init__(self):
         Region.__init__(self)
-        self.foodyield=None
+        self.foodyield = None
+
 
 class Earner(Region):
     def __init__(self):
         Region.__init__(self)
-        self.earnings=None
+        self.earnings = None
+
 
 class Desert(Earner):
-    menu_option='d'
-    
+    menu_option = 'd'
+
+
 class Coastal(Earner):
-    menu_option='c'
+    menu_option = 'c'
+
 
 class Mountain(Earner):
-    menu_option='m'
+    menu_option = 'm'
+
 
 class Urban(Region):
-    menu_option='u'
+    menu_option = 'u'
+
 
 class Technology(Region):
-    menu_option='t'
+    menu_option = 't'
 
-class River(Agricultural,Earner):
-    menu_option='r'
+
+class River(Agricultural, Earner):
+    menu_option = 'r'
+
 
 class Regions(object):
-    menu_option='6'
-    def __init__(self):
-        self.coastal=Earner()
-        self.river=River()
-        self.agricultural=Agricultural()
-        self.desert=Earner()
-        self.industrial=Industrial()
-        self.urban=Urban()
-        self.mountain=Earner()
-        self.technology=Technology()
-        self.waste=Region()
+    menu_option = '6'
 
-        self.number_affordable=None
-        self.price=None
-        self.number=None
-        self.maintenance=None
+    def __init__(self):
+        self.coastal = Earner()
+        self.river = River()
+        self.agricultural = Agricultural()
+        self.desert = Earner()
+        self.industrial = Industrial()
+        self.urban = Urban()
+        self.mountain = Earner()
+        self.technology = Technology()
+        self.waste = Region()
+
+        self.number_affordable = None
+        self.price = None
+        self.number = None
+        self.maintenance = None
 
     def clone(self):
         r = Regions()
 
-        r.coastal.number            =  self.coastal.number
-        r.river.number               =  self.river.number
-        r.agricultural.number =  self.agricultural.number
-        r.desert.number             =  self.desert.number
-        r.industrial.number     =  self.industrial.number
-        r.urban.number               =  self.urban.number
-        r.mountain.number           =  self.mountain.number
-        r.technology.number     =  self.technology.number
-        r.waste.number              =  self.waste.number
-        r.number_affordable      =  self.number_affordable
-        r.price                  =  self.price
-        r.number                 =  self.number
-        r.maintenance            =  self.maintenance
+        r.coastal.number = self.coastal.number
+        r.river.number = self.river.number
+        r.agricultural.number = self.agricultural.number
+        r.desert.number = self.desert.number
+        r.industrial.number = self.industrial.number
+        r.urban.number = self.urban.number
+        r.mountain.number = self.mountain.number
+        r.technology.number = self.technology.number
+        r.waste.number = self.waste.number
+        r.number_affordable = self.number_affordable
+        r.price = self.price
+        r.number = self.number
+        r.maintenance = self.maintenance
 
         return r
 
 
     def __str__(self):
-        return _printvisitor(self,0)
+        return _printvisitor(self, 0)
 
     def normalize(self):
         length = 0
-        if self.coastal.number is not None: 
-            length = length + self.coastal.number 
-        if self.river.number is not None: 
-            length = length + self.river.number 
-        if self.agricultural.number is not None: 
-            length = length + self.agricultural.number
-        if self.desert.number is not None: 
-            length = length + self.desert.number
-        if self.industrial.number is not None: 
-            length = length + self.industrial.number
-        if self.urban.number is not None: 
-            length = length + self.urban.number
-        if self.mountain.number is not None: 
-            length = length + self.mountain.number
-        if self.technology.number is not None: 
-            length = length + self.technology.number
+        if self.coastal.number is not None:
+            length += self.coastal.number
+        if self.river.number is not None:
+            length += self.river.number
+        if self.agricultural.number is not None:
+            length += self.agricultural.number
+        if self.desert.number is not None:
+            length += self.desert.number
+        if self.industrial.number is not None:
+            length += self.industrial.number
+        if self.urban.number is not None:
+            length += self.urban.number
+        if self.mountain.number is not None:
+            length += self.mountain.number
+        if self.technology.number is not None:
+            length += self.technology.number
 
-        self.multiply(1.0/length)
+        self.multiply(1.0 / length)
 
-    def multiply(self,length):
-        if self.coastal.number is not None: 
+    def multiply(self, length):
+        """
+        Multiply each region type by a constant
+        :rtype : Regions
+        """
+        if self.coastal.number is not None:
             self.coastal.number = self.coastal.number * length
-        if self.river.number is not None: 
+        if self.river.number is not None:
             self.river.number = self.river.number * length
-        if self.agricultural.number is not None: 
+        if self.agricultural.number is not None:
             self.agricultural.number = self.agricultural.number * length
-        if self.desert.number is not None: 
+        if self.desert.number is not None:
             self.desert.number = self.desert.number * length
-        if self.industrial.number is not None: 
+        if self.industrial.number is not None:
             self.industrial.number = self.industrial.number * length
-        if self.urban.number is not None: 
+        if self.urban.number is not None:
             self.urban.number = self.urban.number * length
-        if self.mountain.number is not None: 
+        if self.mountain.number is not None:
             self.mountain.number = self.mountain.number * length
-        if self.technology.number is not None: 
+        if self.technology.number is not None:
             self.technology.number = self.technology.number * length
 
     def ratio_to_buy(self, length):
@@ -223,54 +265,54 @@ class Regions(object):
         t = 0
         m = None
         ma = -1
-        if self.coastal.number is not None: 
+        if self.coastal.number is not None:
             self.coastal.number = int(self.coastal.number * length)
             if self.coastal.number > ma:
                 ma = self.coastal.number
                 m = self.coastal
-            t = t + self.coastal.number
-        if self.river.number is not None: 
+            t += self.coastal.number
+        if self.river.number is not None:
             self.river.number = int(self.river.number * length)
             if self.river.number > ma:
                 ma = self.river.number
                 m = self.river
-            t = t + self.river.number
-        if self.agricultural.number is not None: 
+            t += self.river.number
+        if self.agricultural.number is not None:
             self.agricultural.number = int(self.agricultural.number * length)
             if self.agricultural.number > ma:
                 ma = self.agricultural.number
                 m = self.agricultural
-            t = t + self.agricultural.number
-        if self.desert.number is not None: 
+            t += self.agricultural.number
+        if self.desert.number is not None:
             self.desert.number = int(self.desert.number * length)
             if self.desert.number > ma:
                 ma = self.desert.number
                 m = self.desert
-            t = t + self.desert.number
-        if self.industrial.number is not None: 
+            t += self.desert.number
+        if self.industrial.number is not None:
             self.industrial.number = int(self.industrial.number * length)
             if self.industrial.number > ma:
                 ma = self.industrial.number
                 m = self.industrial
-            t = t + self.industrial.number
-        if self.urban.number is not None: 
+            t += self.industrial.number
+        if self.urban.number is not None:
             self.urban.number = int(self.urban.number * length)
             if self.urban.number > ma:
                 ma = self.industrial.number
                 m = self.industrial
-            t = t + self.urban.number
-        if self.mountain.number is not None: 
+            t += self.urban.number
+        if self.mountain.number is not None:
             self.mountain.number = int(self.mountain.number * length)
             if self.mountain.number > ma:
                 ma = self.mountain.number
                 m = self.mountain
-            t = t + self.mountain.number
-        if self.technology.number is not None: 
+            t += self.mountain.number
+        if self.technology.number is not None:
             self.technology.number = int(self.technology.number * length)
             if self.technology.number > ma:
                 ma = self.technology.number
                 m = self.technology
-            t = t + self.technology.number
+            t += self.technology.number
         d = length - t
         if (d > 0):
             m.number = m.number + d
@@ -278,202 +320,237 @@ class Regions(object):
     def get_menu_number_dict(self):
         d = {}
 
-        if self.coastal.number is not None and self.coastal.number > 0: 
+        if self.coastal.number is not None and self.coastal.number > 0:
             d[Coastal.menu_option] = self.coastal.number
-        if self.river.number is not None and self.river.number > 0: 
+        if self.river.number is not None and self.river.number > 0:
             d[River.menu_option] = self.river.number
-        if self.agricultural.number is not None and self.agricultural.number > 0: 
+        if self.agricultural.number is not None and self.agricultural.number > 0:
             d[Agricultural.menu_option] = self.agricultural.number
-        if self.desert.number is not None and self.desert.number > 0: 
+        if self.desert.number is not None and self.desert.number > 0:
             d[Desert.menu_option] = self.desert.number
-        if self.industrial.number is not None and self.industrial.number > 0: 
+        if self.industrial.number is not None and self.industrial.number > 0:
             d[Industrial.menu_option] = self.industrial.number
-        if self.urban.number is not None and self.urban.number > 0: 
+        if self.urban.number is not None and self.urban.number > 0:
             d[Urban.menu_option] = self.urban.number
-        if self.mountain.number is not None and self.mountain.number > 0: 
+        if self.mountain.number is not None and self.mountain.number > 0:
             d[Mountain.menu_option] = self.mountain.number
-        if self.technology.number is not None and self.technology.number > 0: 
+        if self.technology.number is not None and self.technology.number > 0:
             d[Technology.menu_option] = self.technology.number
 
         return d
 
 
-
-    
 class Population(object):
     def __init__(self):
-        self.taxearnings=None
-        self.growth=None
+        self.taxearnings = None
+        self.growth = None
         self.food = None
         self.pop_support_bribe = None
         self.pop_support = None
         self.rate = None
-        self.size=None
-    
+        self.size = None
+
+
 class Gold(object):
-    menu_option='6'
-    num_per_carrier=100000
+    menu_option = '6'
+    num_per_carrier = 100000
+
 
 class Investment(object):
     def __init__(self):
-        self.date=None
-        self.gold=None
+        self.date = None
+        self.gold = None
+
 
 class Bank(object):
     def __init__(self):
-        self.gold=None
-        self.investments=[]
+        self.gold = None
+        self.investments = []
         self.approx_return = None
 
 
 class Turns(object):
     def __init__(self):
-        self.remaining=None
-        self.current=None
+        self.remaining = None
+        self.current = None
         self.years_protection = None
         self.years_freedom = None
 
+
 class Food(object):
-    menu_option='5'
-    num_per_carrier=None
+    menu_option = '5'
+    num_per_carrier = None
+
     def __init__(self):
-        self.spoilage=None
-        self.units=None
-        self.randomly_eaten=None
+        self.spoilage = None
+        self.units = None
+        self.randomly_eaten = None
+
 
 class Setup(object):
-    game_start_date=None
-    turns_per_day=None
+    game_start_date = None
+    turns_per_day = None
     protection_turns = None
-    daily_land_creation=None
-    planetary_tax_rate=None
-    max_players=None
-    interest_rate=None
-    maint_costs=None
-    region_cost=None
-    trade_cost=None
-    attack_damage=None
-    attack_rewards=None
-    army_purchase=None
-    local_game=None
-    interbbs_game=None
-    num_boards=None
-    attack_cost=None
-    terror_cost=None
-    num_indie_attacks=None
-    num_group_attacks=None
-    num_tops=None
-    num_bops=None
-    days_for_mit=None
-    gooies=None
-    bombing_ops=None
-    missle_ops=None
+    daily_land_creation = None
+    planetary_tax_rate = None
+    max_players = None
+    interest_rate = None
+    maint_costs = None
+    region_cost = None
+    trade_cost = None
+    attack_damage = None
+    attack_rewards = None
+    army_purchase = None
+    local_game = None
+    interbbs_game = None
+    num_boards = None
+    attack_cost = None
+    terror_cost = None
+    num_indie_attacks = None
+    num_group_attacks = None
+    num_tops = None
+    num_bops = None
+    days_for_mit = None
+    gooies = None
+    bombing_ops = None
+    missle_ops = None
+
 
 class Advisor(object):
     pass
 
+
 class CivilianAdvisor(Advisor):
-    menu_option='1'
+    menu_option = '1'
+
     def __init__(self):
         Advisor.__init__(self)
-        self.river_food_production=None
-        self.food_consumption=None
-        self.food_surplus=None
-        self.food_deficit=None
-        self.years_survival=None
+        self.river_food_production = None
+        self.food_consumption = None
+        self.food_surplus = None
+        self.food_deficit = None
+        self.years_survival = None
+
+
 class EconomicAdvisor(Advisor):
-    menu_option='2'
+    menu_option = '2'
+
     def __init__(self):
         Advisor.__init__(self)
-        self.income=None
-        self.world_income_ratio=None
-        self.efficiency=None
-        self.global_avg_efficiency=None
+        self.income = None
+        self.world_income_ratio = None
+        self.efficiency = None
+        self.global_avg_efficiency = None
+
+
 class MilitaryAdvisor(Advisor):
-    menu_option='3'
+    menu_option = '3'
+
     def __init__(self):
         Advisor.__init__(self)
+
+
 class TechnologyAdvisor(Advisor):
-    menu_option='4'
+    menu_option = '4'
+
     def __init__(self):
         Advisor.__init__(self)
-        self.mil_tech=None
-        self.gold_tech=None
-        self.food_tech=None
-        self.industry_tech=None
-        self.maint_tech=None
-        self.sdi_tech=None
-        self.food_decay_tech=None
+        self.mil_tech = None
+        self.gold_tech = None
+        self.food_tech = None
+        self.industry_tech = None
+        self.maint_tech = None
+        self.sdi_tech = None
+        self.food_decay_tech = None
+
+
 class Advisors(object):
     def __init__(self):
-        self.civilian=CivilianAdvisor()
-        self.economic=EconomicAdvisor()
-        self.military=MilitaryAdvisor()
-        self.technology=TechnologyAdvisor()
+        self.civilian = CivilianAdvisor()
+        self.economic = EconomicAdvisor()
+        self.military = MilitaryAdvisor()
+        self.technology = TechnologyAdvisor()
+
     def get_advisor(self, menu_option):
-        if CivilianAdvisor.menu_option == str(menu_option): return self.civilian
-        elif EconomicAdvisor.menu_option == str(menu_option): return self.economic
-        elif MilitaryAdvisor.menu_option == str(menu_option): return self.military
-        elif TechnologyAdvisor.menu_option == str(menu_option): return self.technology
-        else: raise Exception("Unkown menu options for advisor")
+        if CivilianAdvisor.menu_option == str(menu_option):
+            return self.civilian
+        elif EconomicAdvisor.menu_option == str(menu_option):
+            return self.economic
+        elif MilitaryAdvisor.menu_option == str(menu_option):
+            return self.military
+        elif TechnologyAdvisor.menu_option == str(menu_option):
+            return self.technology
+        else:
+            raise Exception("Unkown menu options for advisor")
+
     def reset_advisor(self, menu_option):
-        if CivilianAdvisor.menu_option == str(menu_option): self.civilian = CivilianAdvisor()
-        elif EconomicAdvisor.menu_option == str(menu_option): self.economic = EconomicAdvisor()
-        elif MilitaryAdvisor.menu_option == str(menu_option): self.military = MilitaryAdvisor()
-        elif TechnologyAdvisor.menu_option == str(menu_option): self.technology = TechnologyAdvisor()
-        else: raise Exception("Unkown menu options for advisor")
-    
+        if CivilianAdvisor.menu_option == str(menu_option):
+            self.civilian = CivilianAdvisor()
+        elif EconomicAdvisor.menu_option == str(menu_option):
+            self.economic = EconomicAdvisor()
+        elif MilitaryAdvisor.menu_option == str(menu_option):
+            self.military = MilitaryAdvisor()
+        elif TechnologyAdvisor.menu_option == str(menu_option):
+            self.technology = TechnologyAdvisor()
+        else:
+            raise Exception("Unkown menu options for advisor")
+
+
 class Pirates(object):
     def __init__(self):
-        self.regions=None
+        self.regions = None
+
 
 class Realm(object):
     def __init__(self):
-        self.regions=Regions()
-        self.population=Population()
-        self.army=Army()
-        self.name=None
-        self.gold=None
-        self.bank=Bank()
-        self.turns=Turns()
-        self.food=Food()
-        self.queen_taxes=None
-        self.score=None
-        self.advisors=Advisors()
-        self.pirates=Pirates()
+        self.regions = Regions()
+        self.population = Population()
+        self.army = Army()
+        self.name = None
+        self.gold = None
+        self.bank = Bank()
+        self.turns = Turns()
+        self.food = Food()
+        self.queen_taxes = None
+        self.score = None
+        self.advisors = Advisors()
+        self.pirates = Pirates()
 
     def reset_pirates(self):
-        self.pirates=Pirates()
+        self.pirates = Pirates()
+
 
 class RealmStats(object):
     def __init__(self):
-        self.menu_option=None
-        self.name=None
-        self.score=None
-        self.regions=None
-        self.networth=None
-        self.treaty=None
+        self.menu_option = None
+        self.name = None
+        self.score = None
+        self.regions = None
+        self.networth = None
+        self.treaty = None
+
 
 class Planet(object):
     def __init__(self):
-        self.realms=[]
+        self.realms = []
 
     def __str__(self):
-        return _printvisitor(self,0)
+        return _printvisitor(self, 0)
+
 
 class Data(dict):
-
-    realm=Realm()
-    setup=None
-    statstext=''
-    spendtext=''
-    msgtext=''
-    planettext=''
-    planet=None
+    realm = Realm()
+    setup = None
+    statstext = ''
+    spendtext = ''
+    msgtext = ''
+    planettext = ''
+    planet = None
 
 
     def __str__(self):
-        return _printvisitor(self.realm,0) + "\n" + _printvisitor(self.planet,0)
+        return _printvisitor(self.realm, 0) + "\n" + _printvisitor(self.planet,
+                                                                   0)
 
 
     def set(self, key, value):
@@ -483,10 +560,10 @@ class Data(dict):
     def get_maint_cost(self):
         c = 0
         realm = self.realm
-        if realm.army.maintenance is not None: c = c + realm.army.maintenance
-        if realm.regions.maintenance is not None: c = c + realm.regions.maintenance
-        if realm.queen_taxes is not None: c = c + realm.queen_taxes
-        if realm.population.pop_support_bribe is not None: c = c + realm.population.pop_support_bribe
+        if realm.army.maintenance is not None: c += realm.army.maintenance
+        if realm.regions.maintenance is not None: c += realm.regions.maintenance
+        if realm.queen_taxes is not None: c += realm.queen_taxes
+        if realm.population.pop_support_bribe is not None: c += realm.population.pop_support_bribe
         # TODO Morale cost
 
         return c
@@ -497,7 +574,7 @@ class Data(dict):
     def has_full_investments(self):
         # it is common to see $1,999,999,998 investments, i
         #   so subtract 10 of those off by 2's and you get 20
-        return sum(self.realm.bank.investments) >= 20000000000 - 20 
+        return sum(self.realm.bank.investments) >= 20000000000 - 20
 
     def get_number(self, item):
         army = self.realm.army
@@ -514,12 +591,12 @@ class Data(dict):
         raise Exception("get_number() don't know about option " + str(item))
 
     def get_num_per_carrier(self, item):
-# my experiements indicate:
-# 1k troopers
-# 100 jets
-# 1k turrets
-# 100k gold
-# 5k tanks
+        # my experiements indicate:
+        # 1k troopers
+        # 100 jets
+        # 1k turrets
+        # 100k gold
+        # 5k tanks
         army = self.realm.army
         item = str(item)
         if item == Troopers.menu_option: return army.troopers.num_per_carrier
@@ -531,9 +608,10 @@ class Data(dict):
         if item == Agents.menu_option: return army.agents.num_per_carrier
         if item == Food.menu_option: return Food.num_per_carrier
         if item == Gold.menu_option: return Gold.num_per_carrier
-        raise Exception("get_num_per_carrier() don't know about option " + str(item))
+        raise Exception(
+            "get_num_per_carrier() don't know about option " + str(item))
 
-    def get_realm_by_name(self,name):
+    def get_realm_by_name(self, name):
         for r in self.planet.realms:
             if r.name == name:
                 return r
@@ -542,7 +620,7 @@ class Data(dict):
     def can_get_attack_strength(self):
         army = self.realm.army
         return not ( army.troopers.number is None or army.jets.number is None
-            or army.tanks.number is None)
+                     or army.tanks.number is None)
 
     def get_attack_strength(self):
         army = self.realm.army
@@ -563,8 +641,8 @@ class Data(dict):
         r = a.civilian.food_consumption
 
         if r is not None:
-            r = int(round(g * r,0))
-        
+            r = int(round(g * r, 0))
+
         botlog.debug("try_get_needed_surplus: " + str(r))
         return r
 

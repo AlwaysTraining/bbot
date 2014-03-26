@@ -8,73 +8,72 @@ import re
 import botlog
 
 
-class PID:    
+class PID:
     def __init__(self):
         self.Kp = 0
         self.Kd = 0
         self.Ki = 0
         self.initialize()
-        
+
     def SetKp(self, Kp):
         self.Kp = Kp
-    
+
     def SetKi(self, Ki):
         self.Ki = Ki
-        
+
     def SetKd(self, Kd):
         self.Kd = Kd
-        
+
     def SetPrevErr(self, preverr):
         self.prev_err = preverr
-        
+
     def initialize(self):
         self.currtm = 0
-        self.prevtm = self.currtm 
+        self.prevtm = self.currtm
         self.prev_err = 0
         self.Cp = 0
         self.Ci = 0
         self.Cd = 0
-        
+
     def GenOut(self, error):
         """ Performs a PID computation and returns a control value based on the
         elapased time (dt) and the error signal from a summing junction. """
-        
-        self.currtm = self.currtm + 1       #get t
+
+        self.currtm = self.currtm + 1  #get t
         dt = self.currtm - self.prevtm  #get delta t
-        de = error - self.prev_err      #get delta error
-        
-        self.Cp = self.Kp * error   #proportional term
-        self.Ci += error * dt       #integral term
-        
+        de = error - self.prev_err  #get delta error
+
+        self.Cp = self.Kp * error  #proportional term
+        self.Ci += error * dt  #integral term
+
         self.Cd = 0
-        if dt > 0:                  #no div by zero
-            self.Cd = de/dt         #derivative term
-            
-        self.prevtm = self.currtm   #save t for next pass
-        self.prev_err = error       #save t-1 error
-        
-        return self.Cp + (self.Ki * self.Ci) + (self.Kd * self.Cd) 
+        if dt > 0:  #no div by zero
+            self.Cd = de / dt  #derivative term
+
+        self.prevtm = self.currtm  #save t for next pass
+        self.prev_err = error  #save t-1 error
+
+        return self.Cp + (self.Ki * self.Ci) + (self.Kd * self.Cd)
+
 
 class PIDAutoTuner():
-
-    def __init__(self,Kp=1,Ki=1,Kd=1):
-        self.pid=PID()
-        self.pid.SetKp(Kp) # proportial gain
-        self.pid.SetKd(Kd)   #   derivative gain
-        self.pid.SetKi(Ki)   #   integral gain
+    def __init__(self, Kp=1, Ki=1, Kd=1):
+        self.pid = PID()
+        self.pid.SetKp(Kp)  # proportial gain
+        self.pid.SetKd(Kd)  #   derivative gain
+        self.pid.SetKi(Ki)  #   integral gain
 
     def get_next_value(self, err):
         return self.pid.GenOut(err)
 
 
 class AutoTuner():
-
     def __init__(
-            self, 
-            aggressive_increase, 
-            initial_value, 
-            min_clamp, 
-            max_clamp, 
+            self,
+            aggressive_increase,
+            initial_value,
+            min_clamp,
+            max_clamp,
             alpha=0.5,
             beta=5.0):
 
@@ -129,32 +128,35 @@ class AutoTuner():
         ratio = 0
         if (self.wins + self.losses + self.ties != 0):
             ratio = self.wins / float(self.wins + self.losses + self.ties)
-            
-        return ("Old Value: " + str(round(self.old_value,3)) +"-> New Value: " + str(round(self.value,3)) + ", record: " + 
-                str(self.wins) + "-" + str(self.losses) +"-" + str(self.ties)
-                + ": " + str(round(ratio,3)) + "%" )
 
-   
+        return (
+            "Old Value: " + str(
+                round(self.old_value, 3)) + "-> New Value: " + str(
+                round(self.value, 3)) + ", record: " +
+            str(self.wins) + "-" + str(self.losses) + "-" + str(self.ties)
+            + ": " + str(round(ratio, 3)) + "%" )
+
+
 if __name__ == "__main__":
     import random
     import time
     import sys
     import math
-    
+
 
     best = 99999
-    bestgoods =-99999
+    bestgoods = -99999
 
     while True:
 
-        k1 = random.uniform(-100,100)
-        k2 = random.uniform(-100,100)
-        k3 = random.uniform(-100,100)
+        k1 = random.uniform(-100, 100)
+        k2 = random.uniform(-100, 100)
+        k3 = random.uniform(-100, 100)
 
-        army_strength =  10000
+        army_strength = 10000
         pirate_strength = 1000
         attack_ratio = 0.05
-        at = PIDAutoTuner(k1,k2,k3)
+        at = PIDAutoTuner(k1, k2, k3)
         # at = AutoTuner(float(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3]))
         attack_strength = 500
         avg_accuracy = None
@@ -164,16 +166,15 @@ if __name__ == "__main__":
         for i in range(10):
             attack_strength = attack_ratio * army_strength
 
-            if attack_strength >  pirate_strength:
-                losses = 1/100.0
+            if attack_strength > pirate_strength:
+                losses = 1 / 100.0
                 goods = goods + 1
             else:
-                losses = -1/100.0
+                losses = -1 / 100.0
                 bads = bads + 1
 
             army_growth = 1.07
             pirate_growth = 1.05
-
 
             if attack_strength != 0:
                 accuracy = (attack_strength - pirate_strength) / attack_strength
@@ -192,11 +193,11 @@ if __name__ == "__main__":
 
         if math.fabs(avg_accuracy) < math.fabs(best):
             best = avg_accuracy
-            print "avg_error:", avg_accuracy, "k:",k1,k2,k3,"record:",goods,"-",bads
+            print "avg_error:", avg_accuracy, "k:", k1, k2, k3, "record:", goods, "-", bads
 
         if goods > bestgoods:
             bestgoods = goods
-            print "avg_error:", avg_accuracy, "k:",k1,k2,k3,"record:",goods,"-",bads
+            print "avg_error:", avg_accuracy, "k:", k1, k2, k3, "record:", goods, "-", bads
 
         
 

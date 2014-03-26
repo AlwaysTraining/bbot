@@ -37,7 +37,7 @@ class LogOff(State):
         if 'Which, (Q)uit or [1]:' in buf:
             app.send('q')
             buf = app.read(stop_patterns=MAIN_MENUS)
-            if app.match_re != None:
+            if app.match_re is not None:
                 app.send_seq(['o', 'y'])
                 return BailOut()
 

@@ -9,15 +9,15 @@ import os
 import botlog
 import Utils
 
-UNHANDLED="bbot_UNHANDLED"
-TERMINATE="bbot_TERMINATE"
-CONSUMED="bbot_CONSUMED"
+UNHANDLED = "bbot_UNHANDLED"
+TERMINATE = "bbot_TERMINATE"
+CONSUMED = "bbot_CONSUMED"
+
 
 class Strategy:
-
-    UNHANDLED="bbot_UNHANDLED"
-    TERMINATE="bbot_TERMINATE"
-    CONSUMED="bbot_CONSUMED"
+    UNHANDLED = "bbot_UNHANDLED"
+    TERMINATE = "bbot_TERMINATE"
+    CONSUMED = "bbot_CONSUMED"
 
 
     def __init__(self, app):
@@ -51,12 +51,12 @@ class Strategy:
         return UNHANDLED
 
 
-    def get_strategy_option(self,name):
+    def get_strategy_option(self, name):
         option = self.get_name() + "_" + name
         return self.app.get_app_value(option)
 
-class Strategies(list):
 
+class Strategies(list):
     def __init__(self, app, strats):
         # shouldn't happen with cmd line checking
 
@@ -68,13 +68,13 @@ class Strategies(list):
 
         # dynamically load all strategies given form the command line
         for strstrat in strats:
-            codepath = os.path.join(os.path.dirname(__file__),strstrat + ".py")
-            strat = Utils.create_instance(codepath, strstrat,app=app)
+            codepath = os.path.join(os.path.dirname(__file__), strstrat + ".py")
+            strat = Utils.create_instance(codepath, strstrat, app=app)
 
             self.append(strat)
 
         # sort strategies in desending order of priority
-        self.sort(key=lambda s: s.get_priority(), reverse = True)
+        self.sort(key=lambda s: s.get_priority(), reverse=True)
 
 
 

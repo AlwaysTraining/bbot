@@ -12,8 +12,6 @@ S = SPACE_REGEX
 N = NUM_REGEX
 
 
-
-
 class Investor(Strategy):
     def __init__(self, app):
         Strategy.__init__(self, app)
