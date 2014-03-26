@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Author: Derrick H. Karimi
-# Emerging Technology Center, Carnegie Mellon University, Copyright 2013
+# Copyright 2014
 # Unclassified
 
 import Constants
