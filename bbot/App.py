@@ -444,6 +444,7 @@ class App:
             self.data.msgtext + "\n\n" +
             self.data.statstext + "\n\n" +
             self.data.spendtext + "\n\n" +
+            self.data.investmentstext + "\n\n" +
             changes )
 
         Utils.send_mail(

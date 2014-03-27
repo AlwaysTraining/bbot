@@ -149,6 +149,7 @@ class Spending(StatsState):
 def list_investments(app, maintParser):
     app.send("l", comment="Checking investments")
     buf = app.read()
+    app.data.investmentstext = buf
     app.data.realm.bank.investments = []
     maintParser.parse(app, buf)
     botlog.info("Current Investments : $" +
@@ -184,7 +185,11 @@ class Maint(StatsState):
             app.send('0')
         elif '[Crazy Gold Bank]' in buf:
             # list the investments, and parse them
-            list_investments(app, self.statsParse)
+            if not app.data.has_full_investments():
+                list_investments(app, self.statsParse)
+            else:
+                botlog.info("Not listing investments, we already know they "
+                            "are full")
             if app.on_bank_menu() != Strategy.UNHANDLED:
                 list_investments(app, self.statsParse)
 

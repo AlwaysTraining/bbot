@@ -543,6 +543,7 @@ class Data(dict):
     setup = None
     statstext = ''
     spendtext = ''
+    investmentstext = ''
     msgtext = ''
     planettext = ''
     planet = None
