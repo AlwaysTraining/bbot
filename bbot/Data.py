@@ -612,8 +612,10 @@ class Data(dict):
         raise Exception(
             "get_num_per_carrier() don't know about option " + str(item))
 
-    def get_realm_by_name(self, name):
-        for r in self.planet.realms:
+    def get_realm_by_name(self, name, realms=None):
+        if realms is None:
+            realms = self.planet.realms
+        for r in realms:
             if r.name == name:
                 return r
         return None
