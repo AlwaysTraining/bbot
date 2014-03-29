@@ -90,7 +90,7 @@ class AgentRecruiter(Strategy):
             item = Agents.menu_option
 
             # determine number to buy
-            price = self.data.get_price(item)
+            price = self.app.data.realm.army.agents.price
             gold = self.data.realm.gold * ratio
             ammount = int(math.floor(gold / price))
 
@@ -98,9 +98,8 @@ class AgentRecruiter(Strategy):
                 botlog.info("Could not afford even 1 agent")
             else:
                 # buy the items
-                self.app.send_seq([item, ammount], comment="Buying " +
-                                                           str(
-                                                               ammount) + " agents")
+                self.app.send_seq([item, ammount, '\r'], 
+                        comment="Buying " + str(ammount) + " agents")
 
 
         # enter region buying menu
