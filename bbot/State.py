@@ -380,6 +380,15 @@ class MainMenu(StatsState):
             if '-=<Paused>=-' in buf:
                 app.sendl()
             buf = app.read()
+
+            # in the main menu, check the empire status
+            app.send(2, comment="Checking status")
+            buf = app.read()
+            TurnStatsParser().parse(app,buf)
+            if '-=<Paused>=-' in buf:
+                app.sendl()
+            buf = app.read()
+
             app.send(1, comment="Commencing to play the game")
             return PreTurns()
 
