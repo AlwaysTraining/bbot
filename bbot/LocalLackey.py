@@ -55,7 +55,7 @@ class LocalLackey(LackyBase):
 
     def on_spending_menu(self):
         # buy carriers if needed
-        LackeyBase.on_spending_menu()
+        LackeyBase.on_spending_menu(self)
 
         # we will just send the trade deal from the system menu during the
         # spending menu, this saves helps because we make trading a high

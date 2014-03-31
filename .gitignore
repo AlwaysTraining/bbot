@@ -17,3 +17,6 @@ sweng/bbot_*
 # ignore all pycharm files
 .idea
 idea/*
+
+# ignore test scripts
+bin/*_9.sh

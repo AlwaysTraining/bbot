@@ -99,9 +99,14 @@ defaults = {
         'LocalLackey_trade_items': ['Troopers', 'Turrets', 'Jets',
                                     'Tanks', 'Bombers', 'Agents',
                                     'Gold'],
-        'LocalLackey_regions_required': 3000,
         'LocalLackey_tribute_ratio': 0.25,
         'data_dir': '.',
+        'Lackey_master_planet': 'trans canada',
+        'Lackey_master_realm': 'Bonk',
+        'Lackey_trade_items': ['Troopers', 'Turrets', 'Jets',
+                                    'Tanks', 'Bombers', 'Agents',
+                                    'Gold'],
+        'Lackey_tribute_ratio': 0.25,
     },
 }
 
@@ -167,16 +172,31 @@ parser.add_argument("--LocalLackey-trade-items",
                          "Turrets, Jets, Tanks, Bombers, Carriers, Agents, "
                          "Food, Gold ]",
                     default=get_default('LocalLackey_trade_items'))
-parser.add_argument("--LocalLackey-regions-required",
-                    action="store",
-                    help="The number of regions required before sending out "
-                         "trade deals",
-                    default=get_default('LocalLackey_regions_required'))
 parser.add_argument("--LocalLackey-tribute-ratio",
                     action="store",
                     help="The ratio of owned resources to give in tribute to "
                          "the master realm each day: [0.0 - 1.0]",
                     default=get_default('LocalLackey_tribute_ratio'))
+
+parser.add_argument("--Lackey-master-planet",
+                    action="store",
+                    help="Name of the planet who a Lackey will send trade deals to",
+                    default=get_default('Lackey_master_planet'))
+parser.add_argument("--Lackey-master-realm",
+                    action="store",
+                    help="Name of the realm who a Lackey will send trade deals to",
+                    default=get_default('Lackey_master_realm'))
+parser.add_argument("--Lackey-trade-items",
+                    nargs="*",
+                    help="Items to include in trade deal: [ Troopers. "
+                         "Turrets, Jets, Tanks, Bombers, Carriers, Agents, "
+                         "Food, Gold ]",
+                    default=get_default('Lackey_trade_items'))
+parser.add_argument("--Lackey-tribute-ratio",
+                    action="store",
+                    help="The ratio of owned resources to give in tribute to "
+                         "the master realm on master planet each day: [0.0 - 1.0]",
+                    default=get_default('Lackey_tribute_ratio'))
 
 parser.add_argument("-d", "--debug",
                     action="store_true",
