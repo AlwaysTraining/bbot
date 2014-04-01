@@ -577,6 +577,9 @@ class Data(dict):
         #   so subtract 10 of those off by 2's and you get 20
         return sum(self.realm.bank.investments) >= 20000000000 - 20
 
+    def has_full_bank(self):
+        return self.realm.bank.gold >= 1999999999
+
     def get_number(self, item):
         army = self.realm.army
         item = str(item)
