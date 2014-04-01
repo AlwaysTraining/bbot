@@ -13,7 +13,7 @@ from bbot.LackeyBase import LackeyBase
 from math import ceil
 from math import floor
 
-class LocalLackey(LackyBase):
+class LocalLackey(LackeyBase):
     def __init__(self, app):
         LackeyBase.__init__(self, app)
 
