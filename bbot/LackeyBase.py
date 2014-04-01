@@ -145,7 +145,7 @@ class LackeyBase(Strategy):
                               comment="just quit from trade deal, not enough carriers")
             return False
         else:
-            if oneway:
+            if not oneway:
                 self.app.send_seq(["\r", "\r", 'y', 2, "\r"],
                                   comment="Send the deal out")
             else:
