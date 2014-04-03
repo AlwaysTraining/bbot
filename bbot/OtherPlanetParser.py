@@ -18,8 +18,16 @@ W = SPACE_REGEX
 class OtherPlanetParser(StatsParser):
     def __init__(self, realms=None):
         StatsParser.__init__(self)
+        if realms is None:
+            realms = []
         self.realms = realms
-
+    """A Fix parser! TODO
+    -*Players at Trans-Canada BBS*-
+    Id   Empire Name                          Territory   Score   Networth
+    ��������������������������������������������������������������������������
+    (A)  Bonk                                    16,761     33k       743k
+    ��������������������������������������������������������������������������
+    """
     def get_patterns(self):
         return {
             "\(([A-Z])\) " + S + W + N + W + N + W + N: 9091

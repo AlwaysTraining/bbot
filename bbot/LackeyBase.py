@@ -75,6 +75,9 @@ class LackeyBase(Strategy):
         #   each turn
         return self.tribute_ratio
 
+    def get_master_name(self):
+        raise Exception("Base class must provide master name")
+
     def on_spending_menu(self):
         army = self.app.data.realm.army
         tradeRatio = self.get_trade_ratio()
@@ -100,13 +103,13 @@ class LackeyBase(Strategy):
             can_afford = floor(self.app.data.realm.gold / army.carriers.price)
             if num_to_buy > can_afford:
                 botlog.warn("We can not afford enough carriers to send " +
-                            self.masterName + " his goods")
+                            self.get_master_name() + " his goods")
                 # TODO, should we make a partial purchase here?
                 return
             else:
                 self.app.send_seq([Carriers.menu_option,
                                    str(int(num_to_buy)), '\r'],
-                                  comment="Buying carriers to send " + self.masterName + " a trade deal")
+                                  comment="Buying carriers to send " + self.get_master_name() + " a trade deal")
 
 
     def check_can_trade(self, tradeRatio):

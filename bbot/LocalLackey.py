@@ -22,6 +22,8 @@ class LocalLackey(LackeyBase):
         # get the destination realm from the application
         self.masterName = self.get_strategy_option("master")
 
+    def get_master_name(self):
+        return self.masterName
 
     def on_diplomacy_menu(self):
         self.app.send(9, comment="viewing the local diplomacy list")
