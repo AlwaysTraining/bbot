@@ -116,6 +116,8 @@ def create_instance(
 
 def ToNum(strNum):
     strNum = strNum.replace(',', '')
+    strNum = strNum.replace('k', '000')
+    strNum = strNum.replace('m', '000000')
     return int(strNum)
 
 

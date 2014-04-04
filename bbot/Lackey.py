@@ -33,7 +33,6 @@ class Lackey(LackeyBase):
 
     def on_interplanetary_menu(self):
 
-# TODO withdraw from bank to make sure we can fund this
 
         # early in the game, we don't trade
         tradeRatio = self.get_trade_ratio()

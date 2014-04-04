@@ -153,7 +153,7 @@ class LackeyBase(Strategy):
                                   comment="Send the deal out")
             else:
                 # TODO double check this sequence for IP Trading
-                self.app.send_seq(["\r", 'y', 2, "\r"],
+                self.app.send_seq(["\r", 'y'],
                                   comment="Send the deal out")
 
             return True
