@@ -15,6 +15,9 @@ traceid = 0
 cur_state = None
 cur_strat = None
 
+errors = {}
+warnings = {}
+notes = {}
 
 def formattrace(msg):
     global traceid
@@ -42,6 +45,16 @@ def info(msg):
         #print 'info message',traceid,'going to trace',level,'vs',INFO
         trace(msg)
 
+def note(msg):
+    global notes
+    _update_msg_map(notes,msg)
+    info("NOTE: " + msg)
+
+def _update_msg_map(msgmap, msg):
+    if msg in msgmap:
+        msgmap[msg]++
+    else:
+        msgmap[msg] = 1
 
 def debug(msg):
     global level
@@ -52,16 +65,21 @@ def debug(msg):
         #print 'debug message',traceid,'going to trace',level,'vs',DEBUG
         trace(msg)
 
-
 def warn(msg):
     global level
+    global warnings
+    _update_msg_map(warnings,msg)
+
     msg = formattrace(msg)
+    
     logging.warn(msg)
     if level <= WARN:
         trace(msg)
 
 
 def exception(msg):
+    global errors
+    _update_msg_map(errors,msg)
     trace(formattrace(str(msg)))
     logging.exception(msg)
 
@@ -70,6 +88,14 @@ def configure(msglevel, format, logpath, tracepath):
     global tracefile
     global tracefilepath
     global level
+    global warnings
+    global errors
+    global notes
+
+    warnings = {}
+    errors = {}
+    notes = {}
+
     level = msglevel
     logging.getLogger('').handlers = []
 

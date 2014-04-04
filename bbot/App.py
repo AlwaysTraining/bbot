@@ -405,6 +405,16 @@ class App:
             raise Exception("Unexpected end of session in state: " +
                             state.get_name())
 
+    def format_msgmap_text(self, title, msgmap):
+        warntext = ""
+        for warning,count in msgmap:
+            if warntext == "":
+                warntext = title + ":\n"
+            warntext += "\t" + warning
+            if count > 1:
+                warntext += " (x" + str(count) + ")"
+            warntext += "\n"
+        return warntext
 
     def send_notification(self, game_exception):
 
@@ -439,9 +449,17 @@ class App:
             subject = "Failure : " + str(game_exception)
 
         changes = Utils.try_get_recent_changes()
+
+        warntext = self.format_msgmap_text("Warnings", botlog.warnings)
+        errortext = self.format_msgmap_text("Errors", botlog.errors)
+        notetext = self.format_msgmap_text("Notes", botlog.notes)
+
         body = (
             self.data.planettext + "\n\n" +
             self.data.msgtext + "\n\n" +
+            self.data.notetext + "\n\n" +
+            self.data.warntext + "\n\n" +
+            self.data.errortext + "\n\n" +
             self.data.statstext + "\n\n" +
             self.data.spendtext + "\n\n" +
             self.data.investmentstext + "\n\n" +
