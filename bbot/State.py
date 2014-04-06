@@ -452,6 +452,11 @@ class BBSMenus(State):
             app.send_seq(['x', '4', app.get_app_value('game')])
             return StartGame()
 
+        # sequence for ner
+        elif 'Main' in buf and ' NER BBS ' in buf:
+            app.send_seq(['x', '3', app.get_app_value('game')])
+            return StartGame()
+
 
 class Password(State):
     def transition(self, app, buf):
