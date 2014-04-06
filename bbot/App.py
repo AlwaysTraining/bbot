@@ -407,10 +407,10 @@ class App:
 
     def format_msgmap_text(self, title, msgmap):
         warntext = ""
-        for warning,count in msgmap:
+        for warning,count in msgmap.items():
             if warntext == "":
-                warntext = title + ":\n"
-            warntext += "\t" + warning
+                warntext = str(title) + ":\n"
+            warntext += "\t" + str(warning)
             if count > 1:
                 warntext += " (x" + str(count) + ")"
             warntext += "\n"
@@ -457,9 +457,9 @@ class App:
         body = (
             self.data.planettext + "\n\n" +
             self.data.msgtext + "\n\n" +
-            self.data.notetext + "\n\n" +
-            self.data.warntext + "\n\n" +
-            self.data.errortext + "\n\n" +
+            notetext + "\n\n" +
+            warntext + "\n\n" +
+            errortext + "\n\n" +
             self.data.statstext + "\n\n" +
             self.data.spendtext + "\n\n" +
             self.data.investmentstext + "\n\n" +
