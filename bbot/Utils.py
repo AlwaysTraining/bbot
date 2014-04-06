@@ -218,3 +218,13 @@ def try_get_recent_changes():
         botlog.warn("Could not git changes")
 
         return "Could not get recent source code changes"
+
+
+def split_list(terms, bins):
+    numcreds = bins
+    termsPerCred = len(terms) / (numcreds)
+    if termsPerCred * numcreds < len(terms):
+        termsPerCred = termsPerCred + 1
+    splitterms = [terms[x:x + termsPerCred] for x in
+                  xrange(0, len(terms), termsPerCred)]
+    return splitterms
