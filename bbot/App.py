@@ -405,16 +405,21 @@ class App:
             raise Exception("Unexpected end of session in state: " +
                             state.get_name())
 
-    def format_msgmap_text(self, title, msgmap):
+    def format_msgmap_text(self, msgmap):
         warntext = ""
         for warning,count in msgmap.items():
-            if warntext == "":
-                warntext = str(title) + ":\n"
-            warntext += "\t" + str(warning)
+            warntext += str(warning)
             if count > 1:
                 warntext += " (x" + str(count) + ")"
             warntext += "\n"
         return warntext
+
+    def maybe_append_section(body,section_title, section):
+        section = section.strip()
+        if len(section) > 0:
+            body += ("\n\n\n----==== " + section_title + 
+                    " ====----\n\n" + section)
+        return body
 
     def send_notification(self, game_exception):
 
@@ -449,21 +454,20 @@ class App:
             subject = "Failure : " + str(game_exception)
 
         changes = Utils.try_get_recent_changes()
+        warntext = self.format_msgmap_text(botlog.warnings)
+        errortext = self.format_msgmap_text(botlog.errors)
+        notetext = self.format_msgmap_text(botlog.notes)
 
-        warntext = self.format_msgmap_text("Warnings", botlog.warnings)
-        errortext = self.format_msgmap_text("Errors", botlog.errors)
-        notetext = self.format_msgmap_text("Notes", botlog.notes)
-
-        body = (
-            self.data.planettext + "\n\n" +
-            self.data.msgtext + "\n\n" +
-            notetext + "\n\n" +
-            warntext + "\n\n" +
-            errortext + "\n\n" +
-            self.data.statstext + "\n\n" +
-            self.data.spendtext + "\n\n" +
-            self.data.investmentstext + "\n\n" +
-            changes )
+        body = ""
+        self.maybe_append_section(body, "Scores", self.data.planettext)
+        self.maybe_append_section(body, "Messages`", self.data.msgtext)
+        self.maybe_append_section(body, "Notes", self.data.notetext)
+        self.maybe_append_section(body, "Warnings", self.data.warntext)
+        self.maybe_append_section(body, "Errors", self.data.errortext)
+        self.maybe_append_section(body, "Status", self.data.statstext)
+        self.maybe_append_section(body, "Inventory", self.data.spendtext)
+        self.maybe_append_section(body, "Investments", self.data.investmentstext)
+        self.maybe_append_section(body, "Recent Source Code Changes", self.data.changes)
 
         Utils.send_mail(
             to,

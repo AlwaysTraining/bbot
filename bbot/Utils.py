@@ -213,7 +213,7 @@ def try_get_recent_changes():
 
         output = Popen(cmd, stdout=PIPE, shell=True).communicate()[0]
 
-        return "Recent source code changes: \n" + output
+        return output
 
     except Exception, e:
         botlog.exception(e)
