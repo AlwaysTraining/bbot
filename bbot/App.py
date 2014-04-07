@@ -422,7 +422,8 @@ class App:
             body += ("\n\n\n" +
                     spacer + "\n" +
                     titleline + "\n" +
-                    spacer +"\n\n")
+                    spacer +"\n\n" + 
+                    section)
 
         return body
 
