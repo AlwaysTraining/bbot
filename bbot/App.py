@@ -20,6 +20,7 @@ import string
 import State
 import re
 
+MAXWAIT = 60
 
 class App:
     def get_data_dir(self):
@@ -137,11 +138,11 @@ class App:
     def get_close_float(self, x):
         return random.uniform(x * 0.9, x * 1.1)
 
-    def read_until(self, stop_text, timeout=-1, maxwait=20):
+    def read_until(self, stop_text, timeout=-1, maxwait=MAXWAIT):
         return self.read_until_any([stop_text], timeout=timeout,
                                    maxwait=maxwait)
 
-    def read_until_any(self, stop_text_list, timeout=-1, maxwait=20):
+    def read_until_any(self, stop_text_list, timeout=-1, maxwait=MAXWAIT):
 
         stop_patterns = []
 
@@ -283,11 +284,11 @@ class App:
                     #   because it is a wierd case and can throw it off. we do
                     #   however use the time as a good default timeout to use
                     b = self.read(timeout=self.adaptive_timeout)
-                    if self.wait_time > 20:
+                    if self.wait_time > MAXWAIT:
                         botlog.warn(
                             "Last full buffer:\n" + str(self.last_full_buf))
                         raise Exception(
-                            "Waited for about 20 seconds when sending macro and nothing happened")
+                            "Waited for about " + str(MAXWAIT) + " seconds when sending macro and nothing happened")
 
                     if len(b) > 0:
                         break
@@ -378,10 +379,10 @@ class App:
             else:
                 self.read()
 
-            if self.wait_time > 20:
+            if self.wait_time > MAXWAIT:
                 botlog.warn("Last full buffer:\n" + str(self.last_full_buf))
                 raise Exception(
-                    "Waited for about 20 seconds in main loop and nothing happened")
+                    "Waited for about " + str(MAXWAIT) + " seconds in main loop and nothing happened")
 
             if not self.debug:
                 if random.random() < 0.05:
