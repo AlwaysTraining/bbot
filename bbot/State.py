@@ -369,7 +369,9 @@ class MainMenu(StatsState):
 
         if "Choice> Quit" in buf:
             # we have already played today, don't send emails
-            app.no_email_reason = "We already played today"
+            botlog.warn("We already played today")
+            # The server should not be playing multiple times, so we need to know if it is
+            # app.no_email_reason = "We already played today"
             app.skip_next_read = True
             return ExitGame()
         else:

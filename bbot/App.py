@@ -414,11 +414,16 @@ class App:
             warntext += "\n"
         return warntext
 
-    def maybe_append_section(body,section_title, section):
+    def maybe_append_section(self, body, section_title, section):
         section = section.strip()
         if len(section) > 0:
-            body += ("\n\n\n----==== " + section_title + 
-                    " ====----\n\n" + section)
+            titleline = "----==== " + section_title + " ====----"
+            spacer = '-' * len(titleline)
+            body += ("\n\n\n" +
+                    spacer + "\n" +
+                    titleline + "\n" +
+                    spacer +"\n\n")
+
         return body
 
     def send_notification(self, game_exception):
@@ -453,21 +458,22 @@ class App:
         if game_exception is not None:
             subject = "Failure : " + str(game_exception)
 
-        changes = Utils.try_get_recent_changes()
+        changetext = Utils.try_get_recent_changes()
         warntext = self.format_msgmap_text(botlog.warnings)
         errortext = self.format_msgmap_text(botlog.errors)
         notetext = self.format_msgmap_text(botlog.notes)
 
         body = ""
-        self.maybe_append_section(body, "Scores", self.data.planettext)
-        self.maybe_append_section(body, "Messages`", self.data.msgtext)
-        self.maybe_append_section(body, "Notes", self.data.notetext)
-        self.maybe_append_section(body, "Warnings", self.data.warntext)
-        self.maybe_append_section(body, "Errors", self.data.errortext)
-        self.maybe_append_section(body, "Status", self.data.statstext)
-        self.maybe_append_section(body, "Inventory", self.data.spendtext)
-        self.maybe_append_section(body, "Investments", self.data.investmentstext)
-        self.maybe_append_section(body, "Recent Source Code Changes", self.data.changes)
+        body = self.maybe_append_section(body, "Scores", self.data.planettext)
+        body = self.maybe_append_section(body, "Errors", errortext)
+        body = self.maybe_append_section(body, "Warnings", warntext)
+        body = self.maybe_append_section(body, "Notes", notetext)
+        body = self.maybe_append_section(body, "Messages`", self.data.msgtext)
+        body = self.maybe_append_section(body, "Status", self.data.statstext)
+        body = self.maybe_append_section(body, "Inventory", self.data.spendtext)
+        body = self.maybe_append_section(body, "Investments", self.data.investmentstext)
+        body = self.maybe_append_section(body, "Recent Source Code Changes", changetext)
+        body = body.strip()
 
         Utils.send_mail(
             to,
