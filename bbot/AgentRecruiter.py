@@ -52,7 +52,7 @@ class AgentRecruiter(Strategy):
     def get_buy_ratio(self):
 
         if not self.data.is_oop():
-            return 0.1
+            return 0.025
 
         bank_full = self.data.has_full_bank()
         is_investor = self.app.has_strategy("Investor")
