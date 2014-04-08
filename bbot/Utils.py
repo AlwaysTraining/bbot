@@ -222,6 +222,7 @@ def try_get_recent_changes():
         return "Could not get recent source code changes"
 
 def readable_num(num):
+    num = float(num)
     if num > 1000000000:
         return str(round(num / 1000000000.0,1)) + "b"
     if num > 1000000:
