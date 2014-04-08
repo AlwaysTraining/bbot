@@ -232,4 +232,11 @@ def readable_num(num):
     else:
         return str(num)
 
-
+def split_list(terms, bins):
+    numcreds = bins
+    termsPerCred = len(terms) / (numcreds)
+    if termsPerCred * numcreds < len(terms):
+        termsPerCred = termsPerCred + 1
+    splitterms = [terms[x:x + termsPerCred] for x in
+                  xrange(0, len(terms), termsPerCred)]
+    return splitterms

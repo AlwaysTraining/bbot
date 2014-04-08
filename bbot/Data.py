@@ -24,6 +24,25 @@ def enumerate_attribs(obj):
             yield attr, getattr(obj, attr)
 
 
+def _dictvisitor(o, basename, curdict):
+    t = ''
+
+    for n, v in enumerate_attribs(o):
+
+        elementname = basename + '_' + n
+
+        if v is None:
+            continue
+
+        if (isinstance(v, basestring) or isinstance(v, int) or
+                isinstance(v, float) or isinstance(v, bool) or
+                isinstance(v, list)):
+
+            curdict[elementname] = v
+        else:
+            _dictvisitor(v, elementname, curdict)
+
+
 def _printvisitor(o, d):
     indent = _indent(d)
     t = ''
@@ -33,9 +52,8 @@ def _printvisitor(o, d):
         if v is None:
             continue
 
-        if isinstance(v, basestring) or isinstance(v, int) or isinstance(v,
-                                                                         float) or isinstance(
-                v, bool):
+        if (isinstance(v, basestring) or isinstance(v, int) or
+                isinstance(v,float) or isinstance(v, bool)):
             t += indent + n + ": " + str(v)
         elif isinstance(v, list):
             t += indent + n + "[" + str(len(v)) + "]:"
@@ -673,7 +691,10 @@ class Data(dict):
 #           #   to apply to next year, we just use 5%
 #           r = r + (a.food * 1.05)
 
-
+    def get_realm_dict(self):
+        rdict = {}
+        _dictvisitor(self.realm,"",rdict)
+        return rdict
 
 
 
