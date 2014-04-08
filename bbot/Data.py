@@ -534,14 +534,14 @@ class Planet(object):
 
 class Data(dict):
     def __init__(self):
-        realm = Realm()
-        setup = None
-        statstext = ''
-        spendtext = ''
-        investmentstext = ''
-        msgtext = ''
-        planettext = ''
-        planet = None
+        self.realm = Realm()
+        self.setup = None
+        self.statstext = ''
+        self.spendtext = ''
+        self.investmentstext = ''
+        self.msgtext = ''
+        self.planettext = ''
+        self.planet = None
 
 
     def __str__(self):

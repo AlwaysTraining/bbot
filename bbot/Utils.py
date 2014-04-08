@@ -220,3 +220,15 @@ def try_get_recent_changes():
         botlog.warn("Could not git changes")
 
         return "Could not get recent source code changes"
+
+def readable_num(num):
+    if num > 1000000000:
+        return str(round(num / 1000000000.0,1)) + "b"
+    if num > 1000000:
+        return str(round(num / 1000000.0,1)) + "m"
+    if num > 1000:
+        return str(round(num / 1000.0,1)) + "k"
+    else:
+        return str(num)
+
+
