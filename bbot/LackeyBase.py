@@ -164,8 +164,8 @@ class LackeyBase(Strategy):
 
             msg = ("Traded " + str(int(round(tradeRatio * 100,0))) + 
                     "% of Army to " + self.get_master_name() + " on turn (" +
-                    str(self.app.data.turns.current) + " of " + 
-                    str(self.app.data.turns.remaining) + "):\n")
+                    str(self.app.data.realm.turns.current) + " of " + 
+                    str(self.app.data.realm.turns.remaining) + "):\n")
             for itemName,itemAmmount in trademap.items():
                 msg += "\t" + itemName + ":\t" + str(itemAmmount)
             botlog.note(msg)

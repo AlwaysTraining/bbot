@@ -356,12 +356,6 @@ class Gold(object):
     num_per_carrier = 100000
 
 
-class Investment(object):
-    def __init__(self):
-        self.date = None
-        self.gold = None
-
-
 class Bank(object):
     def __init__(self):
         self.gold = None
@@ -539,19 +533,20 @@ class Planet(object):
 
 
 class Data(dict):
-    realm = Realm()
-    setup = None
-    statstext = ''
-    spendtext = ''
-    investmentstext = ''
-    msgtext = ''
-    planettext = ''
-    planet = None
+    def __init__(self):
+        realm = Realm()
+        setup = None
+        statstext = ''
+        spendtext = ''
+        investmentstext = ''
+        msgtext = ''
+        planettext = ''
+        planet = None
 
 
     def __str__(self):
-        return _printvisitor(self.realm, 0) + "\n" + _printvisitor(self.planet,
-                                                                   0)
+        return _printvisitor(self.realm, 0) + "\n" + _printvisitor(
+                self.planet, 0)
 
 
     def set(self, key, value):
