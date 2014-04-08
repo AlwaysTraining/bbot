@@ -13,7 +13,7 @@ from bbot.LackeyBase import LackeyBase
 from math import ceil
 from math import floor
 
-class LocalLackey(LackyBase):
+class LocalLackey(LackeyBase):
     def __init__(self, app):
         LackeyBase.__init__(self, app)
 
@@ -22,6 +22,8 @@ class LocalLackey(LackyBase):
         # get the destination realm from the application
         self.masterName = self.get_strategy_option("master")
 
+    def get_master_name(self):
+        return self.masterName
 
     def on_diplomacy_menu(self):
         self.app.send(9, comment="viewing the local diplomacy list")
@@ -55,7 +57,7 @@ class LocalLackey(LackyBase):
 
     def on_spending_menu(self):
         # buy carriers if needed
-        LackeyBase.on_spending_menu()
+        LackeyBase.on_spending_menu(self)
 
         # we will just send the trade deal from the system menu during the
         # spending menu, this saves helps because we make trading a high

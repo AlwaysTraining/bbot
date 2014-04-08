@@ -14,7 +14,7 @@ from bbot.OtherPlanetParser import OtherPlanetParser
 from math import ceil
 from math import floor
 
-class Lackey(LackyBase):
+class Lackey(LackeyBase):
     def __init__(self, app):
         LackeyBase.__init__(self, app)
 
@@ -26,15 +26,13 @@ class Lackey(LackyBase):
 
     def on_spending_menu(self):
         # buy carriers if needed
-        LackeyBase.on_spending_menu()
+        LackeyBase.on_spending_menu(self)
 
-        # we will just send the trade deal from the system menu during the
-        # spending menu, this saves helps because we make trading a high
-        # priority so region buying comes afterwards
-        self.system_trading_menu()
-
+    def get_master_name(self):
+        return self.masterRealm + " of " + self.masterPlanet
 
     def on_interplanetary_menu(self):
+
 
         # early in the game, we don't trade
         tradeRatio = self.get_trade_ratio()
@@ -53,13 +51,14 @@ class Lackey(LackyBase):
         opp = OtherPlanetParser()
         opp.parse(self.app, buf)
 
-        master = self.app.data.get_realm_by_name(self.masterName,
+        botlog.info("Parsed realms: " + str(opp.realms))
+
+        master = self.app.data.get_realm_by_name(self.masterRealm,
                                                  realms=opp.realms)
 
         if master is None:
-            raise Exception("Could not locate master realm: " +
-                            str(self.masterName) + " on " +
-                            str(self.masterPlanet))
+            raise Exception("Could not locate master realm: " + 
+                            self.get_master_name())
 
         self.app.send(master.menu_option,
                       comment="trade with master realm")

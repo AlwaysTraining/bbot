@@ -116,6 +116,8 @@ def create_instance(
 
 def ToNum(strNum):
     strNum = strNum.replace(',', '')
+    strNum = strNum.replace('k', '000')
+    strNum = strNum.replace('m', '000000')
     return int(strNum)
 
 
@@ -211,7 +213,7 @@ def try_get_recent_changes():
 
         output = Popen(cmd, stdout=PIPE, shell=True).communicate()[0]
 
-        return "Recent source code changes: \n" + output
+        return output
 
     except Exception, e:
         botlog.exception(e)

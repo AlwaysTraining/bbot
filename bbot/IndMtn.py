@@ -25,29 +25,13 @@ def get_region_ratio(app, context):
     r.mountain.number = 0
     r.technology.number = 0
 
-    if app.data.realm.regions.number < 250:
-        r.desert.number = 1
-    elif app.data.realm.regions.number < 500:
-        r.desert.number = 1
+    if not app.data.is_oop():
         r.mountain.number = 1
-    elif app.data.realm.regions.number < 1000:
-        r.mountain.number = 1
-        r.industrial.number = 1
-    elif app.data.realm.regions.number < 2000:
-        r.mountain.number = 1
-        r.industrial.number = 2
-    elif app.data.realm.regions.number < 3000:
-        r.mountain.number = 1
-        r.industrial.number = 3
-        r.technology.number = 1
-    elif app.data.realm.regions.number < 4000:
-        r.mountain.number = 1
-        r.industrial.number = 4
-        r.technology.number = 1
+        r.industrial.number = 5
     else:
         r.mountain.number = 1
-        r.industrial.number = app.data.realm.regions.number / 1000.0
         r.technology.number = 1
+        r.industrial.number = 5
     return r
 
 
@@ -93,17 +77,6 @@ class IndMtn(Strategy):
         if (self.app.has_strategy("Investor") and
                 not self.data.has_full_investments()):
             return 0.75
-
-        # When there are less than 1k regions, concectrate
-        #   on liquidating army
-        if self.data.realm.regions.number < 1000:
-            return 0.75
-        if self.data.realm.regions.number < 2000:
-            return 0.5
-        if self.data.realm.regions.number < 4000:
-            return 0.25
-        if self.data.realm.regions.number < 8000:
-            return 0.125
 
         # in general, we will sell a small portion of our army to suppliment 
         #   region growth

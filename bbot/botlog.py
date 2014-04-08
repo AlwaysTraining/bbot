@@ -1,5 +1,6 @@
 import logging
 import sys
+import traceback
 
 DEBUG = logging.DEBUG
 INFO = logging.INFO
@@ -10,11 +11,17 @@ level = WARN
 tracefile = sys.stdout
 tracefilepath = None
 
+logfile = sys.stderr
+logfilepath = None
+
 traceid = 0
 
 cur_state = None
 cur_strat = None
 
+errors = {}
+warnings = {}
+notes = {}
 
 def formattrace(msg):
     global traceid
@@ -28,50 +35,97 @@ def formattrace(msg):
     s += ">  " + str(msg)
     return s
 
+class Log:
+    def info(self, msg):
+        logfile.write("INFO  : " + msg + "\n")
+        logfile.flush()
+    def debug(self, msg):
+        logfile.write("DEBUG : " + msg + "\n")
+        logfile.flush()
+    def warn(self, msg):
+        logfile.write("WARN  : " + msg + "\n")
+        logfile.flush()
+    def exception(self, msg):
+        logfile.write("EXCEPTION: " + str(type(msg)) + " : " + str(msg) + "\n")
+        logfile.write(traceback.format_exc())
+        logfile.flush()
+log = Log()
+
 
 def trace(msg):
     tracefile.write("\n" + msg + "\n")
+    tracefile.flush()
 
 
 def info(msg):
     global level
+    global log
     msg = formattrace(msg)
-    logging.info(msg)
+    log.info(msg)
     #print 'info message',traceid,'going to log',level
     if level <= INFO:
         #print 'info message',traceid,'going to trace',level,'vs',INFO
         trace(msg)
 
+def note(msg):
+    global notes
+    global log
+    _update_msg_map(notes,msg)
+    info("NOTE: " + msg)
+
+def _update_msg_map(msgmap, msg):
+    if msg in msgmap:
+        msgmap[msg] += 1
+    else:
+        msgmap[msg] = 1
 
 def debug(msg):
     global level
+    global log
     msg = formattrace(msg)
-    logging.debug(msg)
+    log.debug(msg)
     #print 'debug message',traceid,'going to log',level
     if level <= DEBUG:
         #print 'debug message',traceid,'going to trace',level,'vs',DEBUG
         trace(msg)
 
-
 def warn(msg):
     global level
+    global log
+    global warnings
+    _update_msg_map(warnings,msg)
+
     msg = formattrace(msg)
-    logging.warn(msg)
+    
+    log.warn(msg)
     if level <= WARN:
         trace(msg)
 
 
 def exception(msg):
+    global errors
+    global log
+    _update_msg_map(errors,msg)
     trace(formattrace(str(msg)))
-    logging.exception(msg)
+    log.exception(msg)
 
 
 def configure(msglevel, format, logpath, tracepath):
     global tracefile
+    global log
     global tracefilepath
+    global logfile
+    global logfilepath
     global level
+    global warnings
+    global errors
+    global notes
+
+    warnings = {}
+    errors = {}
+    notes = {}
+
     level = msglevel
-    logging.getLogger('').handlers = []
 
     if logpath is not None:
         # when logging to file always go full debug
@@ -79,7 +133,11 @@ def configure(msglevel, format, logpath, tracepath):
     else:
         logmsglevel = msglevel
 
-    logging.basicConfig(level=logmsglevel, format=format, filename=logpath)
+    if logpath is None:
+        logfile = sys.stderr
+    else:
+        logfile = file(logpath, 'w')
+    logfilepath = logpath
 
     if tracepath is None:
         tracefile = sys.stdout

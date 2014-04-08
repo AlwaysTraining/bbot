@@ -26,6 +26,8 @@ TNSOA_MAIN_REGEX = re.compile(
 SHENKS_MAIN_REGEX = re.compile('.+fidonet.+AFTERSHOCK:')
 XBIT_MAIN_REGEX = re.compile(
     '. Main .* Xbit Local Echo \[[0-9]+\] InterBBS FE:')
+NER_MAIN_REGEX = re.compile(
+    '. Main . [0-9:]+ \[[0-9]+\] Local \[[0-9]+\] Notices:')
 
 MAIN_MENUS = [TNSOA_MAIN_REGEX, SHENKS_MAIN_REGEX, XBIT_MAIN_REGEX]
 
@@ -34,12 +36,10 @@ class LogOff(State):
     def transition(self, app, buf):
         if 'Which or (Q)uit:' in buf:
             app.send('q')
-        if 'Which, (Q)uit or [1]:' in buf:
-            app.send('q')
-            buf = app.read(stop_patterns=MAIN_MENUS)
-            if app.match_re is not None:
-                app.send_seq(['o', 'y'])
-                return BailOut()
+        elif 'Which, (Q)uit or [1]:' in buf:
+            app.send_seq(['q', 'o', 'y'],comment="Logoff sequence")
+            app.read()
+            return BailOut()
 
 
 class ExitGame(State):
@@ -204,6 +204,7 @@ class Maint(StatsState):
                 app.send('n')
             else:
                 app.send('y')
+                botlog.warn("Turn income was not enough to pay bills")
                 buf = app.read_until('Do you wish to visit the Bank? (y/N)')
 
                 # maint cost
@@ -225,6 +226,7 @@ class Maint(StatsState):
                 botlog.warn("Unable to prevent not feeding realm")
                 app.send('n')
             else:
+                botlog.warn("Turn food production was not enough to feed empire")
                 app.send_seq(['y', 'b', '\r', '0'])
                 self.food_reconsider_turn = app.data.realm.turns.current
 
@@ -367,7 +369,9 @@ class MainMenu(StatsState):
 
         if "Choice> Quit" in buf:
             # we have already played today, don't send emails
-            app.no_email_reason = "We already played today"
+            botlog.warn("We already played today")
+            # The server should not be playing multiple times, so we need to know if it is
+            # app.no_email_reason = "We already played today"
             app.skip_next_read = True
             return ExitGame()
         else:
@@ -380,6 +384,15 @@ class MainMenu(StatsState):
             if '-=<Paused>=-' in buf:
                 app.sendl()
             buf = app.read()
+
+            # in the main menu, check the empire status
+            app.send(2, comment="Checking status")
+            buf = app.read()
+            TurnStatsParser().parse(app,buf)
+            if '-=<Paused>=-' in buf:
+                app.sendl()
+            buf = app.read()
+
             app.send(1, comment="Commencing to play the game")
             return PreTurns()
 
@@ -441,6 +454,11 @@ class BBSMenus(State):
         # sequence for xbit
         elif 'Main' in buf and ' Xbit Local Echo ' in buf:
             app.send_seq(['x', '4', app.get_app_value('game')])
+            return StartGame()
+
+        # sequence for ner
+        elif 'Main' in buf and ' NER BBS ' in buf:
+            app.send_seq(['x', '3', app.get_app_value('game')])
             return StartGame()
 
 

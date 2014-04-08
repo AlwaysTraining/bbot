@@ -52,7 +52,7 @@ class AgentRecruiter(Strategy):
     def get_buy_ratio(self):
 
         if not self.data.is_oop():
-            return 0.1
+            return 0.025
 
         bank_full = self.data.has_full_bank()
         is_investor = self.app.has_strategy("Investor")
@@ -90,7 +90,7 @@ class AgentRecruiter(Strategy):
             item = Agents.menu_option
 
             # determine number to buy
-            price = self.data.get_price(item)
+            price = self.app.data.realm.army.agents.price
             gold = self.data.realm.gold * ratio
             ammount = int(math.floor(gold / price))
 
@@ -98,9 +98,8 @@ class AgentRecruiter(Strategy):
                 botlog.info("Could not afford even 1 agent")
             else:
                 # buy the items
-                self.app.send_seq([item, ammount], comment="Buying " +
-                                                           str(
-                                                               ammount) + " agents")
+                self.app.send_seq([item, ammount, '\r'], 
+                        comment="Buying " + str(ammount) + " agents")
 
 
         # enter region buying menu

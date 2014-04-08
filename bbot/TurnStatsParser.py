@@ -93,8 +93,10 @@ class TurnStatsParser(StatsParser):
             regions.agricultural.foodyield = self.get_num()
         elif which == 310:
             realm.turns.years_freedom = self.get_num()
+            realm.turns.years_protection = None
         elif which == 320:
             realm.turns.years_protection = self.get_num()
+            realm.turns.years_freedom = None
 
 
 

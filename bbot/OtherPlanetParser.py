@@ -18,11 +18,15 @@ W = SPACE_REGEX
 class OtherPlanetParser(StatsParser):
     def __init__(self, realms=None):
         StatsParser.__init__(self)
+        if realms is None:
+            realms = []
         self.realms = realms
+
+#   (A)  Bonk                                    16,761     33k       743k
 
     def get_patterns(self):
         return {
-            "\(([A-Z])\) " + S + W + N + W + N + W + N: 9091
+            '\(([A-Z])\)  (.+  )[ ]+([0-9].*) +([0-9].*)[ ]+(.+)'   :   9091
         }
 
 
