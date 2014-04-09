@@ -18,6 +18,8 @@ class MetaData(dict):
     def __init__(self, data):
         self.data = data
         self.get_region_ratio_func = default_region_ratio
+        self.last_ag_buy = None
+        self.last_ag_buy_turn = None
 
 
 
