@@ -635,7 +635,7 @@ class Data(dict):
         a = self.realm.advisors
 
         if p.growth is not None and p.size is not None:
-            g = p.growth / p.size
+            g = p.growth / float(p.size)
         else:
             g = 0.05
 

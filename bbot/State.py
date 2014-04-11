@@ -36,7 +36,7 @@ class LogOff(State):
     def transition(self, app, buf):
         if 'Which or (Q)uit:' in buf:
             app.send('q')
-        elif 'Which, (Q)uit or [1]:' or 'Trans-Canada Doors Menu' in buf:
+        elif 'Which, (Q)uit or [1]:' in buf or 'Trans-Canada Doors Menu' in buf:
             app.send_seq(['q', 'o', 'y'],comment="Logoff sequence")
             app.read()
             return BailOut()
