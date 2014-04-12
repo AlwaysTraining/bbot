@@ -18,6 +18,11 @@ class MetaData(dict):
     def __init__(self, data):
         self.data = data
         self.get_region_ratio_func = default_region_ratio
+        self.waiting_to_record_first_turn_number = None
+        self.first_played_turn = None
+        self.used_all_turns = False
+
+
 
 
 

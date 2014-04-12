@@ -107,6 +107,14 @@ class App:
             logpath=self.logfile,
             tracepath=self.tracefile)
 
+    def has_app_value(self, key):
+        if key in self.options and self.options[key] is not None:
+            return True
+        environkey = Constants.ENVIRON_PREFIX + key
+        # otherwise check if value is in environment
+        if environkey in os.environ and os.environ[environkey] != '':
+            return True
+
     def get_app_value(self, key, secret=False):
         # Check if value is in options
         if key in self.options and self.options[key] is not None:
@@ -173,8 +181,8 @@ class App:
 
         timeout = self.get_close_float(timeout)
 
-        botlog.debug(
-            "Reading with " + str(round(timeout, 1)) + " second timeout...")
+        # botlog.debug(
+        #     "Reading with " + str(round(timeout, 1)) + " second timeout...")
 
         while True:
             #todo infinte guard

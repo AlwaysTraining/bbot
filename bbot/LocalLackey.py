@@ -19,6 +19,7 @@ class LocalLackey(LackeyBase):
 
         self.pp = TreatyParser()
         self.can_send_trade = True
+
         # get the destination realm from the application
         self.masterName = self.get_strategy_option("master")
 

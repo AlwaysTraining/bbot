@@ -82,7 +82,35 @@ class EndTurn(StatsState):
             app.on_interplanetary_menu()
             app.send('0', comment='Exiting Inter Planetary menu')
         elif 'Do you wish to continue? (Y/n)' in buf:
+
+            if (app.data.realm.turns is not None and
+                app.data.realm.turns.current is not None and
+                app.data.realm.turns.remaining is not None and
+                        app.metadata.first_played_turn is not None):
+
+                if app.has_app_value("turnsplit"):
+
+                    # TODO, think about randomizing turnsplit, +/- 1
+                    turnsplit = ToNum(app.get_app_value("turnsplit"))
+                    remaining = app.data.realm.turns.remaining
+                    turns_remaining_for_exit = (
+                        app.metadata.first_played_turn - turnsplit)
+
+                    if remaining <= turns_remaining_for_exit:
+                        botlog.note("We are turnsplitting every " +
+                                    str(turnsplit) + " turns, exiting with " +
+                                    str(app.data.realm.turns.remaining) +
+                                    " turns remaining")
+                        app.send('n',
+                                 comment='No, not continuing, we are '
+                                         'turnsplitting')
+
+            else:
+                botlog.warn("Not known what turn we are on when exiting the "
+                            "turn, did the turn start in mid turn?")
+
             app.send('y', comment='Yes I wish to continue')
+            # print out current parsed data state
             botlog.info(str(app.data))
             return TurnStats()
 
@@ -250,8 +278,19 @@ class TurnStats(StatsState):
 
         self.parse(app, buf)
 
+        # if we just started playing, record what turn we started at
+        if app.metadata.waiting_to_record_first_turn_number is None:
+            raise Exception("We should know at this point that we are " +
+                "waiting to record which turn we are playing")
+        elif app.metadata.waiting_to_record_first_turn_number:
+            app.metadata.first_played_turn = app.data.realm.turns.current
+            app.metadata.waiting_to_record_first_turn_number = False
+
+
+
         if 'Sorry, you have used all of your turns today.' in buf:
             app.data.planettext += "\n" + buf + "\n"
+            app.metadata.used_all_turns = True
             app.sendl()
             return ExitGame()
         elif '-=<Paused>=-' in buf:
@@ -394,6 +433,7 @@ class MainMenu(StatsState):
             buf = app.read()
 
             app.send(1, comment="Commencing to play the game")
+            app.metadata.waiting_to_record_first_turn_number = True
             return PreTurns()
 
 
