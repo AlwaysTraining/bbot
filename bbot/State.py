@@ -104,6 +104,7 @@ class EndTurn(StatsState):
                         app.send('n',
                                  comment='No, not continuing, we are '
                                          'turnsplitting')
+                        return MainMenu(should_exit=True)
 
             else:
                 botlog.warn("Not known what turn we are on when exiting the "
@@ -400,8 +401,9 @@ from bbot.PlanetParser import PlanetParser
 
 
 class MainMenu(StatsState):
-    def __init__(self):
+    def __init__(self, should_exit=False):
         StatsState.__init__(self, statsParser=PlanetParser())
+        self.should_exit = should_exit
 
     def transition(self, app, buf):
 
@@ -411,6 +413,9 @@ class MainMenu(StatsState):
             botlog.warn("We already played today")
             # The server should not be playing multiple times, so we need to know if it is
             # app.no_email_reason = "We already played today"
+            app.skip_next_read = True
+            return ExitGame()
+        elif self.should_exit:
             app.skip_next_read = True
             return ExitGame()
         else:

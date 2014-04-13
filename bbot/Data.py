@@ -29,7 +29,11 @@ def _dictvisitor(o, basename, curdict):
 
     for n, v in enumerate_attribs(o):
 
-        elementname = basename + '_' + n
+        if basename != '':
+            elementname = basename + '_' + n
+        else:
+            elementname = n
+
 
         if v is None:
             continue

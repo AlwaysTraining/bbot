@@ -13,7 +13,8 @@ from bbot.SpendingParser import SpendingParser
 class RegionBuy(Strategy):
     last_ag_buy_turn = None
 
-    def __init__(self, app, num_regions=None, region_ratio=None):
+    def __init__(self, app, num_regions=None, region_ratio=None,
+                 enter_region_menu=False):
         Strategy.__init__(self, app)
         self.data = self.app.data
         self.realm = self.app.data.realm
@@ -22,12 +23,24 @@ class RegionBuy(Strategy):
         self.last_ag_buy = 1
         enter_to_exit = False
 
+        if enter_region_menu == True:
+            # enter region buying menu
+            self.app.send('6',comment="Entering region buy menu")
+            # the number of regions we can afford
+            buf = self.app.read()
+            SpendingParser().parse(self.app, buf)
+            if '-=<Paused>=-' in buf:
+                self.app.sendl(comment="continue from region menu")
 
 
         # we should be at the region menu here loaded into the current buffer
 
         # the number of regions we can afforAd
         self.sp.parse(self.app, self.app.buf)
+        if self.app.data.realm.regions.number_affordable == 0:
+            botlog.warn("Can not afford any regions")
+            return
+
         self.a = num_regions
         if num_regions is None:
             self.a = self.app.data.realm.regions.number_affordable

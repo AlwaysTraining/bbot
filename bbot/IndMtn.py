@@ -152,10 +152,7 @@ class IndMtn(Strategy):
         self.sp.parse(self.app, self.app.read())
 
         # enter region buying menu
-        self.app.send('6')
-        # the number of regions we can afford
-        self.sp.parse(self.app, self.app.read())
-        RegionBuy(self.app)
+        RegionBuy(self.app, enter_region_menu=True)
 
         # we should still be at buy menu
 
