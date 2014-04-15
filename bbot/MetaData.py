@@ -21,9 +21,8 @@ class MetaData(dict):
         self.waiting_to_record_first_turn_number = None
         self.first_played_turn = None
         self.used_all_turns = False
-
-
-
+        self.last_ag_buy = None
+        self.last_ag_buy_turn = None
 
 
 

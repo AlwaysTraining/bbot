@@ -36,7 +36,7 @@ class LogOff(State):
     def transition(self, app, buf):
         if 'Which or (Q)uit:' in buf:
             app.send('q')
-        elif 'Which, (Q)uit or [1]:' in buf:
+        elif 'Which, (Q)uit or [1]:' in buf or 'Trans-Canada Doors Menu' in buf:
             app.send_seq(['q', 'o', 'y'],comment="Logoff sequence")
             app.read()
             return BailOut()
@@ -506,6 +506,11 @@ class BBSMenus(State):
             app.send_seq(['x', '3', app.get_app_value('game')])
             return StartGame()
 
+        # sequence for trans canada
+        elif 'Main' in buf and ' Trans-Canada ' in buf:
+            app.send_seq(['x', '7', app.get_app_value('game')])
+            return StartGame()
+
 
 class Password(State):
     def transition(self, app, buf):
@@ -513,15 +518,7 @@ class Password(State):
             app.sendl(app.get_app_value('password'))
             buf = app.read_until("[Hit a key]")
             app.sendl(comment="Is this the any key?")
-            #           if app.get_app_value("address") == "x-bit.org":
-            #               app.read_until("Enter number of bulletin to view or press (ENTER) to continue:")
-            #               app.sendl(comment="Enter to continue")
-            #               buf = app.read_until("[Hit a key]")
-            #               app.sendl(comment="I hate this damn spinning prompts")
             return BBSMenus()
-            #elif "[Hit a key]" in buf:
-            #    app.sendl()
-            #    return BBSMenus()
 
 
 class Login(State):
@@ -531,6 +528,12 @@ class Login(State):
             return Password()
         elif 'Hit a key' in buf:
             app.sendl(comment="Where is the any key?")
-
+        elif 'Matrix Login' in buf:
+            app.sendl(comment="login to login screen")
+            app.read()
+            app.sendl(app.get_app_value('username'))
+            app.read()
+            app.sendl(app.get_app_value('password'))
+            return BBSMenus()
 
 

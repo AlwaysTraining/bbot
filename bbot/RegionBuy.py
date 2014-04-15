@@ -11,7 +11,6 @@ from bbot.SpendingParser import SpendingParser
 
 
 class RegionBuy(Strategy):
-    last_ag_buy_turn = None
 
     def __init__(self, app, num_regions=None, region_ratio=None,
                  enter_region_menu=False):
@@ -20,7 +19,6 @@ class RegionBuy(Strategy):
         self.realm = self.app.data.realm
         self.regions = self.app.data.realm.regions
         self.sp = SpendingParser()
-        self.last_ag_buy = 1
         enter_to_exit = False
 
         if enter_region_menu == True:
@@ -57,10 +55,10 @@ class RegionBuy(Strategy):
         # we could call buy_ag_regions multiple times per turn, but there is usually no
         #   point to doing it, it takes a lot of time when debugging.  If it is ever
         #   shown necessarry, just call it every time (in non debug mode)
-        if RegionBuy.last_ag_buy_turn != self.data.realm.turns.current:
+        if app.metadata.last_ag_buy_turn != self.data.realm.turns.current:
             # buy just enough ag
             self.buy_ag_regions()
-            RegionBuy.last_ag_buy_turn = self.data.realm.turns.current
+            app.metadata.last_ag_buy_turn = self.data.realm.turns.current
 
         self.sp.parse(self.app, self.app.read())
 
@@ -106,15 +104,23 @@ class RegionBuy(Strategy):
 
         advisors = self.data.realm.advisors
 
-        num_to_buy = self.last_ag_buy
+        num_to_buy = self.app.metadata.last_ag_buy
         # visit civilian advisor and buy ag regions until he is happy
-        num_bought = 0
+        limit = 20
         while True:
+            limit -= 1
+            if limit < 0:
+                raise Exception("Possible infinate loop in agriculutre buy")
+
             self.app.read()
 
             # cap the number of regions to buy at the limit we can afford
-            if num_to_buy > self.a:
+            if num_to_buy is None:
+                num_to_buy = 1
+            elif num_to_buy > self.a:
                 num_to_buy = self.a
+            elif num_to_buy < 1:
+                num_to_buy = 1
 
             # visit the ag  minister
             self.app.send('*')
@@ -153,7 +159,7 @@ class RegionBuy(Strategy):
             self.app.send_seq(['0', 'a', str(int_num_to_buy), '\r'])
 
             self.a = ( self.a - int_num_to_buy)
-            num_bought = num_bought + int_num_to_buy
+            self.app.metadata.last_ag_buy = int_num_to_buy
             # for ultimate efficiny you could just always buy one region and
             #   until the adviso says it is okay.  This makes the logs a pain
             #   to read.
@@ -162,7 +168,6 @@ class RegionBuy(Strategy):
         # next time we have to buy ag regions
         #   we will start buying the number we
         #   ended up having to buy this time
-        self.last_ag_buy = num_bought
 
 
 
