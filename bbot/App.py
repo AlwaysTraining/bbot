@@ -81,7 +81,7 @@ class App:
         self.telnet = None
         self.strategies = None
         self.EOF = False
-        self.adaptive_timeout = 2.5
+        self.adaptive_timeout = self.get_app_value('human_delay')
         self.timeout_alpha = 0.1
         self.min_timeout = self.adaptive_timeout
         self.max_timeout = 10.0
@@ -100,6 +100,7 @@ class App:
             debug = False
 
         self.debug = debug
+        self.human_pause_ratio = self.get_app_value('human_pause_ratio')
 
         botlog.configure(
             msglevel=level,
@@ -343,6 +344,29 @@ class App:
         return self.call_strategies("on_interplanetary_menu")
 
 
+    def init_strategies(self):
+
+        strats = []
+        if self.has_app_value('strategies'):
+            strats = self.get_app_value('strategies')
+            # if one string is provided, someitmes they can just give it to us as one string,
+            #   convert it to a list to implify
+            if isinstance(strats, basestring):
+                if ',' in strats:
+                    strats = [x.strip() for x in strats.split(',')]
+                else:
+                    strats = [strats]
+
+            # shouldn't happen with cmd line checking
+            if strats is None:
+                raise Exception("No Strategies provided")
+
+            # union with the default strategy handlers
+            default = []
+            strats = list(set(strats) | set(default))
+            # compile the strategies into indicators sorted by priority
+        self.strategies = Strategy.Strategies(self, strats)
+
     def run_loop(self):
 
 
@@ -352,26 +376,7 @@ class App:
                                     logfile=botlog.tracefile,
                                     maxread=1)
 
-        strats = self.get_app_value('strategies')
-
-        # if one string is provided, someitmes they can just give it to us as one string,
-        #   convert it to a list to implify 
-        if isinstance(strats, basestring):
-            if ',' in strats:
-                strats = [x.strip() for x in strats.split(',')]
-            else:
-                strats = [strats]
-
-        # shouldn't happen with cmd line checking
-        if strats is None:
-            raise Exception("No Strategies provided")
-
-        # union with the default strategy handlers
-        default = []
-        strats = list(set(strats) | set(default))
-
-        # compile the strategies into indicators sorted by priority
-        self.strategies = Strategy.Strategies(self, strats)
+        self.init_strategies()
 
         exitState = State.BailOut().get_name()
 
@@ -393,7 +398,7 @@ class App:
                     "Waited for about " + str(MAXWAIT) + " seconds in main loop and nothing happened")
 
             if not self.debug:
-                if random.random() < 0.05:
+                if random.random() < self.human_pause_ratio:
                     rpause = random.random() * 30
                     botlog.info("Random human pause for " +
                                 str(round(rpause, 0)) + " seconds")
