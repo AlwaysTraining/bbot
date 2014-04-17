@@ -26,7 +26,7 @@ class RegionBuy(Strategy):
             self.app.send('6',comment="Entering region buy menu")
             # the number of regions we can afford
             buf = self.app.read()
-            SpendingParser().parse(self.app, buf)
+            self.sp.parse(self.app, buf)
             if '-=<Paused>=-' in buf:
                 self.app.sendl(comment="continue from region menu")
 
@@ -56,11 +56,16 @@ class RegionBuy(Strategy):
         #   point to doing it, it takes a lot of time when debugging.  If it is ever
         #   shown necessarry, just call it every time (in non debug mode)
         if app.metadata.last_ag_buy_turn != self.data.realm.turns.current:
-            # buy just enough ag
+            # buy just enough ag, this sends us back to the spending menu
             self.buy_ag_regions()
             app.metadata.last_ag_buy_turn = self.data.realm.turns.current
 
-        self.sp.parse(self.app, self.app.read())
+            self.sp.parse(self.app, self.app.read())
+
+            # we can't afford any more regions after buying ag, this exits
+            # back to wherver we came from (menu or turnflow wise)
+            if self.a == 0:
+                return
 
         if region_ratio is None:
             r = self.app.metadata.get_region_ratio_func(self.app, None)
@@ -87,7 +92,7 @@ class RegionBuy(Strategy):
         # buy the regions
         self.app.send_seq(seq)
 
-        # re parse region menu/buy meny
+        # re parse region menu/buy menu
         self.sp.parse(self.app, self.app.read())
 
 
@@ -160,6 +165,12 @@ class RegionBuy(Strategy):
 
             self.a = ( self.a - int_num_to_buy)
             self.app.metadata.last_ag_buy = int_num_to_buy
+
+            # this should rarely happen, but I saw it happen once, we outspent
+            # ourselved on ag regions
+            if self.a == 0:
+                return
+
             # for ultimate efficiny you could just always buy one region and
             #   until the adviso says it is okay.  This makes the logs a pain
             #   to read.
