@@ -529,6 +529,7 @@ class Realm(object):
         self.food = Food()
         self.queen_taxes = None
         self.score = None
+        self.networth = None
         self.advisors = Advisors()
         self.pirates = Pirates()
 

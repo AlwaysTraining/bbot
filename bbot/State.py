@@ -83,6 +83,9 @@ class EndTurn(StatsState):
             app.send('0', comment='Exiting Inter Planetary menu')
         elif 'Do you wish to continue? (Y/n)' in buf:
 
+            # print out current parsed data state
+            botlog.info(str(app.data))
+
             if (app.data.realm.turns is not None and
                 app.data.realm.turns.current is not None and
                 app.data.realm.turns.remaining is not None and
@@ -111,8 +114,7 @@ class EndTurn(StatsState):
                             "turn, did the turn start in mid turn?")
 
             app.send('y', comment='Yes I wish to continue')
-            # print out current parsed data state
-            botlog.info(str(app.data))
+
             return TurnStats()
 
 
@@ -417,6 +419,8 @@ class MainMenu(StatsState):
             return ExitGame()
         elif self.should_exit:
             app.skip_next_read = True
+            # read in the scores and stats of all the realms
+            self.parse(app, buf)
             return ExitGame()
         else:
             # in the main menu, check the scores

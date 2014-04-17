@@ -51,8 +51,14 @@ class PlanetParser(StatsParser):
             r.score = self.get_num(3)
             r.networth = self.get_num(4)
 
+
             if r.name == self.myrealm:
                 regions.number = r.regions
+                realm.score = r.score
+                realm.networth = r.networth
+                botlog.info(self.myrealm + " regions: " + str(regions.number) +
+                             " score: " + str(realm.score) + " nw: " +
+                             str(realm.networth))
     
 
 
