@@ -75,7 +75,9 @@ class IndMtn(Strategy):
             return 1.0
 
         if (self.app.has_strategy("Investor") and
-                not self.data.has_full_investments()):
+                not self.data.has_full_investments(days_missing=1)):
+            # if only missing one day of investments, this is normal, don't
+            # sell anything, otherwise sell a chunk
             return 0.75
 
         # in general, we will sell a small portion of our army to suppliment 

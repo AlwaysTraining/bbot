@@ -24,7 +24,7 @@ def enumerate_attribs(obj):
             yield attr, getattr(obj, attr)
 
 
-def _dictvisitor(o, basename, curdict):
+def _dictvisitor(o, basename, curdict,allow_null):
     t = ''
 
     for n, v in enumerate_attribs(o):
@@ -35,16 +35,16 @@ def _dictvisitor(o, basename, curdict):
             elementname = n
 
 
-        if v is None:
+        if not allow_null and v is None:
             continue
 
         if (isinstance(v, basestring) or isinstance(v, int) or
                 isinstance(v, float) or isinstance(v, bool) or
-                isinstance(v, list)):
+                isinstance(v, list)) or v is None:
 
             curdict[elementname] = v
         else:
-            _dictvisitor(v, elementname, curdict)
+            _dictvisitor(v, elementname, curdict, allow_null)
 
 
 def _printvisitor(o, d):
@@ -560,6 +560,7 @@ class Data(dict):
         self.realm = Realm()
         self.setup = None
         self.statstext = ''
+        self.earntext = ''
         self.spendtext = ''
         self.investmentstext = ''
         self.msgtext = ''
@@ -590,10 +591,15 @@ class Data(dict):
     def is_oop(self):
         return self.realm.turns.years_freedom is not None
 
-    def has_full_investments(self):
+    def has_full_investments(self, days_missing=0):
         # it is common to see $1,999,999,998 investments, i
         #   so subtract 10 of those off by 2's and you get 20
-        return sum(self.realm.bank.investments) >= 20000000000 - 20
+        full = 20000000000
+        missing = days_missing * 1999999998
+        slush = (10-days_missing) * 2
+        needed = full - missing - slush
+        return sum(self.realm.bank.investments) >= full
+
 
     def has_full_bank(self):
         return self.realm.bank.gold >= 1999999999
@@ -660,7 +666,7 @@ class Data(dict):
         if p.growth is not None and p.size is not None:
             g = p.growth / float(p.size)
             if g > 0.05:
-                botlog.info("Population growth was calulated as " + 
+                botlog.info("Population growth was calulated as " +
                         str(round(g,1)) + "%, that seems high, capping " +
                         " to 5%")
                 g = 0.05
@@ -675,8 +681,9 @@ class Data(dict):
         else:
             raise Exception("Not known what current food consumption is")
 
-        botlog.info("last population food consumprion was " + str(r) + ". at " +
-            str(round(r*100,1)) + " growth rate, we should have a surpluss of " +
+        botlog.info("last population food consumption was " + str(r) +
+            ". at a " + str(round(g*100,1)) +
+            "% growth rate, we should need a surplus of " +
             str(r))
 
 
@@ -708,9 +715,9 @@ class Data(dict):
 #           #   to apply to next year, we just use 5%
 #           r = r + (a.food * 1.05)
 
-    def get_realm_dict(self):
+    def get_realm_dict(self,allow_null=True):
         rdict = {}
-        _dictvisitor(self.realm,"",rdict)
+        _dictvisitor(self.realm,"",rdict,allow_null)
         return rdict
 
 

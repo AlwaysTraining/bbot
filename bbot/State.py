@@ -45,24 +45,10 @@ class LogOff(State):
 class ExitGame(State):
     def transition(self, app, buf):
         if '(1) Play Game' in buf:
-
-            # in the main menu, check the scores
-            app.send(3, comment="Checking scores before exit")
-            buf = app.read()
-            app.data.planettext = buf
-            app.data.planet = Planet()
-            # read in the scores and stats of all the realms
-            PlanetParser().parse(app, buf)
-
-            if '-=<Paused>=-' in buf:
-                app.sendl()
-            buf = app.read()
-
-
             app.send('0')
             return LogOff()
         elif '-=<Paused>=-' in buf:
-            app.sendl()
+            app.sendl(comment='continuing from paused prompt before exiting')
 
 
 from bbot.EndTurnParser import EndTurnParser
@@ -282,13 +268,13 @@ from bbot.TurnStatsParser import TurnStatsParser
 class TurnStats(StatsState):
     def __init__(self):
         StatsState.__init__(self, statsParser=TurnStatsParser())
-        self.reset_statstext = True
+        self.reset_earntext = True
 
     def append_stats_text(self, app, buf):
-        if self.reset_statstext:
-            self.reset_statstext = False
-            app.data.statstext = ''
-        app.data.statstext += "\n" + buf + "\n"
+        if self.reset_earntext:
+            self.reset_earntext = False
+            app.data.earntext = ''
+        app.data.earntext += "\n" + buf + "\n"
 
     def transition(self, app, buf):
 
@@ -306,17 +292,32 @@ class TurnStats(StatsState):
 
 
         if 'Sorry, you have used all of your turns today.' in buf:
-            app.metadata.used_all_turns = True
-            app.sendl()
-            return ExitGame()
+            app.sendl(comment="Can not start next turn, we used them all, "
+                              "going to main menu")
+            return MainMenu(should_exit=True)
         elif '-=<Paused>=-' in buf:
             self.append_stats_text(app, buf)
-            app.sendl()
+            app.sendl(comment="Continuing from pause after stats display")
         elif 'Do you wish to accept? [Yes, No, or Ignore for now]' in buf:
+            r = app.data.realm.turns.remaining
+            if r is None:
+                r = "an unknown number of"
+
+            botlog.note("Accepting trade deal with " + str(r) +
+                    "turns remaining:\n\n" + buf )
             app.send('y', comment="accepting mid day trade deal")
         elif 'Do you wish to accept?' in buf:
+
+            r = app.data.realm.turns.remaining
+            if r is None:
+                r = "an unknown number of"
+
+            botlog.note("Ignoring trade deal with " + str(r) +
+                        "turns remaining:\n\n" + buf)
+
             # TODO check what the text really is when a trade deal for ignore shows up
             app.send('i', comment="ignoring mid day trade deal")
+
         elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf:
             # this buffer also contains the do you want to visit the bank
             #   question which is handled by the Maint state.  we must skip
@@ -352,8 +353,7 @@ class PreTurns(StatsState):
         elif '-=<Paused>=-' in buf:
             app.sendl()
             if 'Sorry, you have used all of your turns today.' in buf:
-                app.metadata.used_all_turns = True
-                return ExitGame()
+                return MainMenu(should_exit=True)
 
         elif '[Diplomacy Menu]' in buf:
             app.on_diplomacy_menu()
@@ -421,39 +421,50 @@ class MainMenu(StatsState):
         StatsState.__init__(self, statsParser=PlanetParser())
         self.should_exit = should_exit
 
+    def parse_info(self, app):
+        # in the main menu, check the scores
+        app.send(3, comment="Checking scores")
+        buf = app.read()
+        app.data.planet = Planet()
+        # read in the scores and stats of all the realms
+        self.parse(app, buf)
+        app.data.planettext = buf
+        if '-=<Paused>=-' in buf:
+            app.sendl()
+        buf = app.read()
+
+        # in the main menu, check the empire status
+        app.send(2, comment="Checking status")
+        buf = app.read()
+        app.data.statstext = buf
+        TurnStatsParser().parse(app, buf)
+        if '-=<Paused>=-' in buf:
+            app.sendl()
+        buf = app.read()
+
+
+        return buf
+
+
     def transition(self, app, buf):
 
 
-        if "Choice> Quit" in buf:
-            # we have already played today, don't send emails
-            botlog.warn("We already played today")
-            # The server should not be playing multiple times, so we need to know if it is
-            # app.no_email_reason = "We already played today"
-            app.skip_next_read = True
-            return ExitGame()
-        elif self.should_exit:
-            app.skip_next_read = True
-            # read in the scores and stats of all the realms
-            self.parse(app, buf)
-            return ExitGame()
-        else:
-            # in the main menu, check the scores
-            app.send(3, comment="Checking scores")
-            buf = app.read()
-            app.data.planet = Planet()
-            # read in the scores and stats of all the realms
-            self.parse(app, buf)
-            if '-=<Paused>=-' in buf:
-                app.sendl()
-            buf = app.read()
+        if '-=<Paused>=-' in buf:
+            app.sendl(comment="Leaving paused prompt in main menu")
+        elif self.should_exit or "Choice> Quit" in buf:
 
-            # in the main menu, check the empire status
-            app.send(2, comment="Checking status")
-            buf = app.read()
-            TurnStatsParser().parse(app,buf)
-            if '-=<Paused>=-' in buf:
-                app.sendl()
-            buf = app.read()
+            if "Choice> Quit" in buf:
+                # we have already played today, don't send emails
+                app.metadata.used_all_turns = True
+
+            buf = self.parse_info(app)
+
+            # The server should not be playing multiple times, so we need to know if it is
+            app.skip_next_read = True
+            return ExitGame()
+
+        else:
+            self.parse_info(app)
 
             app.send(1, comment="Commencing to play the game")
             app.metadata.waiting_to_record_first_turn_number = True
@@ -462,7 +473,8 @@ class MainMenu(StatsState):
 
 class NewRealm(State):
     def transition(self, app, buf):
-        app.send_seq([app.get_app_value('realm') + "\r", 'y', 'n'])
+        app.send_seq([app.get_app_value('realm') + "\r", 'y', 'n'],
+                     comment="Creating a new realm")
         return MainMenu()
 
 

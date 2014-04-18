@@ -44,7 +44,7 @@ class Investor(Strategy):
                         "investments")
             return Strategy.UNHANDLED
 
-        max_iters = 11
+        max_iters = 12
 
         while (realm.gold > HUNMIL and
                        self.day <= 10 and
