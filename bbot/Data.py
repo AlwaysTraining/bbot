@@ -659,6 +659,12 @@ class Data(dict):
 
         if p.growth is not None and p.size is not None:
             g = p.growth / float(p.size)
+            if g > 0.05:
+                botlog.info("Population growth was calulated as " + 
+                        str(round(g,1)) + "%, that seems high, capping " +
+                        " to 5%")
+                g = 0.05
+
         else:
             g = 0.05
 
@@ -666,8 +672,14 @@ class Data(dict):
 
         if r is not None:
             r = int(round(g * r, 0))
+        else:
+            raise Exception("Not known what current food consumption is")
 
-        botlog.debug("try_get_needed_surplus: " + str(r))
+        botlog.info("last population food consumprion was " + str(r) + ". at " +
+            str(round(r*100,1)) + " growth rate, we should have a surpluss of " +
+            str(r))
+
+
         return r
 
 #       # But the time we need to buy ag, we should have paid maintenance, and

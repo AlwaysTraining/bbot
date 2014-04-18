@@ -45,6 +45,20 @@ class LogOff(State):
 class ExitGame(State):
     def transition(self, app, buf):
         if '(1) Play Game' in buf:
+
+            # in the main menu, check the scores
+            app.send(3, comment="Checking scores before exit")
+            buf = app.read()
+            app.data.planettext = buf
+            app.data.planet = Planet()
+            # read in the scores and stats of all the realms
+            PlanetParser().parse(app, buf)
+
+            if '-=<Paused>=-' in buf:
+                app.sendl()
+            buf = app.read()
+
+
             app.send('0')
             return LogOff()
         elif '-=<Paused>=-' in buf:
@@ -292,7 +306,6 @@ class TurnStats(StatsState):
 
 
         if 'Sorry, you have used all of your turns today.' in buf:
-            app.data.planettext += "\n" + buf + "\n"
             app.metadata.used_all_turns = True
             app.sendl()
             return ExitGame()
@@ -339,6 +352,7 @@ class PreTurns(StatsState):
         elif '-=<Paused>=-' in buf:
             app.sendl()
             if 'Sorry, you have used all of your turns today.' in buf:
+                app.metadata.used_all_turns = True
                 return ExitGame()
 
         elif '[Diplomacy Menu]' in buf:
