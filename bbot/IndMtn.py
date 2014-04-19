@@ -75,7 +75,8 @@ class IndMtn(Strategy):
             return 1.0
 
         if (self.app.has_strategy("Investor") and
-                not self.data.has_full_investments(days_missing=1)):
+            (self.data.realm.bank.investments) > 0 and  # TODO a better way to learn if investments are unparsed, or try to garantee that they are parsed before calling this funciton
+            not self.data.has_full_investments(days_missing=1)):
             # if only missing one day of investments, this is normal, don't
             # sell anything, otherwise sell a chunk
             return 0.75

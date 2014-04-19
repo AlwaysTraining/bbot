@@ -182,10 +182,3 @@ class RegionBuy(Strategy):
 
 
 
-
-
-
-        
-        
-
-

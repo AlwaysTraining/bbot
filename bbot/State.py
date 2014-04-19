@@ -171,6 +171,14 @@ class Spending(StatsState):
         # any strategy is required to leave the state back in the buy menu
         #   so the current app's buf should be the most recent buy data
         app.data.spendtext = app.buf
+        self.parse(app, app.buf)
+
+        buf = app.read()
+        if len(buf) > 0:
+            app.data.spendtext = app.buf
+            # parse the buy menu
+            self.parse(app, buf)
+
 
         # exit buy menu
         app.sendl()
@@ -319,11 +327,14 @@ class TurnStats(StatsState):
             app.send('i', comment="ignoring mid day trade deal")
 
         elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf:
+
+            # do not append earn text here, this is a status page, we get this 
+            #   from the main menu for the email
+
             # this buffer also contains the do you want to visit the bank
             #   question which is handled by the Maint state.  we must skip
             #   the next read, as the line would be eaten with noone to hanlde
             #   it
-            self.append_stats_text(app, buf)
             app.skip_next_read = True
             return Maint()
         else:

@@ -594,11 +594,16 @@ class Data(dict):
     def has_full_investments(self, days_missing=0):
         # it is common to see $1,999,999,998 investments, i
         #   so subtract 10 of those off by 2's and you get 20
-        full = 20000000000
-        missing = days_missing * 1999999998
-        slush = (10-days_missing) * 2
-        needed = full - missing - slush
-        return sum(self.realm.bank.investments) >= full
+        TWOBIL = 2000000000
+        full = (TWOBIL * (10 - days_missing)) - 20
+        botlog.debug(str(full) + " needed for  full investments with " + 
+                str(days_missing) + " days missing")
+        cur = sum(self.realm.bank.investments) 
+        botlog.debug(str(cur) + " Current total investments")
+        is_full = cur >= full
+        botlog.debug("Are investments full?: " + str(is_full))
+
+        return is_full
 
 
     def has_full_bank(self):
@@ -681,8 +686,9 @@ class Data(dict):
         else:
             raise Exception("Not known what current food consumption is")
 
-        botlog.info("last population food consumption was " + str(r) +
-            ". at a " + str(round(g*100,1)) +
+        botlog.info("last population food consumption was " + 
+                str(a.civilian.food_consumption) +
+            ". at a " + str(round(g*100,2)) +
             "% growth rate, we should need a surplus of " +
             str(r))
 
