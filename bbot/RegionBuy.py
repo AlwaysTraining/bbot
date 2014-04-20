@@ -65,6 +65,15 @@ class RegionBuy(Strategy):
             # we can't afford any more regions after buying ag, this exits
             # back to wherver we came from (menu or turnflow wise)
             if self.a == 0:
+                botlog.info("Bought all ag regions, should be back at "
+                            "spending menu")
+                buf = self.app.read()
+                if 'Your choice?' in buf:
+                    app.sendl(comment='leaving ag menu, we bought the limit')
+
+                # back in spending menu, give it a good parse
+                buf = self.app.read()
+                self.sp.parse(self.app, buf)
                 return
 
         if region_ratio is None:
@@ -103,6 +112,9 @@ class RegionBuy(Strategy):
         if enter_to_exit:
             self.app.sendl(comment="Exiting region menu even though we could "
                                    "buy more")
+            # back in spending menu, give it a good parse
+            buf = self.app.read()
+            self.sp.parse(self.app, buf)
 
     def buy_ag_regions(self):
         # we start at the region menu
@@ -165,11 +177,6 @@ class RegionBuy(Strategy):
 
             self.a = ( self.a - int_num_to_buy)
             self.app.metadata.last_ag_buy = int_num_to_buy
-
-            # this should rarely happen, but I saw it happen once, we outspent
-            # ourselved on ag regions
-            if self.a == 0:
-                return
 
             # for ultimate efficiny you could just always buy one region and
             #   until the adviso says it is okay.  This makes the logs a pain
