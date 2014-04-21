@@ -67,8 +67,7 @@ class RegionBuy(Strategy):
             if self.a == 0:
                 botlog.info("Bought all ag regions, should be back at "
                             "spending menu")
-                buf = self.app.read()
-                if 'Your choice?' in buf:
+                if 'Your choice?' in self.app.buf or enter_to_exit:
                     app.sendl(comment='leaving ag menu, we bought the limit')
 
                 # back in spending menu, give it a good parse
