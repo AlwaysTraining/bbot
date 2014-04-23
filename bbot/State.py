@@ -423,6 +423,10 @@ class PreTurns(StatsState):
             app.skip_next_read = True
             return Spending()
 
+        elif 'Do you wish to send a message?' in buf:
+            app.skip_next_read = True
+            return EndTurn()
+
 
 from bbot.PlanetParser import PlanetParser
 

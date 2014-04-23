@@ -132,7 +132,7 @@ from email import Encoders
 
 def send_mail(to, subject, text, _from="", files=[], cc=[], bcc=[],
               server="smtp.gmail.com", port=587, server_user=None,
-              server_user_pass=None):
+              server_user_pass=None,preformatted=True):
     assert type(to) == list
     assert type(files) == list
     assert type(cc) == list
@@ -145,8 +145,10 @@ def send_mail(to, subject, text, _from="", files=[], cc=[], bcc=[],
     message['Subject'] = subject
     message['Cc'] = COMMASPACE.join(cc)
 
-    html = "<html><body><pre>" + text + "</html></body></pre>"
-    message.attach(MIMEText(html, 'html'))
+    if preformatted:
+        text = "<html><body><pre>" + text + "</html></body></pre>"
+
+    message.attach(MIMEText(text, 'html'))
 
     for f in files:
         part = MIMEBase('application', 'octet-stream')
