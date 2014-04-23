@@ -176,6 +176,8 @@ class RegionBuy(Strategy):
 
             self.a = ( self.a - int_num_to_buy)
             self.app.metadata.last_ag_buy = int_num_to_buy
+            if self.a <= 0:
+                break
 
             # for ultimate efficiny you could just always buy one region and
             #   until the adviso says it is okay.  This makes the logs a pain
