@@ -23,7 +23,7 @@ class PlanetParser(StatsParser):
 
     def get_patterns(self):
         return {
-            "\(([A-Z])\) " + S + W + N + W + N + W + N: 909
+            "\(([A-Z])\)[ \+]" + S + W + N + W + N + W + N: 909
         }
 
 

@@ -97,6 +97,18 @@ class TurnStatsParser(StatsParser):
         elif which == 320:
             realm.turns.years_protection = self.get_num()
             realm.turns.years_freedom = None
+        elif which == 560:
+            manufacture.troopers.production = self.get_num()
+        elif which == 580:
+            manufacture.jets.production = self.get_num()
+        elif which == 570:
+            manufacture.turrets.production = self.get_num()
+        elif which == 600:
+            manufacture.bombers.production = self.get_num()
+        elif which == 610:
+            manufacture.tanks.production = self.get_num()
+        elif which == 590:
+            manufacture.carriers.production = self.get_num()
 
 
 
