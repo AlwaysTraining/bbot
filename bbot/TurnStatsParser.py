@@ -55,6 +55,7 @@ class TurnStatsParser(StatsParser):
         realm = app.data.realm
         army = realm.army
         regions = realm.regions
+        manufacture = regions.industrial.zonemanufacturing
 
         if which == 200:
             realm.name = self.get_str()
