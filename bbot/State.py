@@ -472,7 +472,7 @@ class MainMenu(StatsState):
         # in the main menu, check the history
         app.send(4, comment="Checking today's news")
         buf = app.read()
-        app.data.yesterdaynewstext = buf
+        app.data.todaynewstext = buf
         while 'Continue? (Y/n)' in buf:
             app.send('y', comment="Continue reading today's news")
             buf = app.read()
