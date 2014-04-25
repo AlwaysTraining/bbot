@@ -133,35 +133,35 @@ class Spending(StatsState):
         self.parse(app, buf)
 
         # commentin out this because we don't really need it until we heavily start to mine data
-
-        #       # if game setup has not been read, # parse it
-        #       if app.data.setup is None:
-        #           app.data.setup=Setup()
-        #           app.send_seq(['*','g'])
-        #           buf = app.read()
-        #           self.parse(app,buf)
-        #           if '-=<Paused>=-' in buf:
-        #               app.sendl()
-        #               buf = app.read()
-        #           app.send('0')
-        #           buf = app.read()
-        #           self.parse(app,buf)
-
-        #       # parse the information from the advisors
-        #       app.send_seq(['*','a'])
-        #       for advisor in range(1,5):
-        #           app.data.realm.advisors.reset_advisor(advisor)
-        #           app.send(advisor)
-        #           buf = app.read()
-        #           self.parse(app,buf)
-        #           if '-=<Paused>=-' in buf:
-        #               app.sendl()
-        #               buf = app.read()
-
-        #       # return to the buy menu and parse it again for good measure
-        #       app.send_seq(['0','0'])
-        #       buf = app.read()
-        #       self.parse(app,buf)
+        #
+        # # if game setup has not been read, # parse it
+        # if app.data.setup is None:
+        #     app.data.setup=Setup()
+        #     app.send_seq(['*','g'])
+        #     buf = app.read()
+        #     self.parse(app,buf)
+        #     if '-=<Paused>=-' in buf:
+        #         app.sendl()
+        #         buf = app.read()
+        #     app.send('0')
+        #     buf = app.read()
+        #     self.parse(app,buf)
+        #
+        # # parse the information from the advisors
+        # app.send_seq(['*','a'])
+        # for advisor in range(1,5):
+        #     app.data.realm.advisors.reset_advisor(advisor)
+        #     app.send(advisor)
+        #     buf = app.read()
+        #     self.parse(app,buf)
+        #     if '-=<Paused>=-' in buf:
+        #         app.sendl()
+        #         buf = app.read()
+        #
+        # return to the buy menu and parse it again for good measure
+        app.send_seq(['0','0'])
+        buf = app.read()
+        self.parse(app,buf)
 
 
         # based on the strategies registered with the app we do differnt
@@ -453,6 +453,30 @@ class MainMenu(StatsState):
         buf = app.read()
         app.data.statstext = buf
         TurnStatsParser().parse(app, buf)
+        if '-=<Paused>=-' in buf:
+            app.sendl()
+        buf = app.read()
+
+        # in the main menu, check the history
+        app.send(5, comment="Checking yesterday's news")
+        buf = app.read()
+        app.data.yesterdaynewstext = buf
+        while 'Continue? (Y/n)' in buf:
+            app.send('y', comment="Continue reading yesterday's news")
+            buf = app.read()
+            app.data.yesterdaynewstext += "\n" + buf
+        if '-=<Paused>=-' in buf:
+            app.sendl()
+        buf = app.read()
+
+        # in the main menu, check the history
+        app.send(4, comment="Checking today's news")
+        buf = app.read()
+        app.data.yesterdaynewstext = buf
+        while 'Continue? (Y/n)' in buf:
+            app.send('y', comment="Continue reading today's news")
+            buf = app.read()
+            app.data.todaynewstext += "\n" + buf
         if '-=<Paused>=-' in buf:
             app.sendl()
         buf = app.read()

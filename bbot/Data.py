@@ -566,6 +566,8 @@ class Data(dict):
         self.msgtext = ''
         self.planettext = ''
         self.planet = None
+        self.yesterdaynewstext = ''
+        self.todaynewstext = ''
 
 
     def __str__(self):

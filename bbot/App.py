@@ -30,9 +30,12 @@ class App:
 
 
     def get_tag_str(self, joiner='_'):
-        a = self.get_app_value('address')
-        a = a.split('.')
-        a = a[0]
+        if self.has_app_value('id'):
+            a = self.get_app_value('id')
+        else:
+            a = self.get_app_value('address')
+            a = a.split('.')
+            a = a[0]
         s = joiner.join([
             str(a),
             str(self.get_app_value('game')),
@@ -489,6 +492,8 @@ class App:
         body = self.maybe_append_section(body, "Inventory", self.data.spendtext)
         body = self.maybe_append_section(body, "Investments", self.data.investmentstext)
         body = self.maybe_append_section(body, "Recent Source Code Changes", changetext)
+        body = self.maybe_append_section(body, "Today's News", self.data.todaynewstext)
+        body = self.maybe_append_section(body, "Yesterday's News",self.data.yesterdaynewstext)
         body = body.strip()
 
         Utils.send_mail(

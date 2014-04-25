@@ -95,6 +95,9 @@ class LocalLackey(LackeyBase):
 
         if "You do not have relations with that realm." in buf:
             botlog.warn("Could not trade with master realm")
+            self.can_send_trade = False
+            self.not_trading_reason = (self.get_master_name() +
+                                       " has not yet accepted treaty")
         else:
             traded = self.fill_trade_deal(tradeRatio)
             if traded:
