@@ -159,9 +159,9 @@ class Spending(StatsState):
         #         buf = app.read()
         #
         # return to the buy menu and parse it again for good measure
-        app.send_seq(['0','0'])
-        buf = app.read()
-        self.parse(app,buf)
+        # app.send_seq(['0','0'])
+        # buf = app.read()
+        # self.parse(app,buf)
 
 
         # based on the strategies registered with the app we do differnt
