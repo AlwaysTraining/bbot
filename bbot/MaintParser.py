@@ -27,12 +27,12 @@ class MaintParser(StatsParser):
             'Your People Need ' + NUM_REGEX + ' units of food': 1730,
             'Your Armed Forces Require ' + NUM_REGEX + ' units of food': 1740,
             NUM_REGEX + ' gold is requested to boost popular support\.': 1750,
+            NUM_REGEX + ' gold is requested to improve military morale\.': 1760,
             'You have ' + NUM_REGEX + ' gold and ' + NUM_REGEX + ' units of food.': 1900,
             'You have ' + NUM_REGEX + ' gold in hand and ' + NUM_REGEX + ' gold in the bank.': 1510,
             '\[' + N + ' Regions left\] Your choice\?': 521,
             N + "/" + N + "/" + N + S + "\$[ ]*" + N: 3254,
-            (
-                'Returns expected to be approximately ' + N + ' gold\.  Accept\? \(Y/n\) '): 3264,
+            'Returns expected to be approximately ' + N + ' gold\.  Accept\? \(Y/n\) ': 3264,
             'You have ' + NUM_REGEX + ' gold in hand and ' + NUM_REGEX + ' gold in the bank.': 1510,
         }
 
@@ -53,7 +53,9 @@ class MaintParser(StatsParser):
         elif which == 1740:
             army.food = self.get_num(0)
         elif which == 1750:
-            realm.pop_support_bribe = self.get_num(0)
+            realm.population.pop_support_bribe = self.get_num(0)
+        elif which == 1760:
+            realm.army.morale_bribe = self.get_num(0)
         elif which == 1900:
             realm.gold = self.get_num(0)
             realm.food.units = self.get_num(1)

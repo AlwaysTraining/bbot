@@ -252,7 +252,7 @@ class Maint(StatsState):
                 withdraw = maintcost - app.data.realm.gold
                 # don't try to withdraw more than we have or it will take
                 #   two enter's to get through the prompt
-                if withdraw > app.data.realm.bank.gold:
+                if withdraw > app.data.realm.bank.gold or withdraw < 0:
                     withdraw = app.data.realm.bank.gold
 
                 # withdraw the money and get back to the maintenance sequence

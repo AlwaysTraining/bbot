@@ -140,6 +140,7 @@ class Army(ManufacturedArmy):
         self.agents = Agents()
         self.headquarters = Headquarters()
         self.maintenance = None
+        self.morale_bribe = None
         self.food = None
         self.sdi = None
 
@@ -586,7 +587,7 @@ class Data(dict):
         if realm.regions.maintenance is not None: c += realm.regions.maintenance
         if realm.queen_taxes is not None: c += realm.queen_taxes
         if realm.population.pop_support_bribe is not None: c += realm.population.pop_support_bribe
-        # TODO Morale cost
+        if realm.army.morale_bribe is not None: c += realm.army.morale_bribe
 
         return c
 
