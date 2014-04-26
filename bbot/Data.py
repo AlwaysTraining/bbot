@@ -673,14 +673,14 @@ class Data(dict):
 
         if p.growth is not None and p.size is not None:
             g = p.growth / float(p.size)
-            if g > 0.05:
+            if g > 0.01:
                 botlog.info("Population growth was calulated as " +
                         str(round(g,1)) + "%, that seems high, capping " +
-                        " to 5%")
-                g = 0.05
+                        " to 1%")
+                g = 0.01
 
         else:
-            g = 0.05
+            g = 0.01
 
         r = a.civilian.food_consumption
 

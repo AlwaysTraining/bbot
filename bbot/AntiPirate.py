@@ -73,8 +73,10 @@ class AntiPirate(Strategy):
 
         if self.app.match_index == 0:
             self.last_result = False
+            botlog.note("Lost to Pirates")
         elif self.app.match_index == 1:
             self.last_result = True
+            botlog.note("Beat the Pirates")
         else:
             raise Exception('Error after waiting for pirate attack results')
 
