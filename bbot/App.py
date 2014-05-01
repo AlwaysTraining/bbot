@@ -38,7 +38,6 @@ class App:
             a = a[0]
         s = joiner.join([
             str(a),
-            str(self.get_app_value('game')),
             str(self.get_app_value('realm'))])
 
         return s
