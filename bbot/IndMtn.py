@@ -42,6 +42,25 @@ class IndMtn(Strategy):
         self.app.metadata.get_region_ratio_func = get_region_ratio
         self.sp = SpendingParser()
         self.do_specialize = False
+        self.protection_sell_ratio = self.get_strategy_option(
+            "protection_sell_ratio")
+        self.investing_sell_ratio = self.get_strategy_option(
+            "investing_sell_ratio")
+        self.normal_sell_ratio = self.get_strategy_option(
+            "normal_sell_ratio")
+
+        self.protection_buy_ratio = self.get_strategy_option(
+            "protection_buy_ratio")
+        self.investing_buy_ratio = self.get_strategy_option(
+            "investing_buy_ratio")
+        self.normal_buy_ratio = self.get_strategy_option(
+            "normal_buy_ratio")
+        self.visited_sell_menu = False
+
+        if self.normal_sell_ratio * self.normal_buy_ratio != 0:
+            botlog.warn("buy ratio of " + str(self.normal_buy_ratio) +
+                " and sell ratio of " + str(self.normal_sell_ratio) +
+                " are self conflicting")
 
     def get_priority(self):
         return MED_PRIORITY
@@ -72,24 +91,44 @@ class IndMtn(Strategy):
         #   total day out of protection, we will always
         #   sell 100% of regions
         if not self.data.is_oop():
-            return 1.0
+            return self.protection_sell_ratio
 
         if (self.app.has_strategy("Investor") and
             (self.data.realm.bank.investments) > 0 and  # TODO a better way to learn if investments are unparsed, or try to garantee that they are parsed before calling this funciton
             not self.data.has_full_investments(days_missing=1)):
             # if only missing one day of investments, this is normal, don't
             # sell anything, otherwise sell a chunk
-            return 0.75
+            return self.investing_sell_ratio
 
-        # in general, we will sell a small portion of our army to suppliment 
+        # in general, we will sell a small portion of our army to suppliment
         #   region growth
-        return 0.025
+        return self.normal_sell_ratio
+
+    def get_army_buy_ratio(self):
+
+        if not self.data.is_oop():
+            return self.protection_buy_ratio
+
+        if (self.app.has_strategy("Investor") and
+                    (
+                            self.data.realm.bank.investments) > 0 and  # TODO a better way to learn if investments are unparsed, or try to garantee that they are parsed before calling this funciton
+                not self.data.has_full_investments(days_missing=1)):
+            # if only missing one day of investments, this is normal, don't
+            # buy anything, otherwise buy a chunk
+            return self.investing_buy_ratio
+
+        # in general, we will buy a to suppliment
+        #   industry
+        return self.normal_buy_ratio
+
 
     def sell(self, sellItems, sellRatio):
 
         # we start at the buy menu
         in_buy = True
 
+        if not self.visited_sell_menu or sellRatio > 0:
+            return
 
         # sell all the items specified
         for saleItem in sellItems:
@@ -108,10 +147,13 @@ class IndMtn(Strategy):
                 if in_buy:
                     # sell all tanks and return to buy menu
                     self.app.send('s')
+                    self.visited_sell_menu = True
                     # perform a read and through a spending state to parse all the data
                     self.sp.parse(self.app, self.app.read())
                     in_buy = False
-                self.app.send_seq([str(saleItem), ammount, '\r'])
+
+                if ammount > 0:
+                    self.app.send_seq([str(saleItem), ammount, '\r'])
 
             else:
                 raise Exception("Do not know how to drop regions yet")
@@ -130,7 +172,7 @@ class IndMtn(Strategy):
                               comment="Specializing industry on tanks")
             self.do_specialize = False
 
-        # Sell items         
+        # Sell items
 
         sell_ratio = self.get_army_sell_ratio()
 
@@ -153,6 +195,11 @@ class IndMtn(Strategy):
 
         self.sell(sellItems, sell_ratio)
         self.sp.parse(self.app, self.app.read())
+
+        # buy tanks
+        buy_ratio = self.get_army_buy_ratio()
+        if buy_ratio > 0:
+            self.buy_army_units("Tanks", buy_ratio)
 
         # enter region buying menu
         RegionBuy(self.app, enter_region_menu=True)

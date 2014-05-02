@@ -8,6 +8,7 @@ import Constants
 import os
 import botlog
 import Utils
+import math
 
 UNHANDLED = "bbot_UNHANDLED"
 TERMINATE = "bbot_TERMINATE"
@@ -54,6 +55,24 @@ class Strategy:
     def get_strategy_option(self, name):
         option = self.get_name() + "_" + name
         return self.app.get_app_value(option)
+
+    def buy_army_units(self, unit_type, buyratio):
+        # Assume at buy menu
+        item = self.app.data.get_menu_option(unit_type)
+
+        # determine number to buy
+        price = self.app.data.get_price(item)
+        gold = self.data.realm.gold * buyratio
+        ammount = int(math.floor(gold / price))
+
+        if ammount == 0:
+            botlog.info("Could not afford even 1 " + unit_type)
+        else:
+            # buy the items
+            self.app.send_seq([item, ammount, '\r'],
+                              comment="Buying " + str(ammount) + " " + unit_type)
+
+        return ammount
 
 
 class Strategies(list):

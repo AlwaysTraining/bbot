@@ -626,6 +626,19 @@ class Data(dict):
         if item == Gold.menu_option: return self.realm.gold
         raise Exception("get_number() don't know about option " + str(item))
 
+
+    def get_price(self, item):
+        army = self.realm.army
+        item = str(item)
+        if item == Troopers.menu_option: return army.troopers.price
+        if item == Turrets.menu_option: return army.turrets.price
+        if item == Jets.menu_option: return army.jets.price
+        if item == Tanks.menu_option: return army.tanks.price
+        if item == Bombers.menu_option: return army.bombers.price
+        if item == Carriers.menu_option: return army.carriers.price
+        if item == Agents.menu_option: return army.agents.price
+        raise Exception("get_price() don't know about option " + str(item))
+
     def get_num_per_carrier(self, item):
         # my experiements indicate:
         # 1k troopers
@@ -646,6 +659,20 @@ class Data(dict):
         if item == Gold.menu_option: return Gold.num_per_carrier
         raise Exception(
             "get_num_per_carrier() don't know about option " + str(item))
+
+    def get_menu_option(self, unit_type):
+        army = self.realm.army
+        if "trooper" in unit_type.lower(): return Troopers.menu_option
+        if "turret" in unit_type.lower(): return Turrets.menu_option
+        if "jet" in unit_type.lower(): return Jets.menu_option
+        if "tank" in unit_type.lower(): return Tanks.menu_option
+        if "bomber" in unit_type.lower(): return Bombers.menu_option
+        if "carrier" in unit_type.lower(): return Carriers.menu_option
+        if "agent" in unit_type.lower(): return Agents.menu_option
+
+        raise Exception(
+            "get_menu_option() don't know about type " + str(unit_type))
+
 
     def get_realm_by_name(self, name, realms=None):
         if realms is None:
