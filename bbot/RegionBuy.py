@@ -35,7 +35,8 @@ class RegionBuy(Strategy):
 
         # the number of regions we can afforAd
         self.sp.parse(self.app, self.app.buf)
-        if self.app.data.realm.regions.number_affordable == 0:
+        if (num_regions is None and
+            self.app.data.realm.regions.number_affordable == 0):
             botlog.warn("Can not afford any regions")
             return
 
@@ -70,9 +71,6 @@ class RegionBuy(Strategy):
                 if 'Your choice?' in self.app.buf or enter_to_exit:
                     app.sendl(comment='leaving ag menu, we bought the limit')
 
-                # back in spending menu, give it a good parse
-                buf = self.app.read()
-                self.sp.parse(self.app, buf)
                 return
 
         if region_ratio is None:
