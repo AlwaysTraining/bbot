@@ -427,6 +427,10 @@ class PreTurns(StatsState):
             app.skip_next_read = True
             return EndTurn()
 
+        elif '[Trading]' in buf:
+            app.skip_next_read = True
+            return EndTurn()
+
 
 from bbot.PlanetParser import PlanetParser
 

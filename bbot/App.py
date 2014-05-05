@@ -184,8 +184,8 @@ class App:
 
         timeout = self.get_close_float(timeout)
 
-        # botlog.debug(
-        #     "Reading with " + str(round(timeout, 1)) + " second timeout...")
+        botlog.debug(
+            "Reading with " + str(round(timeout, 1)) + " second timeout...")
 
         while True:
             #todo infinte guard
