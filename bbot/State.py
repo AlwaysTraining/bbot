@@ -431,6 +431,9 @@ class PreTurns(StatsState):
             app.skip_next_read = True
             return EndTurn()
 
+        elif ' Regions left] Your Choice?' in buf:
+            RegionBuy(app)
+
 
 from bbot.PlanetParser import PlanetParser
 

@@ -6,7 +6,7 @@
 
 import botlog
 import math
-
+import random
 
 def _indent(d):
     s = '\n'
@@ -281,61 +281,48 @@ class Regions(object):
         if self.technology.number is not None:
             self.technology.number = self.technology.number * length
 
+
+
+    def buy_helper(self, r, m, mra, t, length):
+
+        if r.number is None:
+            return (m, mra, t)
+
+        ra = r.number * length
+        ia = int(ra)
+
+        # randomly choose greather than or greatherthan or equal
+        if random.choice([True,False]):
+            newmax = ra >= mra
+        else:
+            newmax = ra > mra
+
+        if newmax:
+            mra = ra
+            m = r
+
+        r.number = ia
+        t += r.number
+
+        return (m, mra, t)
+
     def ratio_to_buy(self, length):
 
         self.normalize()
 
         t = 0
         m = None
-        ma = -1
-        if self.coastal.number is not None:
-            self.coastal.number = int(self.coastal.number * length)
-            if self.coastal.number > ma:
-                ma = self.coastal.number
-                m = self.coastal
-            t += self.coastal.number
-        if self.river.number is not None:
-            self.river.number = int(self.river.number * length)
-            if self.river.number > ma:
-                ma = self.river.number
-                m = self.river
-            t += self.river.number
-        if self.agricultural.number is not None:
-            self.agricultural.number = int(self.agricultural.number * length)
-            if self.agricultural.number > ma:
-                ma = self.agricultural.number
-                m = self.agricultural
-            t += self.agricultural.number
-        if self.desert.number is not None:
-            self.desert.number = int(self.desert.number * length)
-            if self.desert.number > ma:
-                ma = self.desert.number
-                m = self.desert
-            t += self.desert.number
-        if self.industrial.number is not None:
-            self.industrial.number = int(self.industrial.number * length)
-            if self.industrial.number > ma:
-                ma = self.industrial.number
-                m = self.industrial
-            t += self.industrial.number
-        if self.urban.number is not None:
-            self.urban.number = int(self.urban.number * length)
-            if self.urban.number > ma:
-                ma = self.industrial.number
-                m = self.industrial
-            t += self.urban.number
-        if self.mountain.number is not None:
-            self.mountain.number = int(self.mountain.number * length)
-            if self.mountain.number > ma:
-                ma = self.mountain.number
-                m = self.mountain
-            t += self.mountain.number
-        if self.technology.number is not None:
-            self.technology.number = int(self.technology.number * length)
-            if self.technology.number > ma:
-                ma = self.technology.number
-                m = self.technology
-            t += self.technology.number
+        mra = -1
+
+        (m, mra, t) = self.buy_helper(self.coastal, m, mra, t, length)
+        (m, mra, t) = self.buy_helper(self.river, m, mra, t, length)
+        (m, mra, t) = self.buy_helper(self.agricultural, m, mra, t, length)
+        (m, mra, t) = self.buy_helper(self.desert, m, mra, t, length)
+        (m, mra, t) = self.buy_helper(self.industrial, m, mra, t, length)
+        (m, mra, t) = self.buy_helper(self.urban, m, mra, t, length)
+        (m, mra, t) = self.buy_helper(self.mountain, m, mra, t, length)
+        (m, mra, t) = self.buy_helper(self.technology, m, mra, t, length)
+
         d = length - t
         if (d > 0):
             m.number = m.number + d

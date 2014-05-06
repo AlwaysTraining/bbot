@@ -127,7 +127,7 @@ class IndMtn(Strategy):
         # we start at the buy menu
         in_buy = True
 
-        if not self.visited_sell_menu or sellRatio > 0:
+        if self.visited_sell_menu and sellRatio <= 0:
             return
 
         # sell all the items specified
