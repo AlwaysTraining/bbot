@@ -138,11 +138,8 @@ class IndMtn(Strategy):
 
                 if ammount == 0:
                     continue
-                if sellRatio >= 1.0:
-                    ammount = '>'
-                else:
-                    ammount = int(round(ammount * sellRatio, 0))
-                    ammount = str(ammount)
+
+                ammount = int(round(ammount * sellRatio, 0))
 
                 if in_buy:
                     # sell all tanks and return to buy menu
@@ -153,7 +150,32 @@ class IndMtn(Strategy):
                     in_buy = False
 
                 if ammount > 0:
-                    self.app.send_seq([str(saleItem), ammount, '\r'])
+
+                    # sell the item
+                    self.app.send(saleItem,
+                                  comment="selling item " + str(saleItem))
+
+                    # read max ammount for sale
+                    self.sp.parse(self.app, self.app.read())
+
+                    botlog.info("Max sale amount is " +
+                                str(self.app.metadata.max_sale_ammount) +
+                                " desired sale ammount is " +
+                                str(ammount) + ", t1 is " +
+                                str(type(self.app.metadata.max_sale_ammount)) +
+                                " and t2 is " + str(type(ammount)) +
+                                ", too much? " +
+                                str(self.app.metadata.max_sale_ammount <
+                                    ammount))
+
+                    # if max ammoutn for sale is less than what we are selling
+                    if self.app.metadata.max_sale_ammount < ammount:
+                        # cap off how much we are selling
+                        ammount = self.app.metadata.max_sale_ammount
+
+                    # send the number we are selling
+                    self.app.sendl(ammount, comment="Selling this many")
+                    self.sp.parse(self.app, self.app.read())
 
             else:
                 raise Exception("Do not know how to drop regions yet")
