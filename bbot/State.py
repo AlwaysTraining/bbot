@@ -52,12 +52,15 @@ class ExitGame(State):
 
 
 from bbot.EndTurnParser import EndTurnParser
-
+from bbot.InterplanetaryParser import InterplanetaryParser
 
 class EndTurn(StatsState):
     def __init__(self):
         StatsState.__init__(self, statsParser=EndTurnParser())
 
+    def set_interplanetary_score(self, context, planet, num):
+        pass
+        # TODO STOPPPPPPED HERE
     def transition(self, app, buf):
 
         self.parse(app, buf)
@@ -79,6 +82,21 @@ class EndTurn(StatsState):
         elif 'Do you wish to attack a Gooie Kablooie? (y/N)' in buf:
             app.send('n', comment='Not attacking gooie')
         elif '[InterPlanetary Operations]' in buf:
+
+            if app.data.league is None:
+                app.data.league = League()
+                app.send(1, comment="Entering IP scores menu")
+                app.read()
+
+                ipp = InterplanetaryParser()
+
+                for menu_option in range(1,4):
+                    app.send(menu_option, comment="Reading stats by planet")
+                    app.buf = app.read()
+                    ipp.parse(app.buf)
+                    if '-=<Paused>=-' in buf:
+                        app.sendl(comment="Paused after displaying ip stats")
+
             app.on_interplanetary_menu()
             app.send('0', comment='Exiting Inter Planetary menu')
         elif 'Do you wish to continue? (Y/n)' in buf:

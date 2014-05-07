@@ -538,10 +538,20 @@ class RealmStats(object):
 class Planet(object):
     def __init__(self):
         self.realms = []
+        self.name = None
+        self.networth = None
+        self.score = None
+        self.regions = None
 
     def __str__(self):
         return _printvisitor(self, 0)
 
+class League(object):
+    def __init__(self):
+        self.planets = []
+
+    def __str__(self):
+        return _printvisitor(self, 0)
 
 class Data(dict):
     def __init__(self):
@@ -556,6 +566,7 @@ class Data(dict):
         self.planet = None
         self.yesterdaynewstext = ''
         self.todaynewstext = ''
+        self.league = None
 
 
     def __str__(self):
