@@ -23,7 +23,7 @@ class MetaData(dict):
         self.used_all_turns = False
         self.last_ag_buy = None
         self.last_ag_buy_turn = None
-        self.max_sale_ammount = None
+        self.max_ammount = None
 
 
 

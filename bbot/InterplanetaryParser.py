@@ -8,23 +8,22 @@ import re
 import botlog
 from bbot.Utils import *
 from bbot.StatsParser import StatsParser
+from bbot.Data import Planet
 
 S = SPACE_REGEX
 N = NUM_REGEX
 
 
 class InterplanetaryParser(StatsParser):
-    def __init__(self, score_callback_func, context):
+    def __init__(self, score_callback_func, context=None):
         StatsParser.__init__(self)
         self.context = context
         self.score_callback_func = score_callback_func
 
     def get_patterns(self):
         return {
-
-            # TODO get correct string
-            STR_REGEX + SPACE_REGEX + NUM_REGEX : 26184
-
+            # may break if BBS name is very long or has more than 3 spaces
+            '([ 0-9]+\) ' + STR_REGEX + "   " + S + N: 26184
         }
 
 

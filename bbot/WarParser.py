@@ -21,15 +21,36 @@ class WarParser(StatsParser):
 
     def get_patterns(self):
         return {
-            # note if someone puts five spaces in thier realm name, it will break this
-            "\[([A-Z])\]  " + S + "     " + S: 5532
+            # note if someone puts spaces in thier bbs name, it will break this
+            '\( 0-9]+\) ' + S + '   ' + W + S : 5532
         }
 
 
     def on_match(self, app, line, which):
 
+        league = app.data.league
+
         if which == 5532:
-            pass
+            if league is None:
+                app.data.league = League()
+                league = app.data.league
+
+            planet_name = self.get_str(0)
+            relation = self.get_str(1)
+
+            planet = None
+            for cur_planet in app.data.league.planets:
+                if cur_planet.name == planet_name:
+                    planet = cur_planet
+                    break
+            if planet is None:
+                planet = Planet()
+                planet.name = planet_name
+
+            planet.relation = relation
+
+
+
 
 
 

@@ -542,6 +542,8 @@ class Planet(object):
         self.networth = None
         self.score = None
         self.regions = None
+        self.nwdensity = None
+        self.relation = None
 
     def __str__(self):
         return _printvisitor(self, 0)
@@ -753,6 +755,15 @@ class Data(dict):
         rdict = {}
         _dictvisitor(self.realm,"",rdict,allow_null)
         return rdict
+
+    def has_enemy(self):
+        if self.league is None:
+            return False
+        for p in self.league.planets:
+            if p.relation == "Enemy":
+                return True
+
+        return False
 
 
 

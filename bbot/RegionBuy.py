@@ -44,11 +44,6 @@ class RegionBuy(Strategy):
         if num_regions is None:
             self.a = self.app.data.realm.regions.number_affordable
 
-            # We want some money for investments, but only out of protection
-            if (self.app.has_strategy("Investor") and self.data.is_oop() and
-                    not self.data.has_full_investments()):
-                self.a = int(math.ceil(self.a * 0.125))
-                enter_to_exit = True
 
         if self.a is None:
             raise Exception("Not known how many regions there are")
@@ -72,6 +67,30 @@ class RegionBuy(Strategy):
                     app.sendl(comment='leaving ag menu, we bought the limit')
 
                 return
+
+        # during wartime we do not but regions unless in danger of bank
+        # overflow, and then we will only buy 1/8th of what we can afford
+        if self.app.has_strategy("War") and self.app.data.has_enemy():
+            if self.data.realm.gold > 0.75 * TWOBIL:
+                botlog.info("buying some regions in wartime so we don't "
+                            "overflow our cash")
+                self.a = int(math.ceil(self.a * 0.125))
+            else:
+                botlog.info("Not buying any regions in wartime")
+                self.a = 0
+            enter_to_exit = True
+
+        # We want some money for investments, but only out of protection
+        if (self.app.has_strategy("Investor") and self.data.is_oop() and
+                not self.data.has_full_investments()):
+            self.a = int(math.ceil(self.a * 0.125))
+            enter_to_exit = True
+
+        if self.a == 0:
+            botlog.info("not buying any regions")
+            app.sendl(
+                comment="leaving buy region menu, we don't want any")
+            return
 
         if region_ratio is None:
             r = self.app.metadata.get_region_ratio_func(self.app, None)

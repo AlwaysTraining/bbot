@@ -159,19 +159,19 @@ class IndMtn(Strategy):
                     self.sp.parse(self.app, self.app.read())
 
                     botlog.info("Max sale amount is " +
-                                str(self.app.metadata.max_sale_ammount) +
+                                str(self.app.metadata.max_ammount) +
                                 " desired sale ammount is " +
                                 str(ammount) + ", t1 is " +
-                                str(type(self.app.metadata.max_sale_ammount)) +
+                                str(type(self.app.metadata.max_ammount)) +
                                 " and t2 is " + str(type(ammount)) +
                                 ", too much? " +
-                                str(self.app.metadata.max_sale_ammount <
+                                str(self.app.metadata.max_ammount <
                                     ammount))
 
                     # if max ammoutn for sale is less than what we are selling
-                    if self.app.metadata.max_sale_ammount < ammount:
+                    if self.app.metadata.max_ammount < ammount:
                         # cap off how much we are selling
-                        ammount = self.app.metadata.max_sale_ammount
+                        ammount = self.app.metadata.max_ammount
 
                     # send the number we are selling
                     self.app.sendl(ammount, comment="Selling this many")
@@ -223,6 +223,7 @@ class IndMtn(Strategy):
         if buy_ratio > 0:
             self.buy_army_units("Tanks", buy_ratio)
 
+        if self.app.has_strategy("War")
         # enter region buying menu
         RegionBuy(self.app, enter_region_menu=True)
 

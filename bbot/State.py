@@ -52,15 +52,12 @@ class ExitGame(State):
 
 
 from bbot.EndTurnParser import EndTurnParser
-from bbot.InterplanetaryParser import InterplanetaryParser
 
 class EndTurn(StatsState):
     def __init__(self):
         StatsState.__init__(self, statsParser=EndTurnParser())
 
-    def set_interplanetary_score(self, context, planet, num):
-        pass
-        # TODO STOPPPPPPED HERE
+
     def transition(self, app, buf):
 
         self.parse(app, buf)
@@ -83,21 +80,8 @@ class EndTurn(StatsState):
             app.send('n', comment='Not attacking gooie')
         elif '[InterPlanetary Operations]' in buf:
 
-            if app.data.league is None:
-                app.data.league = League()
-                app.send(1, comment="Entering IP scores menu")
-                app.read()
-
-                ipp = InterplanetaryParser()
-
-                for menu_option in range(1,4):
-                    app.send(menu_option, comment="Reading stats by planet")
-                    app.buf = app.read()
-                    ipp.parse(app.buf)
-                    if '-=<Paused>=-' in buf:
-                        app.sendl(comment="Paused after displaying ip stats")
-
             app.on_interplanetary_menu()
+
             app.send('0', comment='Exiting Inter Planetary menu')
         elif 'Do you wish to continue? (Y/n)' in buf:
 
@@ -454,14 +438,55 @@ class PreTurns(StatsState):
 
 
 from bbot.PlanetParser import PlanetParser
+from bbot.WarParser import WarParser
+from bbot.InterplanetaryParser import InterplanetaryParser
 
 
 class MainMenu(StatsState):
     def __init__(self, should_exit=False):
         StatsState.__init__(self, statsParser=PlanetParser())
         self.should_exit = should_exit
+        self.cur_score_list = None
+        self.app = None
+
+    def set_interplanetary_score(self, context, planet, num):
+        if self.cur_score_list == "score":
+            planet.score = num
+        elif self.cur_score_list == "networth":
+            planet.networth = num
+        elif self.cur_score_list == "regions":
+            planet.regions = num
+        elif self.cur_score_list == "nwdensity":
+            planet.nwdensity = num
+        else:
+            raise Exception("Unexpected score list: " +
+                            str(self.cur_score_list))
+
+
+    def diplomacy_list(self):
+
+        wp = WarParser
+        self.app.send('d', comment="Listing diplomacy")
+
+        max_iterations = 10
+        while max_iterations > 0:
+            buf = self.app.read()
+            wp.parse(self.app, buf)
+
+            if '-=<Paused>=-' in buf:
+                self.app.sendl(comment="Continuing to list diplomacy")
+            elif '[InterPlanetary Operations]' in buf:
+                botlog.info("returned to interplanetary menu")
+                break
+
+            max_iterations -= 1
+
+        if max_iterations <= 0:
+            raise Exception("Too many iterations when listing diplomacy")
 
     def parse_info(self, app):
+        self.app = app
+
         # in the main menu, check the scores
         app.send(3, comment="Checking scores")
         buf = app.read()
@@ -505,6 +530,54 @@ class MainMenu(StatsState):
         if '-=<Paused>=-' in buf:
             app.sendl()
         buf = app.read()
+
+        # if we have not read in league scores
+        if app.data.league is None:
+            app.data.league = League()
+
+            app.send(9,comment="Entering IP menu to parse scores and dip list")
+            app.read()
+            app.send(1, comment="Entering IP scores menu")
+            app.read()
+
+            # construct parser for interplanetary stats
+            ipp = InterplanetaryParser(
+                context=None,
+                score_callback_func=self.set_interplanetary_score)
+
+            # the score options to parse
+            scoredict = {1: 'score', 2: 'networth', 3: 'regions',
+                         4: 'nwdensity'}
+
+            # parse each of the score lists
+            for menu_option, score_list in scoredict.items():
+                app.send(menu_option, comment="Reading stats by planet")
+                self.cur_score_list = score_list
+                max_iteration = 10
+
+                # keep reading while there are more scores
+                while (max_iteration > 0):
+
+                    app.buf = app.read()
+                    ipp.parse(app.buf)
+                    max_iteration -= 1
+
+                    if 'Continue? (Y/n)' in app.buf:
+                        app.send('y', comment="Continuing to display "
+                                              "scores")
+                    elif '-=<Paused>=-' in buf:
+                        app.sendl(
+                            "Leaving paused prompt after displaying scores")
+                        break
+
+                if max_iteration <= 0:
+                    raise Exception(
+                        "Too many iterations when displaying scores")
+
+            app.send(0, comment='Leaving scores menu')
+            self.cur_score_list = None
+
+
 
 
         return buf

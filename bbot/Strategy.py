@@ -56,21 +56,49 @@ class Strategy:
         option = self.get_name() + "_" + name
         return self.app.get_app_value(option)
 
-    def buy_army_units(self, unit_type, buyratio):
-        # Assume at buy menu
-        item = self.app.data.get_menu_option(unit_type)
+    def buy_army_units(self, unit_types, buyratio, ammount = None):
 
-        # determine number to buy
-        price = self.app.data.get_price(item)
-        gold = self.data.realm.gold * buyratio
-        ammount = int(math.floor(gold / price))
+        if isinstance(unit_types, basestring):
+            if ',' in unit_types:
+                strats = [x.strip() for x in unit_types.split(',')]
+            else:
+                unit_types = [unit_types]
 
-        if ammount == 0:
-            botlog.info("Could not afford even 1 " + unit_type)
-        else:
-            # buy the items
-            self.app.send_seq([item, ammount, '\r'],
-                              comment="Buying " + str(ammount) + " " + unit_type)
+        if unit_types is None:
+            raise Exception("No unit_types provided")
+
+
+        if isinstance(unit_types, basestring):
+            unit_types = [unit_types]
+
+
+        for unit_type in unit_types:
+            # Assume at buy menu
+            item = self.app.data.get_menu_option(unit_type)
+
+            # determine number to buy
+            price = self.app.data.get_price(item)
+            if buyratio is not None:
+                gold = self.data.realm.gold * buyratio
+                ammount = int(math.floor(gold / price))
+            elif ammount is None:
+                raise Exception("Did not specify ratio or ammount of " + str(
+                    unit_type) + " to buy")
+
+            if ammount == 0:
+                botlog.info("Could not afford even 1 " + unit_type)
+            else:
+                self.app.send(item, comment="buying " + unit_type)
+                self.sp.parse(self.app, self.app.read())
+
+                # if max ammoutn for buy is more than possible
+                if self.app.metadata.max_ammount > ammount:
+                    # cap off how much we are buying
+                    ammount = self.app.metadata.max_ammount
+
+                # buy the items
+                self.app.sendl(ammount,
+                               comment="Buying " + str(ammount) + " " + unit_type)
 
         return ammount
 

@@ -83,6 +83,7 @@ class SpendingParser(StatsParser):
             "Our SDI yearly funding needs have been lowered to " + N + "\% normal expenses.": 2610,
             "Food decay is at " + N + "\% of standard levels.": 2620,
             "Sell how many " + STR + "\? \(0\; " + N + "\)": 2701,
+            "Buy how many " + STR + "\? \(0\; " + N + "\)": 2701,
 
         }
 
@@ -234,6 +235,6 @@ class SpendingParser(StatsParser):
         elif which == 2620:
             advisors.technology.food_decay_tech = self.get_num()
         elif which == 2701:
-            app.metadata.max_sale_ammount = self.get_num(1)
+            app.metadata.max_ammount = self.get_num(1)
 
 
