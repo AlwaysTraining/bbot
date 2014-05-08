@@ -432,7 +432,10 @@ class PreTurns(StatsState):
             return EndTurn()
 
         elif ' Regions left] Your Choice?' in buf:
-            RegionBuy(app)
+            SpendingParser().parse(app,buf)
+            botlog.info("Restarted turn on region allocate with " +
+                        str(app.metadata.regions_left) + " regions")
+            RegionBuy(app,num_regions=app.metadata.regions_left)
 
 
 from bbot.PlanetParser import PlanetParser

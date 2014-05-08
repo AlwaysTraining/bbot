@@ -24,6 +24,7 @@ class MetaData(dict):
         self.last_ag_buy = None
         self.last_ag_buy_turn = None
         self.max_sale_ammount = None
+        self.regions_left = None
 
 
 
