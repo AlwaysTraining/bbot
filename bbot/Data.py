@@ -533,6 +533,7 @@ class RealmStats(object):
         self.regions = None
         self.networth = None
         self.treaty = None
+        self.planet_name = None
 
 
 class Planet(object):
@@ -544,6 +545,7 @@ class Planet(object):
         self.regions = None
         self.nwdensity = None
         self.relation = None
+
 
     def __str__(self):
         return _printvisitor(self, 0)

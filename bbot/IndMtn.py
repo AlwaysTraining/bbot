@@ -223,7 +223,6 @@ class IndMtn(Strategy):
         if buy_ratio > 0:
             self.buy_army_units("Tanks", buy_ratio)
 
-        if self.app.has_strategy("War")
         # enter region buying menu
         RegionBuy(self.app, enter_region_menu=True)
 

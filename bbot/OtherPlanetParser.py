@@ -16,11 +16,12 @@ W = SPACE_REGEX
 
 
 class OtherPlanetParser(StatsParser):
-    def __init__(self, realms=None):
+    def __init__(self, realms=None, planet_name=None):
         StatsParser.__init__(self)
         if realms is None:
             realms = []
         self.realms = realms
+        self.planet_name = planet_name
 
 #   (A)  Bonk                                    16,761     33k       743k
 
@@ -49,3 +50,4 @@ class OtherPlanetParser(StatsParser):
             r.regions = self.get_num(2)
             r.score = self.get_num(3)
             r.networth = self.get_num(4)
+            r.planet = self.planet_name

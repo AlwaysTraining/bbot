@@ -55,7 +55,7 @@ class LackeyBase(Strategy):
         if num_per_carrier is None:
             return 0
 
-        needed = ceil(ammount / float(num_per_carrier))
+        needed = int(ceil(ammount / float(num_per_carrier)))
         return needed
 
     def get_trade_ratio(self):

@@ -22,6 +22,9 @@ class War(Strategy):
         self.wp = WarParser()
         self.sent_tops = False
         self.sent_sops = False
+        self.sop_bombs = {5,7,6}
+        self.all_undermines_sent = False
+
 
 
 
@@ -73,9 +76,123 @@ class War(Strategy):
                     ammount=ammount)
 
 
+    def select_enemy_realms(self,context, select_func):
+
+        league = self.app.data.league
+        if league is None:
+            raise Exception("League scores have not been read")
+        planets = league.planets
+
+        selected_realms = []
+
+        for p in league.planets:
+            if p.relation != "Enemy":
+                continue
+            for r in p.realms:
+                if select_func(context, selected_realms, p, r):
+                    selected_realms.append(r)
+
+        return selected_realms
+
+
+    def select_highest_networth_enemy_realm(
+            self,
+            context,
+            selectedrealms,
+            planet,
+            realm):
+
+
+        if len(selectedrealms) == 0:
+            return True
+
+        if realm.networth > selectedrealms[0].networth:
+            selectedrealms.pop()
+            return True
+
+        return False
 
 
 
+    def get_highest_networth_enemy_realm(self):
+        realms = self.select_enemy_realms(
+            None,
+            self.select_highest_networth_enemy_realm)
+        if len(realms) == 0:
+            raise Exception("No realms found when looking for highest "
+                            "networth")
+
+        return realms[0]
+
+
+
+
+    def send_sops(self, target_realm):
+
+        if (len(self.sop_bombs) > 0 or not self.all_undermines_sent):
+            self.app.send(8,comment="Entering s-op menu")
+            self.app.read()
+
+
+        # send s-op missles
+        while len(self.sop_bombs) > 0:
+            self.app.send(self.sop_bombs[0],comment="Sending bomb")
+            buf = self.app.read()
+            if "Enter Planet Name or Number" not in buf:
+                botlog.warn("Not able to send missle s-op")
+                break
+            self.app.sendl(target_realm.planet_name)
+            self.app.read()
+            self.app.send('?',comment="Displaying realms at missle s-op menu")
+            self.app.read()
+            self.app.send(target_realm.menu_option)
+            buf = self.app.read()
+            if "Would you like to prepare the attack? (Y/n)" not in buf:
+                botlog.warn("Unable to send sop:\n" + buf)
+                break
+            self.app.send('y',comment="Yes i will send the s-op")
+
+            buf = self.app.read()
+            if "Attack Launched." not in buf:
+                botlog.warn("s-op missle was not sent")
+                break
+
+            self.sop_bombs.pop(0)
+
+
+        # send s-op undermines
+        if not self.all_undermines_sent:
+            max_iterations = 20
+            while max_iterations > 0:
+                self.app.send("4",comment="Undermining Investments")
+                buf = self.app.read()
+                if "Enter Planet Name or Number" not in buf:
+                    botlog.warn("Not able to send undermine s-op: \n" + buf)
+                    break
+
+                # note if attacking multiple planets, this may not be the high NW
+                #  planet
+                self.app.sendl(target_realm.planet_name)
+
+                buf = self.app.read()
+                if "Send a bomb to" not in buf:
+                    botlog.warn("Not able to send undermine to enemy planet")
+                    break
+
+                self.app.send('y')
+                buf = self.app.read()
+                if "Mission Specialists sent out." not in buf:
+                    botlog.warn("Could not send undermine to enemy planet")
+                    break
+
+                if 'You have 0 bombing ops left today' in buf:
+                    self.all_undermines_sent = True
+                    break
+
+                max_iterations -= 1
+
+            if max_iterations <= 0:
+                raise Exception("Tried too many times to send bombs")
 
 
 
@@ -84,7 +201,10 @@ class War(Strategy):
 
         # send t-ops
 
+
         # send s-ops
+        sop_target = self.get_highest_networth_enemy_realm()
+        self.send_sops(sop_target)
 
         # join short term GA's
 
