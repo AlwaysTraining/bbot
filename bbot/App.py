@@ -74,7 +74,7 @@ class App:
         self.query_func = query_func
         self.secret_query_func = secret_query_func
         self.data = Data.Data()
-        self.metadata = MetaData.MetaData(self.data)
+        self.metadata = MetaData.MetaData(self)
         self.cur_state = None
         self.match = None
         self.match_index = None

@@ -550,6 +550,16 @@ class Planet(object):
     def __str__(self):
         return _printvisitor(self, 0)
 
+    def find_realm(self, name):
+        found = None
+        for r in self.realms:
+            if name in r.name:
+                if found is not None:
+                    raise Exception("Ambiguous planet name search")
+                found = r
+        return found
+
+
 class League(object):
     def __init__(self):
         self.planets = []
@@ -766,6 +776,19 @@ class Data(dict):
                 return True
 
         return False
+
+    def find_planet(self, name):
+        name = name.lower()
+        found = None
+        for p in self.league.planets:
+            if name in p.name.lower():
+                if found is not None:
+                    raise Exception("Ambiguously specified planet")
+                found = p
+
+        return p
+
+
 
 
 
