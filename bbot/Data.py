@@ -704,6 +704,16 @@ class Data(dict):
         return (army.troopers.number + (army.jets.number * 2) +
                 (army.tanks.number * 4))
 
+    def can_get_defense_strength(self):
+        army = self.realm.army
+        return not ( army.troopers.number is None or
+                     army.turrets.number is None or army.tanks.number is None)
+
+    def get_defense_strength(self):
+        army = self.realm.army
+        return (army.troopers.number + (army.turrets.number * 2) +
+                (army.tanks.number * 4))
+
     def try_get_needed_surplus(self):
         """Guess at how much food we will need for the next turn"""
 

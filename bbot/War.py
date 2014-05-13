@@ -15,6 +15,14 @@ import math
 S = SPACE_REGEX
 N = NUM_REGEX
 
+# % of attack strength compared to target networth
+ATCK_SURP_RATIO = 1.05
+MULTIPLE_ATTACK_REDUCER = 0.9
+
+# what portion of troops stay home
+# TODO use this
+DEFENSIIVE_RESERVE_RATIO = 0.1
+
 class Attack(object):
     def __init__(self):
         self.id = None
@@ -26,6 +34,52 @@ class Attack(object):
         self.tanks = None
         self.bombers = None
         self.leave = None
+
+    def get_strength(self):
+        return (self.troopers + (self.jets * 2) +
+         (self.tanks * 4))
+
+    def is_filled(self):
+        return self.get_strength() >= (self.realm.networth * ATCK_SURP_RATIO)
+
+    def needed_strength(self, group_attacks):
+
+        # base needed strength
+        base = (self.realm.networth * ATCK_SURP_RATIO)
+
+        if group_attacks is None:
+            return int(math.ceil(base) - self.get_strength())
+
+        # reduce needed stringth by some ratio for each loaded attack facing
+        # the same realm
+        reducer = 1.0
+        num_reduces = 1
+        for ga in group_attacks:
+
+            # stop iterating when we get to this attack
+            if ga.id == self.id:
+                break
+
+            if (ga.realm.name == self.realm.name and
+                ga.planet.name == self.planet.name):
+
+                if self.get_strength() >= base:
+                    base *= MULTIPLE_ATTACK_REDUCER
+                    num_reduces += 1
+
+        if num_reduces > 0:
+            botlog.debug("Multiple Ga's have reduced needed strength " + str(
+                num_reduces) + " times")
+
+        return base - self.get_strength()
+
+
+
+
+
+
+    def __str__(self):
+        return _printvisitor(self, 0)
 
 class War(Strategy):
     def __init__(self, app):
@@ -41,6 +95,7 @@ class War(Strategy):
         self.all_undermines_sent = False
         self.first_turn = True
         self.group_attacks = None
+        self.attacked_targets = None
 
 
     def select_enemy_realms(self, context, select_func):
@@ -76,6 +131,21 @@ class War(Strategy):
 
         return False
 
+    def select_highest_regions_enemy_realm(
+            self,
+            context,
+            selectedrealms,
+            planet,
+            realm):
+        if len(selectedrealms) == 0:
+            return True
+
+        if realm.regions > selectedrealms[0].regions:
+            selectedrealms.pop()
+            return True
+    
+        return False
+        
     def select_indie_attack_enemy_realm(
             self,
             context,
@@ -84,13 +154,17 @@ class War(Strategy):
             realm):
 
         atkstrength = self.app.data.get_attack_strength()
-        defstrength = realm.networth
+        defstrength = (realm.networth * ATCK_SURP_RATIO)
 
+        # if an attack on the realm is winable
         if atkstrength >= defstrength:
-            if selectedrealms[0].regions < realm.regions:
-                selectedrealms.pop(0)
-                return True
+            # add the realm, and sort it in descending order of regions
+            selectedrealms.append(realm)
+            selectedrealms.sort(key=lambda x: x.regions, reversed=True)
 
+
+        # we always return false, because we handle maintenance of the
+        # selected realms list
         return False
 
     def can_send_indie(self):
@@ -131,6 +205,7 @@ class War(Strategy):
         setup = self.app.data.setup
         wishlist = self.app.metadata.wishlist
 
+        #TODO decide if we are going to try to keep wishlist
         for top in range(setup.num_tops):
             wish = CashWish(
                 name="terror_wish",
@@ -206,10 +281,11 @@ class War(Strategy):
             ammount = needed_carriers - self.army.carriers.number
             if ammount > 0:
                 self.buy_army_units(
-                    "carriers",
+                    "bombers",
                     buyratio=None,
                     ammount=ammount)
 
+            
 
 
     def get_highest_networth_enemy_realm(self):
@@ -222,7 +298,15 @@ class War(Strategy):
 
         return realms[0]
 
+    def get_highest_regions_enemy_realm(self):
+        realms = self.select_enemy_realms(
+            None,
+            self.select_highest_regions_enemy_realm)
+        if len(realms) == 0:
+            raise Exception("No realms found when looking for highest "
+                            "regions")
 
+        return realms[0]
 
 
     def send_sops(self, target_realm):
@@ -231,6 +315,7 @@ class War(Strategy):
             self.app.send(8,comment="Entering s-op menu")
             self.app.read()
 
+            target_realm = self.get_highest_regions_enemy_realm()
 
         # send s-op missles
         while len(self.sop_bombs) > 0:
@@ -257,6 +342,7 @@ class War(Strategy):
 
             self.sop_bombs.pop(0)
 
+            target_realm = self.get_highest_networth_enemy_realm()
 
         # send s-op undermines
         if not self.all_undermines_sent:
@@ -292,19 +378,16 @@ class War(Strategy):
             if max_iterations <= 0:
                 raise Exception("Tried too many times to send bombs")
 
-    def send_tops(self):
+    def send_tops(self, top_target = None):
 
         if self.sent_tops:
             return
 
-        target = None
-        if self.can_send_indie():
-            target = self.get_indie_target()
+        # our default top target will be high networth realm
 
-        if self.can_join_ga():
-            target = self.get_ga_target()
-
-        target = self.get_highest_networth_enemy_realm()
+        target = top_target
+        if target is None:
+            target = self.get_highest_networth_enemy_realm()
 
         self.app.send(2, comment="Entering t-op menu")
         buf = self.app.read()
@@ -411,7 +494,8 @@ class War(Strategy):
                     raise Exception("Could not parse group attacks")
 
             max_iterations -= 1
-        self.app.send(0)
+        self.app.send_seq([0,0,0,0],comment="Not joining GA, just reading "
+                                            "list of current ga's")
         buf = self.app.read()
         if "[InterPlanetary Operations]" not in buf:
             raise Exception("Not back at ip menu after parsing group attacks")
@@ -419,23 +503,160 @@ class War(Strategy):
 
 
 
+    def sort_group_attacks(self):
+        self.group_attacks.sort(key=lambda x:x.leave)
+        
+        
+
+    def join_group_attack(self, attack):
+        self.app.send(5)
+
+        # read all the attacks until we get to the join prompt
+        max_iterations = 20
+        while max_iterations > 0:
+            buf = self.app.read()
+            if "Join which group?" in buf:
+                break
+            self.app.sendl(comment="Who the fuck created so many damn GA's")
+            max_iterations -= 1
+
+        # get how much is needed to put into this attack to make it win
+        needed_strength = attack.needed_strength(self.group_attacks)
+        army = self.data.realm.army
+
+        # determing the number of troops to put in.  Only put in what is needed
+        # to win, otherwise, go all in.
+        # TODO implement some way to enforce leaving troops at home to defend
+        numjets = 0
+        power = 2
+        if army.jets.number > 0:
+            jetsstrength = army.jets.number * power
+            if jetsstrength > needed_strength:
+                numjets = int(math.ceil(needed_strength/float(power)))
+            else:
+                numjets = army.jets.number
+            needed_strength -= numjets * power
+
+
+        numtanks = 0
+        power = 4
+        if army.tanks.number > 0:
+            tanksstrength = army.tanks.number * power
+            if tanksstrength > needed_strength:
+                numtanks = int(math.ceil(needed_strength / float(power)))
+            else:
+                numtanks = army.tanks.number
+            needed_strength -= numtanks * power
+
+
+        numtroopers = 0
+        power = 1
+        if army.troopers.number > 0:
+            troopersstrength = army.troopers.number * power
+            if troopersstrength > needed_strength:
+                numtroopers = int(math.ceil(needed_strength/ float(power)))
+            else:
+                numtroopers = army.troopers.number
+            needed_strength -= numtroopers * power
+
+        # noone really cares about bombers, just send some portion of what
+        # we have
+        numbombers = int(0.25 * army.bombers.number)
+
+        # integrety check, this should be true, we should only be sending
+        # enough to win
+        if needed_strength > 10 or needed_strength < -1:
+            botlog.warn("Attack force too big or too small for " +
+                        attack.planet.name + " : " + attack.realm.name +
+                        " by: " + str(needed_strength))
+
+        # send the sequence for joining
+        self.app.send_seq([attack.id, numtroopers,'\r',numjets,'\r',numtanks,
+                           '\r',numbombers,'\r'])
+
+        # if all went according to plan this should be asking us to be sure
+        buf = self.app.read()
+
+        ret_val = False
+        if 'Send this Attack? (Y/n)' not in buf:
+            botlog.warn("Not able to send out attack to " + attack.planet
+                        .name +" : " + attack.realm.name)
+        else:
+            self.app.send('y',comment="yes, join the group attack")
+
+            # reduce the inventory of the army by what was just sent
+            army.jets.number -= numjets
+            army.tanks.number -= numtanks
+            army.troopers.number -= numtroopers
+            army.bombers.number -= numbombers
+
+            buf = self.app.read()
+            ret_val = True
+
+
+        # double check we are back at the interplanetary menu
+        if '[InterPlanetary Operations]' not in buf:
+            raise Exception("Not back at the interplanetary menu after "
+                            "sending group attacl")
+
+        return ret_val
+
+
+    def maybe_join_winning_group_attacks(self):
+
+        # if we can top off any GA that leaves soon, lets do it
+
+        first_target = None
+
+        njoined = 0
+        for ga in self.group_attacks:
+            # ignore any attack already filled.
+            if ga.is_filled():
+                continue
+
+            # ga's are sorted, stop iterating after we are past 24 hours,
+            # we won't fill these
+            if ga.leave > 24:
+                break
+
+            needed_strength_to_win_ga = ga.needed_strength(self.group_attacks)
+            if self.data.get_attack_strength() >= needed_strength_to_win_ga:
+                joined = self.join_group_attack(ga)
+                if joined:
+                    self.attacked_targets.append(ga.realm)
+                    njoined += 1
+
+        return njoined
+
+
+    def maybe_send_indie_attacks(self):
+        if not self.can_send_indie():
+            pass
+
+
 
     def on_interplanetary_menu(self):
 
         if self.group_attacks is None:
             self.parse_group_attacks()
+            self.sort_group_attacks()
+            botlog.debug("Parsed ga's:\n" +  str(self.group_attacks))
 
+
+        # join short term GA's that we would cap off to assure victory
+        self.maybe_join_winning_group_attacks()
 
         # send t-ops
         self.send_tops()
 
-        # send s-ops
-        sop_target = self.get_highest_networth_enemy_realm()
-        self.send_sops(sop_target)
-
-        # join short term GA's
-
         # send indie
+        self.maybe_send_indie_attacks()
+
+
+        # send s-ops
+        self.send_sops()
+
+
 
         # create short term GA
 
