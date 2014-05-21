@@ -16,7 +16,7 @@ S = SPACE_REGEX
 N = NUM_REGEX
 
 # % of attack strength compared to target networth
-ATCK_SURP_RATIO = 1.05
+ATCK_SURP_RATIO = 1.125
 MULTIPLE_ATTACK_REDUCER = 0.9
 
 # what portion of troops stay home
@@ -42,13 +42,16 @@ class Attack(object):
     def is_filled(self):
         return self.get_strength() >= (self.realm.networth * ATCK_SURP_RATIO)
 
-    def needed_strength(self, group_attacks):
+    def needed_strength(self, group_attacks, base=False):
 
         # base needed strength
         base = (self.realm.networth * ATCK_SURP_RATIO)
 
         if group_attacks is None:
-            return int(math.ceil(base) - self.get_strength())
+            if  not base:
+                return int(math.ceil(base) - self.get_strength())
+            else:
+                return int(math.ceil(base))
 
         # reduce needed stringth by some ratio for each loaded attack facing
         # the same realm
@@ -59,6 +62,9 @@ class Attack(object):
             # stop iterating when we get to this attack
             if ga.id == self.id:
                 break
+            if ga.leave > self.leave:
+                botlog.warn("Itterating to many GA's, are they sorted?")
+                continue
 
             if (ga.realm.name == self.realm.name and
                 ga.planet.name == self.planet.name):
@@ -71,7 +77,10 @@ class Attack(object):
             botlog.debug("Multiple Ga's have reduced needed strength " + str(
                 num_reduces) + " times")
 
-        return base - self.get_strength()
+        if not base:
+            return int(math.ceil(base)) - self.get_strength()
+        else:
+            return int(math.ceil(base))
 
 
 
@@ -173,11 +182,11 @@ class War(Strategy):
             self.select_indie_attack_enemy_realm)
         return len(target) > 0
 
-    def get_indie_target(self):
-        target = self.select_enemy_realms(
+    def get_indie_targets(self):
+        targets = self.select_enemy_realms(
             None,
             self.select_indie_attack_enemy_realm)
-        return target[0]
+        return targets
 
     def get_estimated_attack_cost(self, realm=None):
         # this will take some work to reverse engineer the formular for
@@ -505,8 +514,79 @@ class War(Strategy):
 
     def sort_group_attacks(self):
         self.group_attacks.sort(key=lambda x:x.leave)
-        
-        
+
+
+    def send_attack(self, attack, needed_strength):
+        # determing the number of troops to put in.  Only put in what is needed
+        # to win, otherwise, go all in.
+        # TODO implement some way to enforce leaving troops at home to defend
+        army = self.data.realm.army
+        numjets = 0
+        power = 2
+        if army.jets.number > 0:
+            jetsstrength = army.jets.number * power
+            if jetsstrength > needed_strength:
+                numjets = int(math.ceil(needed_strength / float(power)))
+            else:
+                numjets = army.jets.number
+            needed_strength -= numjets * power
+        numtanks = 0
+        power = 4
+        if army.tanks.number > 0:
+            tanksstrength = army.tanks.number * power
+            if tanksstrength > needed_strength:
+                numtanks = int(math.ceil(needed_strength / float(power)))
+            else:
+                numtanks = army.tanks.number
+            needed_strength -= numtanks * power
+        numtroopers = 0
+        power = 1
+        if army.troopers.number > 0:
+            troopersstrength = army.troopers.number * power
+            if troopersstrength > needed_strength:
+                numtroopers = int(math.ceil(needed_strength / float(power)))
+            else:
+                numtroopers = army.troopers.number
+            needed_strength -= numtroopers * power
+
+        # noone really cares about bombers, just send some portion of what
+        # we have
+        numbombers = int(0.25 * army.bombers.number)
+        # integrety check, this should be true, we should only be sending
+        # enough to win
+        if needed_strength > 10 or needed_strength < -1:
+            botlog.warn("Attack force too big or too small for " +
+                        attack.planet.name + " : " + attack.realm.name +
+                        " by: " + str(needed_strength))
+
+        # send the sequence for joining
+        self.app.send_seq(
+            [attack.id, numtroopers, '\r', numjets, '\r', numtanks,
+             '\r', numbombers, '\r'])
+        # if all went according to plan this should be asking us to be sure
+        buf = self.app.read()
+        ret_val = False
+        if 'Send this Attack? (Y/n)' not in buf:
+            botlog.warn("Not able to send out attack to " + attack.planet
+                        .name + " : " + attack.realm.name)
+        else:
+            self.app.send('y', comment="yes, join the attack")
+
+            # reduce the inventory of the army by what was just sent
+            army.jets.number -= numjets
+            army.tanks.number -= numtanks
+            army.troopers.number -= numtroopers
+            army.bombers.number -= numbombers
+
+            buf = self.app.read()
+            ret_val = True
+
+        # double check we are back at the interplanetary menu
+        if '[InterPlanetary Operations]' not in buf:
+            raise Exception("Not back at the interplanetary menu after "
+                            "sending Attack")
+
+        return ret_val
 
     def join_group_attack(self, attack):
         self.app.send(5)
@@ -522,82 +602,9 @@ class War(Strategy):
 
         # get how much is needed to put into this attack to make it win
         needed_strength = attack.needed_strength(self.group_attacks)
-        army = self.data.realm.army
-
-        # determing the number of troops to put in.  Only put in what is needed
-        # to win, otherwise, go all in.
-        # TODO implement some way to enforce leaving troops at home to defend
-        numjets = 0
-        power = 2
-        if army.jets.number > 0:
-            jetsstrength = army.jets.number * power
-            if jetsstrength > needed_strength:
-                numjets = int(math.ceil(needed_strength/float(power)))
-            else:
-                numjets = army.jets.number
-            needed_strength -= numjets * power
 
 
-        numtanks = 0
-        power = 4
-        if army.tanks.number > 0:
-            tanksstrength = army.tanks.number * power
-            if tanksstrength > needed_strength:
-                numtanks = int(math.ceil(needed_strength / float(power)))
-            else:
-                numtanks = army.tanks.number
-            needed_strength -= numtanks * power
-
-
-        numtroopers = 0
-        power = 1
-        if army.troopers.number > 0:
-            troopersstrength = army.troopers.number * power
-            if troopersstrength > needed_strength:
-                numtroopers = int(math.ceil(needed_strength/ float(power)))
-            else:
-                numtroopers = army.troopers.number
-            needed_strength -= numtroopers * power
-
-        # noone really cares about bombers, just send some portion of what
-        # we have
-        numbombers = int(0.25 * army.bombers.number)
-
-        # integrety check, this should be true, we should only be sending
-        # enough to win
-        if needed_strength > 10 or needed_strength < -1:
-            botlog.warn("Attack force too big or too small for " +
-                        attack.planet.name + " : " + attack.realm.name +
-                        " by: " + str(needed_strength))
-
-        # send the sequence for joining
-        self.app.send_seq([attack.id, numtroopers,'\r',numjets,'\r',numtanks,
-                           '\r',numbombers,'\r'])
-
-        # if all went according to plan this should be asking us to be sure
-        buf = self.app.read()
-
-        ret_val = False
-        if 'Send this Attack? (Y/n)' not in buf:
-            botlog.warn("Not able to send out attack to " + attack.planet
-                        .name +" : " + attack.realm.name)
-        else:
-            self.app.send('y',comment="yes, join the group attack")
-
-            # reduce the inventory of the army by what was just sent
-            army.jets.number -= numjets
-            army.tanks.number -= numtanks
-            army.troopers.number -= numtroopers
-            army.bombers.number -= numbombers
-
-            buf = self.app.read()
-            ret_val = True
-
-
-        # double check we are back at the interplanetary menu
-        if '[InterPlanetary Operations]' not in buf:
-            raise Exception("Not back at the interplanetary menu after "
-                            "sending group attacl")
+        ret_val = self.send_attack(attack, needed_strength)
 
         return ret_val
 
@@ -628,10 +635,139 @@ class War(Strategy):
 
         return njoined
 
+    def send_indie_attack(self, target):
+        self.app.send(6, comment="Enter send indie attack menu")
+        buf = self.app.read()
+        if 'Enter Planet Name or Number' not in buf:
+            botlog.warn("Could not send indie attack")
+            return False
+
+        self.app.sendl(target.planet_name,"Comment enter planet name for "
+                                          "indie attack")
+        buf = self.app.read()
+        if 'Our current relations with Prison Board BBS: Enemy' not in buf:
+            botlog.warn("Attempting to attack planet not marked as enemy")
+            return False
+        if 'Choose a target' not in buf:
+            botlog.warn("Unable to select target for indie attack")
+            return False
+        self.app.send('?',comment="Listing planets for indie attack, for your pleasure")
+        but = self.app.read()
+        self.app.send(target.menu_option,comment="Selecting which realm to "
+                                                 "indie")
+        self.app.send(3,comment="Going balls deep with extended attack")
+
+        indie = Attack()
+        indie.realm = target
+        indie.planet = self.data.find_planet(target.planet_name)
+        indie.troopers = 0
+        indie.jets = 0
+        indie.tanks = 0
+        indie.bombers = 0
+
+
+        return self.send_attack(indie, target.networth * ATCK_SURP_RATIO)
+
+
+
 
     def maybe_send_indie_attacks(self):
         if not self.can_send_indie():
-            pass
+            return
+
+        # targets are listed in order of sexyness
+        targets = self.get_indie_targets()
+
+        for target in targets:
+            # send t-ops
+            self.send_tops(target)
+            attack_sent = self.send_indie_attacks(target)
+            if not  attack_sent:
+                break
+            else:
+                self.attacked_targets.append(target)
+
+
+    def get_planet_strength(self):
+        # get our current strength
+        our_strength = 0
+        for realm in self.data.planet.realms:
+            our_strength += realm.networth
+
+        return our_strength
+
+    def maybe_create_global_ga(selfself):
+
+        our_strength = self.get_planet_strength()
+
+        #get list of beatable by global attack enemies
+        global_target_planets = []
+        for planet in self.data.league.planets:
+            if planet.relation != "Enemy":
+                continue
+            if our_strength * ATCK_SURP_RATIO >= planet.networth:
+                global_target_planets.append(planet)
+
+        # sort beatable enemies in order of most regions
+        global_target_planets.sort(key=lambda x: x.regions, reverse=True)
+
+        # bail if no global beatable enemies
+        if len(global_target_planets) == 0:
+            return False
+
+        global_attack = Attack()
+        global_attack.planet = global_target_planets[0]
+
+
+    def select_group_attacks(self, context, callback_func):
+        result = []
+        for ga in self.group_attacks:
+            if callback_func(context, result, ga ):
+                result.append(ga)
+        return result
+
+
+    def _select_group_attacks_in_window(
+            self, context, selected_attacks, cur_attack):
+        t1 = context[0]
+        t2 = context[1]
+
+        if cur_attack.leave >= t1 and cur_attack.leave < t2:
+            return True
+
+
+    def get_group_attacks_in_window(self,t1,t2):
+        result = self.select_group_attacks(
+            (t1,t2), self._select_group_attacks_in_window)
+        return result
+
+
+
+    def maybe_create_group_attacks(self):
+
+        # add up what it would take to fill 24 hours worth of currently
+        # created group attacks.
+        for t1,t2 in zip(range(0, 24 * 5, 24), range(24, 24 * 6, 24)):
+            cur_gas = self.get_group_attacks_in_window(t1,t2)
+
+            # calculate how much strength is needed for all of these attacks
+            # to win
+            total_base_needed_strength = 0
+            for ga in cur_gas:
+                total_base_needed_strength += ga.needed_strength(
+                    cur_gas, base=True)
+
+            # calculate how much strength our planet has
+            our_strength = self.get_planet_strength()
+
+            #TODO stopped here
+
+
+
+
+
+
+
 
 
 
@@ -646,9 +782,6 @@ class War(Strategy):
         # join short term GA's that we would cap off to assure victory
         self.maybe_join_winning_group_attacks()
 
-        # send t-ops
-        self.send_tops()
-
         # send indie
         self.maybe_send_indie_attacks()
 
@@ -656,9 +789,13 @@ class War(Strategy):
         # send s-ops
         self.send_sops()
 
+        # send t-ops
+        self.send_tops()
 
+        # join partial ga's
 
-        # create short term GA
+        # create GA's
+        self.maybe_create_group_attacks()
 
 
 
