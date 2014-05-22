@@ -590,6 +590,11 @@ class BBSMenus(State):
             app.send_seq(['x', '7', app.get_app_value('game')])
             return StartGame()
 
+        # sequence for Battlestar
+        elif 'Main' in buf and ' Battlestar BBS ' in buf:
+            app.send_seq(['x', '33', app.get_app_value('game')])
+            return StartGame()
+
 
 class Password(State):
     def transition(self, app, buf):
