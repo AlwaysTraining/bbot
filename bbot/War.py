@@ -586,6 +586,8 @@ class War(Strategy):
             raise Exception("Not back at the interplanetary menu after "
                             "sending Attack")
 
+        # TODO i was going bbot_TOOL_VERSION return something like
+        # needed_strength added
         return ret_val
 
     def join_group_attack(self, attack):
@@ -603,10 +605,61 @@ class War(Strategy):
         # get how much is needed to put into this attack to make it win
         needed_strength = attack.needed_strength(self.group_attacks)
 
-
         ret_val = self.send_attack(attack, needed_strength)
 
         return ret_val
+
+    def create_group_attack(self, attack, needed_strength):
+
+        # check that this is a group attack
+        if attack.planet.name is None or attack.planet.name == '':
+            botlog.warn('Can not send group attack, no planet specified')
+
+        #TODO I did this sequence blind, verify with real text
+        self.app.send(4, comment="Enter group attack menu to create global")
+        buf = self.app.read()
+        if 'TODO' not in buf:
+            botlog.warn("Unable to enter Create Group Attack menu")
+            return 0
+
+        self.app.send(attack.planet.name,comment="Attacking this planet with "
+                                                 "GA")
+        buf = self.app.read()
+        if 'TODO' not in buf:
+            botlog.warn("Unable to specify planet for group attack")
+            return 0
+
+        if attack.realm == None:
+            self.app.send('a',comment="Creating a global group attack")
+        else:
+            self.app.send('o', comment="Creating a one realm group attack")
+            buf = self.app.read()
+            if 'TODO' not in buf:
+                botlog.warn("Unable to create one realm GA")
+                max_ter = 10
+                while "[InterPlanetary Operations]" not in buf and max_ter > 0:
+                    max_ter -= 1
+                    self.app.sendl(comment="trying to get back to " \
+                                         "interplanetary menu")
+                    buf = self.app.read()
+                return 0
+
+            self.app.send(
+                attack.realm.menu_option,
+                comment="creating attacking to realm: " +
+                        str(attack.realm.name) )
+
+        return self.send_attack(attack, needed_strength)
+
+
+
+
+
+
+
+
+
+
 
 
     def maybe_join_winning_group_attacks(self):
@@ -696,9 +749,10 @@ class War(Strategy):
 
         return our_strength
 
-    def maybe_create_global_ga(selfself):
+    def maybe_create_global_ga(self, our_strength=None, leave=12):
 
-        our_strength = self.get_planet_strength()
+        if our_strength is None:
+            our_strength = self.get_planet_strength()
 
         #get list of beatable by global attack enemies
         global_target_planets = []
@@ -713,10 +767,16 @@ class War(Strategy):
 
         # bail if no global beatable enemies
         if len(global_target_planets) == 0:
-            return False
+            return 0
 
         global_attack = Attack()
         global_attack.planet = global_target_planets[0]
+        global_attack.leave = leave
+
+        self.create_group_attack(
+            attack=global_attack,
+            needed_strength=global_target_planets[0])
+
 
 
     def select_group_attacks(self, context, callback_func):
@@ -759,6 +819,16 @@ class War(Strategy):
 
             # calculate how much strength our planet has
             our_strength = self.get_planet_strength()
+
+            # we have already created all of the GA's we can handle
+            if our_strength < total_base_needed_strength:
+                continue
+
+            # we have determined we have some strength left, let us try to
+            # create some globals with it
+            newly_commited_strength = self.maybe_create_global_ga(
+                our_strength - total_base_needed_strength,
+                leave=t2)
 
             #TODO stopped here
 
