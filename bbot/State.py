@@ -40,9 +40,11 @@ class LogOff(State):
             app.send_seq(['q', 'o', 'y'],comment="Logoff sequence")
             app.read()
             return BailOut()
+        # logoff sequence for battlestar bbs
         elif 'Battlenet :' in buf and 'Which door number or (Q)uit:' in buf:
             app.send_seq(['q','q','o','y'],comment="Logoff sequence")
             app.read()
+            return BailOut()
 
 
 class ExitGame(State):

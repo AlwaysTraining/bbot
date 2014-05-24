@@ -117,10 +117,6 @@ class LackeyBase(Strategy):
         if tradeRatio <= 0.0:
             self.can_send_trade = False
 
-        if not self.can_send_trade:
-            botlog.info(
-                "Not trading this turn because: " + self.not_trading_reason)
-
         return self.can_send_trade
 
     def fill_trade_deal(self, tradeRatio, oneway=False):
