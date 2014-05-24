@@ -523,12 +523,14 @@ class War(Strategy):
         army = self.data.realm.army
         numjets = 0
         power = 2
+        sent_strength = 0
         if army.jets.number > 0:
             jetsstrength = army.jets.number * power
             if jetsstrength > needed_strength:
                 numjets = int(math.ceil(needed_strength / float(power)))
             else:
                 numjets = army.jets.number
+            sent_strength += numjets * power
             needed_strength -= numjets * power
         numtanks = 0
         power = 4
@@ -538,6 +540,7 @@ class War(Strategy):
                 numtanks = int(math.ceil(needed_strength / float(power)))
             else:
                 numtanks = army.tanks.number
+            sent_strength += numtanks * power
             needed_strength -= numtanks * power
         numtroopers = 0
         power = 1
@@ -547,11 +550,14 @@ class War(Strategy):
                 numtroopers = int(math.ceil(needed_strength / float(power)))
             else:
                 numtroopers = army.troopers.number
+            sent_strength += numtroopers * power
             needed_strength -= numtroopers * power
 
         # noone really cares about bombers, just send some portion of what
         # we have
         numbombers = int(0.25 * army.bombers.number)
+
+
         # integrety check, this should be true, we should only be sending
         # enough to win
         if needed_strength > 10 or needed_strength < -1:
@@ -565,7 +571,7 @@ class War(Strategy):
              '\r', numbombers, '\r'])
         # if all went according to plan this should be asking us to be sure
         buf = self.app.read()
-        ret_val = False
+        ret_val = 0
         if 'Send this Attack? (Y/n)' not in buf:
             botlog.warn("Not able to send out attack to " + attack.planet
                         .name + " : " + attack.realm.name)
@@ -579,7 +585,7 @@ class War(Strategy):
             army.bombers.number -= numbombers
 
             buf = self.app.read()
-            ret_val = True
+            ret_val = sent_strength
 
         # double check we are back at the interplanetary menu
         if '[InterPlanetary Operations]' not in buf:
@@ -668,7 +674,7 @@ class War(Strategy):
 
         first_target = None
 
-        njoined = 0
+        ret_val = 0
         for ga in self.group_attacks:
             # ignore any attack already filled.
             if ga.is_filled():
@@ -681,12 +687,11 @@ class War(Strategy):
 
             needed_strength_to_win_ga = ga.needed_strength(self.group_attacks)
             if self.data.get_attack_strength() >= needed_strength_to_win_ga:
-                joined = self.join_group_attack(ga)
+                ret_val = self.join_group_attack(ga)
                 if joined:
                     self.attacked_targets.append(ga.realm)
-                    njoined += 1
 
-        return njoined
+        return ret_val
 
     def send_indie_attack(self, target):
         self.app.send(6, comment="Enter send indie attack menu")
@@ -730,15 +735,19 @@ class War(Strategy):
 
         # targets are listed in order of sexyness
         targets = self.get_indie_targets()
+        tot_ret = 0
 
         for target in targets:
             # send t-ops
             self.send_tops(target)
-            attack_sent = self.send_indie_attacks(target)
-            if not  attack_sent:
+            ret_val = self.send_indie_attacks(target)
+            tot_ret += ret_val
+            if ret_val  == 0:
                 break
             else:
                 self.attacked_targets.append(target)
+
+        return tot_ret
 
 
     def get_planet_strength(self):
