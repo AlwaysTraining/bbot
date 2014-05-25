@@ -39,7 +39,7 @@ class WarParser(StatsParser):
             relation = self.get_str(1)
 
             planet = None
-            for cur_planet in app.data.league.planets:
+            for cur_planet in league.planets:
                 if cur_planet.name == planet_name:
                     planet = cur_planet
                     break

@@ -392,32 +392,33 @@ class Food(object):
 
 
 class Setup(object):
-    game_start_date = None
-    turns_per_day = None
-    protection_turns = None
-    daily_land_creation = None
-    planetary_tax_rate = None
-    max_players = None
-    interest_rate = None
-    maint_costs = None
-    region_cost = None
-    trade_cost = None
-    attack_damage = None
-    attack_rewards = None
-    army_purchase = None
-    local_game = None
-    interbbs_game = None
-    num_boards = None
-    attack_cost = None
-    terror_cost = None
-    num_indie_attacks = None
-    num_group_attacks = None
-    num_tops = None
-    num_bops = None
-    days_for_mit = None
-    gooies = None
-    bombing_ops = None
-    missle_ops = None
+    def __init__(self):
+        self.game_start_date = None
+        self.turns_per_day = None
+        self.protection_turns = None
+        self.daily_land_creation = None
+        self.planetary_tax_rate = None
+        self.max_players = None
+        self.interest_rate = None
+        self.maint_costs = None
+        self.region_cost = None
+        self.trade_cost = None
+        self.attack_damage = None
+        self.attack_rewards = None
+        self.army_purchase = None
+        self.local_game = None
+        self.interbbs_game = None
+        self.num_boards = None
+        self.attack_cost = None
+        self.terror_cost = None
+        self.num_indie_attacks = None
+        self.num_group_attacks = None
+        self.num_tops = None
+        self.num_bops = None
+        self.days_for_mit = None
+        self.gooies = None
+        self.bombing_ops = None
+        self.missle_ops = None
 
 
 class Advisor(object):

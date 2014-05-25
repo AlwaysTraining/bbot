@@ -80,10 +80,12 @@ class Strategy:
             price = self.app.data.get_price(item)
             if buyratio is not None:
                 gold = self.data.realm.gold * buyratio
-                ammount = int(math.floor(gold / price))
+                ammount = gold / price
             elif ammount is None:
                 raise Exception("Did not specify ratio or ammount of " + str(
                     unit_type) + " to buy")
+
+            ammount = int(math.floor(ammount))
 
             if ammount == 0:
                 botlog.info("Could not afford even 1 " + unit_type)

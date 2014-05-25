@@ -23,7 +23,7 @@ class InterplanetaryParser(StatsParser):
     def get_patterns(self):
         return {
             # may break if BBS name is very long or has more than 3 spaces
-            '([ 0-9]+\) ' + STR_REGEX + "   " + S + N: 26184
+            '\([ 0-9]+\) ' + STR_REGEX + "   " + S + N: 26184
         }
 
 

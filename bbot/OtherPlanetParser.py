@@ -27,7 +27,8 @@ class OtherPlanetParser(StatsParser):
 
     def get_patterns(self):
         return {
-            '\(([A-Z])\)  (.+  )[ ]+([0-9].*) +([0-9].*)[ ]+(.+)'   :   9091
+            '\(([A-Z])\)  (.+  )[ ]+([0-9,km].*) +([0-9,km].*)[ ]+(.,km+)':
+                9091
         }
 
 

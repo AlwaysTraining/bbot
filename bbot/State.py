@@ -37,7 +37,7 @@ class LogOff(State):
         if 'Which or (Q)uit:' in buf:
             app.send('q')
         elif 'Which, (Q)uit or [1]:' in buf or 'Trans-Canada Doors Menu' in buf:
-            app.send_seq(['q', 'o', 'y'],comment="Logoff sequence")
+            app.send_seq(['q', 'o', 'y'], comment="Logoff sequence")
             app.read()
             return BailOut()
 
@@ -52,6 +52,7 @@ class ExitGame(State):
 
 
 from bbot.EndTurnParser import EndTurnParser
+
 
 class EndTurn(StatsState):
     def __init__(self):
@@ -89,8 +90,8 @@ class EndTurn(StatsState):
             botlog.info(str(app.data))
 
             if (app.data.realm.turns is not None and
-                app.data.realm.turns.current is not None and
-                app.data.realm.turns.remaining is not None and
+                        app.data.realm.turns.current is not None and
+                        app.data.realm.turns.remaining is not None and
                         app.metadata.first_played_turn is not None):
 
                 if app.has_app_value("turnsplit"):
@@ -136,34 +137,34 @@ class Spending(StatsState):
 
         # if game setup has not been read, # parse it
         if app.data.setup is None:
-            app.data.setup=Setup()
-            app.send_seq(['*','g'])
+            app.data.setup = Setup()
+            app.send_seq(['*', 'g'])
             buf = app.read()
-            self.parse(app,buf)
+            self.parse(app, buf)
             if '-=<Paused>=-' in buf:
                 app.sendl()
                 buf = app.read()
             app.send('0')
             buf = app.read()
-            self.parse(app,buf)
+            self.parse(app, buf)
 
             # parse the information from the advisors, we are only doing this
             # on the first turn, even though this could change every turn, that
             # would be TMI
-            app.send_seq(['*','a'])
-            for advisor in range(1,5):
+            app.send_seq(['*', 'a'])
+            for advisor in range(1, 5):
                 app.data.realm.advisors.reset_advisor(advisor)
                 app.send(advisor)
                 buf = app.read()
-                self.parse(app,buf)
+                self.parse(app, buf)
                 if '-=<Paused>=-' in buf:
                     app.sendl()
                     buf = app.read()
 
             # return to the buy menu and parse it again for good measure
-            app.send_seq(['0','0'])
+            app.send_seq(['0', '0'])
             buf = app.read()
-            self.parse(app,buf)
+            self.parse(app, buf)
 
 
         # based on the strategies registered with the app we do differnt
@@ -267,7 +268,8 @@ class Maint(StatsState):
                 botlog.warn("Unable to prevent not feeding realm")
                 app.send('n')
             else:
-                botlog.warn("Turn food production was not enough to feed empire")
+                botlog.warn(
+                    "Turn food production was not enough to feed empire")
                 app.send_seq(['y', 'b', '\r', '0'])
                 self.food_reconsider_turn = app.data.realm.turns.current
 
@@ -294,12 +296,10 @@ class TurnStats(StatsState):
         # if we just started playing, record what turn we started at
         if app.metadata.waiting_to_record_first_turn_number is None:
             raise Exception("We should know at this point that we are " +
-                "waiting to record which turn we are playing")
+                            "waiting to record which turn we are playing")
         elif app.metadata.waiting_to_record_first_turn_number:
             app.metadata.first_played_turn = app.data.realm.turns.current
             app.metadata.waiting_to_record_first_turn_number = False
-
-
 
         if 'Sorry, you have used all of your turns today.' in buf:
             app.sendl(comment="Can not start next turn, we used them all, "
@@ -314,7 +314,7 @@ class TurnStats(StatsState):
                 r = "an unknown number of"
 
             botlog.note("Accepting trade deal with " + str(r) +
-                    "turns remaining:\n\n" + buf )
+                        "turns remaining:\n\n" + buf)
             app.send('y', comment="accepting mid day trade deal")
         elif 'Do you wish to accept?' in buf:
 
@@ -330,7 +330,7 @@ class TurnStats(StatsState):
 
         elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf:
 
-            # do not append earn text here, this is a status page, we get this 
+            # do not append earn text here, this is a status page, we get this
             #   from the main menu for the email
 
             # this buffer also contains the do you want to visit the bank
@@ -442,6 +442,7 @@ from bbot.WarParser import WarParser
 from bbot.InterplanetaryParser import InterplanetaryParser
 from bbot.OtherPlanetParser import OtherPlanetParser
 
+
 class MainMenu(StatsState):
     def __init__(self, should_exit=False):
         StatsState.__init__(self, statsParser=PlanetParser())
@@ -465,7 +466,7 @@ class MainMenu(StatsState):
 
     def parse_diplomacy_list(self):
 
-        wp = WarParser
+        wp = WarParser()
         self.app.send('d', comment="Listing diplomacy")
 
         max_iterations = 10
@@ -485,28 +486,30 @@ class MainMenu(StatsState):
             raise Exception("Too many iterations when listing diplomacy")
 
 
-
     def parse_other_realms(self, app):
         league = self.app.data.league
         planets = league.planets
-        for cur_planet in league.planets:
+        for cur_planet in planets:
             if cur_planet.relation is None:
                 continue
-            app.send_seq([7,1,'?'], comment="Fake sending a message to read "
-                                            "realm stats")
+            app.send_seq([7, 1, '?'], comment="Fake sending a message to read "
+                                              "realm stats")
+            buf = app.read()
+            app.sendl(cur_planet.name,comment="Fake send message to this "
+                                              "enemy planet")
+            buf = app.read()
+            app.send('?',comment="List enemy planet realms")
             buf = app.read()
             opp = OtherPlanetParser(cur_planet.realms, planet=cur_planet)
             opp.parse(app, buf)
 
-            #TODO check that this is the paused line
+
             if '-=<Paused>=-' in buf:
                 self.app.sendl(comment="Continuing after displaying other "
                                        "realms")
 
-            #TODO check that this is hwo you exit back to interplanetary menu
             app.sendl(comment="Returning to interplanetary menu from send "
                               "message menu")
-
 
 
     def parse_interplanetary_data(self, app):
@@ -532,7 +535,7 @@ class MainMenu(StatsState):
             while (max_iteration > 0):
 
                 app.buf = app.read()
-                ipp.parse(app.buf)
+                ipp.parse(app, app.buf)
                 max_iteration -= 1
 
                 if 'Continue? (Y/n)' in app.buf:
@@ -540,12 +543,14 @@ class MainMenu(StatsState):
                                           "scores")
                 elif '-=<Paused>=-' in app.buf:
                     app.sendl(
-                        "Leaving paused prompt after displaying scores")
+                        comment="Leaving paused prompt after displaying scores")
+                    app.buf = app.read()
                     break
 
             if max_iteration <= 0:
                 raise Exception(
                     "Too many iterations when displaying scores")
+
         app.send(0, comment='Leaving scores menu')
         self.cur_score_list = None
 
@@ -600,12 +605,10 @@ class MainMenu(StatsState):
             app.sendl()
         buf = app.read()
 
-        # if we have not read in league scores
-        if app.data.league is None:
+        # if we have not read in league scores, and if
+        # this is an IP game
+        if app.data.league is None and '(9)' in buf:
             self.parse_interplanetary_data(app)
-
-
-
 
         return buf
 

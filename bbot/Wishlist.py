@@ -22,7 +22,7 @@ class CashWish(WishlistItem):
 
 
 class Wishlist(list):
-    def __init(self, app):
+    def __init__(self, app):
         self.app = app
 
     def pop_wish(self, wish_name, context = None):

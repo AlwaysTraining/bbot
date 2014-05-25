@@ -1,6 +1,7 @@
 import logging
 import sys
 import traceback
+import inspect
 
 DEBUG = logging.DEBUG
 INFO = logging.INFO
@@ -82,8 +83,26 @@ def _update_msg_map(msgmap, msg):
 def debug(msg):
     global level
     global log
+
+    frame = inspect.currentframe()
+    stack_trace = traceback.format_stack(frame)
+
+    if len(stack_trace) > 1:
+        calling_method = stack_trace[-2]
+        calling_method = calling_method.split('\n')
+        calling_method = calling_method[0]
+        calling_method = calling_method.replace('"','')
+        # shameless hack to improve reaability
+        calling_method = calling_method.replace('/home/ubuntu/devplay/bbot/','')
+        calling_method = calling_method.replace('/home/ubuntu/play/bbot/','')
+        calling_method = str(calling_method)
+    else:
+        calling_method = 'No Callstack'
+
     msg = formattrace(msg)
+    msg += ' ### ' + calling_method.strip()
     log.debug(msg)
+
     #print 'debug message',traceid,'going to log',level
     if level <= DEBUG:
         #print 'debug message',traceid,'going to trace',level,'vs',DEBUG

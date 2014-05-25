@@ -23,6 +23,7 @@ MULTIPLE_ATTACK_REDUCER = 0.9
 # TODO use this
 DEFENSIIVE_RESERVE_RATIO = 0.1
 
+
 class Attack(object):
     def __init__(self):
         self.id = None
@@ -35,9 +36,13 @@ class Attack(object):
         self.bombers = None
         self.leave = None
 
+    def __str__(self):
+        # TODO make sexy
+        return (str(self.realm.name) + " of " + str(self.planet.name) )
+
     def get_strength(self):
         return (self.troopers + (self.jets * 2) +
-         (self.tanks * 4))
+                (self.tanks * 4))
 
     def is_filled(self):
         return self.get_strength() >= (self.realm.networth * ATCK_SURP_RATIO)
@@ -48,7 +53,7 @@ class Attack(object):
         base = (self.realm.networth * ATCK_SURP_RATIO)
 
         if group_attacks is None:
-            if  not base:
+            if not base:
                 return int(math.ceil(base) - self.get_strength())
             else:
                 return int(math.ceil(base))
@@ -67,7 +72,7 @@ class Attack(object):
                 continue
 
             if (ga.realm.name == self.realm.name and
-                ga.planet.name == self.planet.name):
+                        ga.planet.name == self.planet.name):
 
                 if self.get_strength() >= base:
                     base *= MULTIPLE_ATTACK_REDUCER
@@ -83,12 +88,9 @@ class Attack(object):
             return int(math.ceil(base))
 
 
-
-
-
-
     def __str__(self):
         return _printvisitor(self, 0)
+
 
 class War(Strategy):
     def __init__(self, app):
@@ -98,8 +100,9 @@ class War(Strategy):
         self.wp = WarParser()
         self.sent_tops = False
         self.sent_sops = False
-        self.sop_bombs = [5,7,6]
-        self.possible_tops = [2,3,4,9]
+        self.sent_indies = False
+        self.sop_bombs = [5, 7, 6]
+        self.possible_tops = [2, 3, 4, 9]
         self.tops = []
         self.all_undermines_sent = False
         self.first_turn = True
@@ -115,7 +118,7 @@ class War(Strategy):
 
         selected_realms = []
 
-        for p in league.planets:
+        for p in planets:
             if p.relation != "Enemy":
                 continue
             for r in p.realms:
@@ -125,7 +128,7 @@ class War(Strategy):
         return selected_realms
 
 
-    def select_highest_networth_enemy_realm(
+    def _select_highest_networth_enemy_realm(
             self,
             context,
             selectedrealms,
@@ -140,7 +143,7 @@ class War(Strategy):
 
         return False
 
-    def select_highest_regions_enemy_realm(
+    def _select_highest_regions_enemy_realm(
             self,
             context,
             selectedrealms,
@@ -152,17 +155,17 @@ class War(Strategy):
         if realm.regions > selectedrealms[0].regions:
             selectedrealms.pop()
             return True
-    
+
         return False
-        
-    def select_indie_attack_enemy_realm(
+
+    def _select_attackable_enemy_realms(
             self,
-            context,
+            atkstrength,
             selectedrealms,
             planet,
             realm):
 
-        atkstrength = self.app.data.get_attack_strength()
+
         defstrength = (realm.networth * ATCK_SURP_RATIO)
 
         # if an attack on the realm is winable
@@ -176,62 +179,65 @@ class War(Strategy):
         # selected realms list
         return False
 
-    def can_send_indie(self):
-        target = self.select_enemy_realms(
-            None,
-            self.select_indie_attack_enemy_realm)
-        return len(target) > 0
 
-    def get_indie_targets(self):
+    def get_indie_targets(self, max_strength=None):
+        if max_strength is None:
+            max_strength = self.data.get_attack_strength()
         targets = self.select_enemy_realms(
-            None,
-            self.select_indie_attack_enemy_realm)
+            max_strength,
+            self._select_attackable_enemy_realms)
         return targets
 
-    def get_estimated_attack_cost(self, realm=None):
-        # this will take some work to reverse engineer the formular for
-        # low/med/high
-        return 200000000
+    def can_send_indie(self, max_strength=None):
+        if self.sent_indies:
+            return False
 
-    def get_estimated_top_cost(self,realm=None):
-        return 10000000
+        return len(self.get_indie_targets(max_strength=max_strength)) > 0
 
-    def can_join_ga(self):
-        if self.group_attacks is None:
-            return True
+    def get_ga_targets(self, max_strength=None):
+        if max_strength is None:
+            max_strength = self.get_planet_strength()
+        targets = self.select_enemy_realms(
+            max_strength,
+            self._select_attackable_enemy_realms)
+        return targets
 
-        #TODO parse ga's
-        return True
+    def can_send_ga(self, max_strength=None):
+        return len(self.get_ga_targets(max_strength=max_strength)) > 0
 
-    def get_ga_target(self):
-        # TODO parse ga's
 
-        if self.group_attacks is None:
-            return None
-        return None
+    # def get_estimated_attack_cost(self, realm=None):
+    #     # this will take some work to reverse engineer the formular for
+    #     # low/med/high
+    #     return 200000000
+    #
+    # def get_estimated_top_cost(self,realm=None):
+    #     return 10000000
+    #
 
-    def make_initial_wishes(self):
-        setup = self.app.data.setup
-        wishlist = self.app.metadata.wishlist
 
-        #TODO decide if we are going to try to keep wishlist
-        for top in range(setup.num_tops):
-            wish = CashWish(
-                name="terror_wish",
-                ammount=self.get_estimated_top_cost())
-            wishlist.append(wish)
-
-        if self.can_join_ga():
-            wish = CashWish("ga_wish", self.get_estimated_attack_cost())
-            wishlist.append(wish)
-
-        if self.can_send_indie():
-            wish = CashWish("indie_wish", self.get_estimated_attack_cost())
-            wishlist.append(wish)
-
-        for bop in range(setup.num_bops):
-            wish = CashWish(name="undermine_wish",ammount=75000000)
-            wishlist.append(wish)
+    # def make_initial_wishes(self):
+    #     setup = self.app.data.setup
+    #     wishlist = self.app.metadata.wishlist
+    #
+    #     #TODO decide if we are going to try to keep wishlist
+    #     for top in range(setup.num_tops):
+    #         wish = CashWish(
+    #             name="terror_wish",
+    #             ammount=self.get_estimated_top_cost())
+    #         wishlist.append(wish)
+    #
+    #     if self.can_join_ga():
+    #         wish = CashWish("ga_wish", self.get_estimated_attack_cost())
+    #         wishlist.append(wish)
+    #
+    #     if self.can_send_indie():
+    #         wish = CashWish("indie_wish", self.get_estimated_attack_cost())
+    #         wishlist.append(wish)
+    #
+    #     for bop in range(setup.num_bops):
+    #         wish = CashWish(name="undermine_wish",ammount=75000000)
+    #         wishlist.append(wish)
 
 
 
@@ -240,9 +246,10 @@ class War(Strategy):
 
         if self.first_turn:
 
-            # record the ammount of money we might need to spend in wishlist
             self.first_turn = False
-            self.make_initial_wishes()
+
+            # record the ammount of money we might need to spend in wishlist
+            # self.make_initial_wishes()
 
             # setup the tops we plan on sending, game setup is read by now
             for i in range(self.data.setup.num_tops):
@@ -262,7 +269,7 @@ class War(Strategy):
             self.buy_army_units(
                 "agents",
                 buyratio=None,
-                ammount=1000 - self.army.agents.number )
+                ammount=1000 - self.army.agents.number)
             if self.army.agents.number < 1000:
                 botlog.warn("Could not buy 1k agents")
 
@@ -270,17 +277,17 @@ class War(Strategy):
             botlog.warn("Not known how many agents there are")
 
         # buy bombers if necessarry
-        elif self.army.bombers.number < 10000:
+        elif self.army.bombers.number < 1000:
             self.buy_army_units(
                 "agents",
                 buyratio=None,
-                ammount=1000 - self.army.bombers.number)
+                ammount=10000 - self.army.bombers.number)
             if self.army.agents.number < 10000:
                 botlog.warn("Could not buy 10k bombers")
 
         # buy carriers if we don't have enough to send jets
         if (self.army.jets is None or self.army.jets.number is None or
-            self.army.carriers is None or self.army.carriers.number is None):
+                    self.army.carriers is None or self.army.carriers.number is None):
             botlog.warn("Not known how many jets or carriers there are")
         else:
             jets_per_carrier = self.app.data.get_num_per_carrier(
@@ -294,13 +301,11 @@ class War(Strategy):
                     buyratio=None,
                     ammount=ammount)
 
-            
-
 
     def get_highest_networth_enemy_realm(self):
         realms = self.select_enemy_realms(
             None,
-            self.select_highest_networth_enemy_realm)
+            self._select_highest_networth_enemy_realm)
         if len(realms) == 0:
             raise Exception("No realms found when looking for highest "
                             "networth")
@@ -310,7 +315,7 @@ class War(Strategy):
     def get_highest_regions_enemy_realm(self):
         realms = self.select_enemy_realms(
             None,
-            self.select_highest_regions_enemy_realm)
+            self._select_highest_regions_enemy_realm)
         if len(realms) == 0:
             raise Exception("No realms found when looking for highest "
                             "regions")
@@ -318,31 +323,97 @@ class War(Strategy):
         return realms[0]
 
 
-    def send_sops(self, target_realm):
+    def send_sops(self, caller_supplied_target_realm=None):
 
-        if (len(self.sop_bombs) > 0 or not self.all_undermines_sent):
-            self.app.send(8,comment="Entering s-op menu")
-            self.app.read()
+        buf = self.app.buf
 
-            target_realm = self.get_highest_regions_enemy_realm()
+        if len(self.sop_bombs) == 0 and self.all_undermines_sent:
+            self.sent_sops = True
+
+        if self.sent_sops:
+            # just to enforce consistancy, make sure these are set.  There is
+            # a strange case where we send all undermines and no nukes because
+            # a target is too big to afford to nuke in which the sent_sops
+            # will become true with elements still in the sop_bombs list
+            self.sop_bombs = []
+            self.all_undermines_sent = True
+            return
+
+
+        self.app.send(8, comment="Entering s-op menu")
+        self.app.read()
+
 
         # send s-op missles
-        while len(self.sop_bombs) > 0:
-            self.app.send(self.sop_bombs[0],comment="Sending bomb")
+        while not self.sent_sops and len(self.sop_bombs) > 0:
+
+            # pick the correct target for this type of missle if the user
+            # has not specified a desired target
+            if caller_supplied_target_realm is None:
+                if self.sop_bombs[0] == 5:
+                    # nuke big region target
+                    target_realm = self.get_highest_regions_enemy_realm()
+                elif self.sop_bombs[0] == 6:
+                    # chem big region target
+                    target_realm = self.get_highest_regions_enemy_realm()
+                else:
+                    # sabre big net target
+                    target_realm = self.get_highest_networth_enemy_realm()
+            else:
+                target_realm = caller_supplied_target_realm
+
+            # check if we have already sent this type of bomb
+            menu_string = '(' + self.sop_bombs[0] + ')'
+            if menu_string not in buf:
+                # this bomb is not available, try next one
+                self.sop_bombs.pop()
+                continue
+
+            self.app.send(self.sop_bombs[0], comment="Sending bomb")
             buf = self.app.read()
+
+            if "All missiles and bombs require 500 Bombers to deliver their " \
+               "payloads." in buf:
+                botlog.warn("Not enough bombers to send S-op")
+                self.app.sendl(comment="Returning from S-Op to interplanetary "
+                                       "menu")
+                buf = self.app.read()
+                return
+
             if "Enter Planet Name or Number" not in buf:
-                botlog.warn("Not able to send missle s-op")
-                break
+                raise Exception("Not able to send missle s-op")
+
             self.app.sendl(target_realm.planet_name)
-            self.app.read()
-            self.app.send('?',comment="Displaying realms at missle s-op menu")
+            buf = self.app.read()
+
+            if 'Enemy' not in buf:
+                raise Exception(
+                    "Attempting to bomb planet not marked as enemy")
+
+            # because this is what a human would do, and we might like to read
+            # it in the log
+            self.app.send('?', comment="Displaying realms at missle s-op menu")
             self.app.read()
             self.app.send(target_realm.menu_option)
             buf = self.app.read()
-            if "Would you like to prepare the attack? (Y/n)" not in buf:
-                botlog.warn("Unable to send sop:\n" + buf)
+
+            if "You cannot afford it." in buf:
+                botlog.warn("Could not afford to send S-Op missle/bomb")
+                # though we can't afford it, we don't quit, we break,
+                # which will then cause us to send undermines in the next
+                # loop.
+
+                # TODO If by the last turn we still can't send missles to our
+                #  prefered target we should lower our sights to smaller
+                # targets
                 break
-            self.app.send('y',comment="Yes i will send the s-op")
+
+
+
+            if "Would you like to prepare the attack? (Y/n)" not in buf:
+                raise Exception("Unable to send sop:\n" + buf)
+
+            self.app.send('y', comment="Yes i will send the s-op")
 
             buf = self.app.read()
             if "Attack Launched." not in buf:
@@ -350,44 +421,85 @@ class War(Strategy):
                 break
 
             self.sop_bombs.pop(0)
+            # TODO verify it is always 500 bombers per sop
+            self.data.realm.army.bombers -= 500
 
-            target_realm = self.get_highest_networth_enemy_realm()
+
+
 
         # send s-op undermines
         if not self.all_undermines_sent:
             max_iterations = 20
             while max_iterations > 0:
-                self.app.send("4",comment="Undermining Investments")
+                self.app.send("4", comment="Undermining Investments")
                 buf = self.app.read()
+
+                if "You can't afford that!" in buf:
+                    botlog.warn("Could not afford to send undermine")
+                    self.app.sendl(
+                        comment="Returning from S-Op to interplanetary "
+                                "menu")
+                    buf = self.app.read()
+                    return
+
+                if ("All missiles and bombs require 500 Bombers to deliver "
+                    "their payloads." in buf):
+                    botlog.warn("Not enough bombers to send undermine")
+                    self.app.sendl(
+                        comment="Returning from S-Op to interplanetary "
+                                "menu")
+                    buf = self.app.read()
+                    return
+
                 if "Enter Planet Name or Number" not in buf:
-                    botlog.warn("Not able to send undermine s-op: \n" + buf)
-                    break
+                    raise Exception("Not able to send undermine s-op: \n" + buf)
 
                 # note if attacking multiple planets, this may not be the high NW
                 #  planet
                 self.app.sendl(target_realm.planet_name)
 
                 buf = self.app.read()
+
+                if 'Enemy' not in buf:
+                    raise Exception(
+                        "Attempting to undermine planet not marked as enemy")
+
                 if "Send a bomb to" not in buf:
-                    botlog.warn("Not able to send undermine to enemy planet")
-                    break
+                    raise Exception("Not able to send undermine to enemy planet")
 
                 self.app.send('y')
                 buf = self.app.read()
                 if "Mission Specialists sent out." not in buf:
-                    botlog.warn("Could not send undermine to enemy planet")
-                    break
+                    raise Exception("Could not send undermine to enemy planet")
+
+                self.data.realm.army.bombers -= 500
 
                 if 'You have 0 bombing ops left today' in buf:
                     self.all_undermines_sent = True
-                    break
+                    self.app.sendl(
+                        comment="Returning from S-Op to interplanetary "
+                                "menu")
+                    buf = self.app.read()
+                    return
 
                 max_iterations -= 1
 
             if max_iterations <= 0:
                 raise Exception("Tried too many times to send bombs")
 
-    def send_tops(self, top_target = None):
+        if '[Special Operations]' in buf:
+            botlog.warn("Unexpected exit from S-Op menu")
+            self.app.sendl(
+                comment="Returning from S-Op to interplanetary menu")
+            buf = self.app.read()
+
+        if '[InterPlanetary Operations]' not in buf:
+            raise Exception(
+                "Not returned to interplanetary menu after S-Op menu")
+
+
+
+    def send_tops(self, top_target=None):
 
         if self.sent_tops:
             return
@@ -400,43 +512,74 @@ class War(Strategy):
 
         self.app.send(2, comment="Entering t-op menu")
         buf = self.app.read()
+
+        if "You can't afford that!" in buf:
+            botlog.warn("Can not afford to send T-Ops")
+            return
+
+        # if we have already sent the limit, lets not try to do it again
+        if "Limit " in buf and " Terrorist Operations per day!" in buf:
+            self.sent_tops = True
+            return
+
         if "Enter Planet Name or Number" not in buf:
             botlog.warn("Unable to choose t-op target planet")
             return
 
-        self.app.sendl(target.planet_name)
-
+        self.app.sendl(target.planet_name, comment="entering planet name for "
+                                                   "top target")
         buf = self.app.read()
+
+        if 'Enemy' not in buf:
+            raise Exception("Attempting to terrorize planet not marked as "
+                            "enemy")
+
+        if 'Choose a target' not in buf:
+            botlog.warn("Unable to choose t-op target realm")
+            return
+
+        self.app.send(
+            target.menu_option,
+            comment="Sending t-ops to " + target.name)
+        buf = self.app.read()
+
         if "[Terrorist Ops]" not in buf:
             botlog.warn("Could not get to t-op menu")
             return
 
-        while(len(self.tops) > 0):
+        # TODO case for running out of money/agents during send cycles
+
+        while (len(self.tops) > 0):
             self.app.send(self.tops[0])
-            buf = self.app.read()
-
-            if 'Choose a target' not in buf:
-                botlog.warn("Unable to choose t-op target realm")
-                return
-
-            self.app.send(
-                target.menu_option,
-                comment="Sending t-op to " + target.name)
             buf = self.app.read()
 
             if 'Send how many?' not in buf:
                 botlog.warn("Not able to send t-op")
                 return
 
-            self.app.sendl(1,comment="Sending one t-op")
+            self.app.sendl(1, comment="Sending one t-op")
             buf = self.app.read()
-            if '1 agent sent out.' not in buf:
-                botlog.warn("Agent not sent out")
-                return
+
+            # in my experience sending 1 top at a time it won't ask you to
+            # confirm, just assure this
+            if 'This will cost you' in buf and 'Accept? (Y/n)' in buf:
+                botlog.warn("Unexpected confirmation message sending t-op")
+                self.app.send('y', comment="Confirming t-op send")
+                buf = self.app.read()
+                if "[InterPlanetary Operations]" not in buf:
+                    self.app.sendl()
+                    return
+                #
+                # if 'agents sent out.' not in buf:
+                #     botlog.warn("Agents not sent out")
+                #     return
+            else:
+                if '1 agent sent out.' not in buf:
+                    botlog.warn("Agent not sent out")
+                    return
 
             self.tops.pop()
 
-            # TODO confirm the text on the last t-op
             if "[InterPlanetary Operations]" in buf:
                 self.tops = []
                 self.sent_tops = True
@@ -479,11 +622,19 @@ class War(Strategy):
 
         while max_iterations > 0:
             buf = self.app.read()
+
+            # check if there are no GA's
+            if 'There are not any attack parties at this time.' in buf:
+                return
+
+
             lines = buf.split(os.linesep)
+
+            if len(lines) <= 1:
+                raise Exception("Expected more lines in group attack buffer")
 
 
             #TODO get training text for multipage list
-            #TODO check text for no GA's
             for line in lines:
                 if 'Individual Target' in line:
                     next_line_header = True
@@ -503,17 +654,19 @@ class War(Strategy):
                     raise Exception("Could not parse group attacks")
 
             max_iterations -= 1
-        self.app.send_seq([0,0,0,0],comment="Not joining GA, just reading "
-                                            "list of current ga's")
+
+        if max_iterations <= 0:
+            raise Exception("Too many iterations when listing GA's")
+
+        self.app.send_seq([0, 0, 0, 0], comment="Not joining GA, just reading "
+                                                "list of current ga's")
         buf = self.app.read()
         if "[InterPlanetary Operations]" not in buf:
             raise Exception("Not back at ip menu after parsing group attacks")
 
 
-
-
     def sort_group_attacks(self):
-        self.group_attacks.sort(key=lambda x:x.leave)
+        self.group_attacks.sort(key=lambda x: x.leave)
 
 
     def send_attack(self, attack, needed_strength):
@@ -567,16 +720,17 @@ class War(Strategy):
 
         # send the sequence for joining
         self.app.send_seq(
-            [attack.id, numtroopers, '\r', numjets, '\r', numtanks,
+            [numtroopers, '\r', numjets, '\r', numtanks,
              '\r', numbombers, '\r'])
         # if all went according to plan this should be asking us to be sure
         buf = self.app.read()
         ret_val = 0
         if 'Send this Attack? (Y/n)' not in buf:
-            botlog.warn("Not able to send out attack to " + attack.planet
-                        .name + " : " + attack.realm.name)
+            botlog.warn("Not able to send out attack to " + str(attack.planet
+                        .name) + " : " + str(attack.realm.name))
         else:
             self.app.send('y', comment="yes, join the attack")
+            buf = self.app.read()
 
             # reduce the inventory of the army by what was just sent
             army.jets.number -= numjets
@@ -584,7 +738,24 @@ class War(Strategy):
             army.troopers.number -= numtroopers
             army.bombers.number -= numbombers
 
-            buf = self.app.read()
+            # record what was sent in the attack
+            if attack.jets is None:
+                attack.jets = numjets
+            else:
+                attack.jets += numjets
+            if attack.tanks is None:
+                attack.tanks = numtanks
+            else:
+                attack.tanks += numtanks
+            if attack.troopers is None:
+                attack.troopers = numtroopers
+            else:
+                attack.troopers += numtroopers
+            if attack.bombers is None:
+                attack.bombers = numbombers
+            else:
+                attack.bombers += numbombers
+
             ret_val = sent_strength
 
         # double check we are back at the interplanetary menu
@@ -592,8 +763,6 @@ class War(Strategy):
             raise Exception("Not back at the interplanetary menu after "
                             "sending Attack")
 
-        # TODO i was going bbot_TOOL_VERSION return something like
-        # needed_strength added
         return ret_val
 
     def join_group_attack(self, attack):
@@ -624,19 +793,24 @@ class War(Strategy):
         #TODO I did this sequence blind, verify with real text
         self.app.send(4, comment="Enter group attack menu to create global")
         buf = self.app.read()
+
+        if 'Enemy' not in buf:
+            raise Exception("Attempting to group attack planet not marked as "
+                            "enemy")
+
         if 'TODO' not in buf:
             botlog.warn("Unable to enter Create Group Attack menu")
             return 0
 
-        self.app.send(attack.planet.name,comment="Attacking this planet with "
-                                                 "GA")
+        self.app.send(attack.planet.name, comment="Attacking this planet with "
+                                                  "GA")
         buf = self.app.read()
         if 'TODO' not in buf:
             botlog.warn("Unable to specify planet for group attack")
             return 0
 
         if attack.realm == None:
-            self.app.send('a',comment="Creating a global group attack")
+            self.app.send('a', comment="Creating a global group attack")
         else:
             self.app.send('o', comment="Creating a one realm group attack")
             buf = self.app.read()
@@ -646,26 +820,23 @@ class War(Strategy):
                 while "[InterPlanetary Operations]" not in buf and max_ter > 0:
                     max_ter -= 1
                     self.app.sendl(comment="trying to get back to " \
-                                         "interplanetary menu")
+                                           "interplanetary menu")
                     buf = self.app.read()
                 return 0
 
             self.app.send(
                 attack.realm.menu_option,
                 comment="creating attacking to realm: " +
-                        str(attack.realm.name) )
+                        str(attack.realm.name))
 
-        return self.send_attack(attack, needed_strength)
+        sent_strength = self.send_attack(attack, needed_strength)
 
+        # if a new GA was created, add it to our list of GA's
+        if sent_strength > 0:
+            self.group_attacks.append(attack)
+            self.sort_group_attacks()
 
-
-
-
-
-
-
-
-
+        return sent_strength
 
 
     def maybe_join_winning_group_attacks(self):
@@ -688,32 +859,46 @@ class War(Strategy):
             needed_strength_to_win_ga = ga.needed_strength(self.group_attacks)
             if self.data.get_attack_strength() >= needed_strength_to_win_ga:
                 ret_val = self.join_group_attack(ga)
-                if joined:
+                if ret_val > 0:
                     self.attacked_targets.append(ga.realm)
 
         return ret_val
 
     def send_indie_attack(self, target):
+
+        if self.sent_indies:
+            return 0
+
         self.app.send(6, comment="Enter send indie attack menu")
         buf = self.app.read()
+
+        if ('You can only send' in buf and
+                    'individual Strike(s) per day!' in buf):
+            self.sent_indies = True
+            return 0
+
         if 'Enter Planet Name or Number' not in buf:
             botlog.warn("Could not send indie attack")
-            return False
+            return 0
 
-        self.app.sendl(target.planet_name,"Comment enter planet name for "
-                                          "indie attack")
+        self.app.sendl(target.planet_name, "Comment enter planet name for "
+                                           "indie attack")
         buf = self.app.read()
-        if 'Our current relations with Prison Board BBS: Enemy' not in buf:
-            botlog.warn("Attempting to attack planet not marked as enemy")
-            return False
+
+        if 'Enemy' not in buf:
+            raise Exception("Attempting to attack planet not marked as enemy")
+
         if 'Choose a target' not in buf:
             botlog.warn("Unable to select target for indie attack")
-            return False
-        self.app.send('?',comment="Listing planets for indie attack, for your pleasure")
-        but = self.app.read()
-        self.app.send(target.menu_option,comment="Selecting which realm to "
-                                                 "indie")
-        self.app.send(3,comment="Going balls deep with extended attack")
+            return 0
+
+        self.app.send('?',
+                      comment="Listing planets for indie attack, for your pleasure")
+        buf = self.app.read()
+        self.app.send(target.menu_option, comment="Selecting which realm to "
+                                                  "indie")
+        buf = self.app.read()
+        self.app.send(3, comment="Going balls deep with extended attack")
 
         indie = Attack()
         indie.realm = target
@@ -723,13 +908,16 @@ class War(Strategy):
         indie.tanks = 0
         indie.bombers = 0
 
-
-        return self.send_attack(indie, target.networth * ATCK_SURP_RATIO)
+        ret_val = self.send_attack(indie, target.networth * ATCK_SURP_RATIO)
+        if ret_val > 0:
+            msg = ("Sent indie Attack:\n" + str(indie))
+            botlog.note(msg)
 
 
 
 
     def maybe_send_indie_attacks(self):
+
         if not self.can_send_indie():
             return
 
@@ -740,9 +928,20 @@ class War(Strategy):
         for target in targets:
             # send t-ops
             self.send_tops(target)
-            ret_val = self.send_indie_attacks(target)
+            ret_val = self.send_indie_attack(target)
             tot_ret += ret_val
-            if ret_val  == 0:
+
+
+            if ret_val == 0:
+
+                # we do our best to ensure we are attacking targets in the right
+                # order, if we couldn't attack, it is probably because we couldn't
+                # afford it, lets just wait until we have more money
+
+                # TODO on last turn, relax this rule, and allow exaustively
+                #   attacking all indie targets
+
+
                 break
             else:
                 self.attacked_targets.append(target)
@@ -782,16 +981,44 @@ class War(Strategy):
         global_attack.planet = global_target_planets[0]
         global_attack.leave = leave
 
-        self.create_group_attack(
+        return self.create_group_attack(
             attack=global_attack,
-            needed_strength=global_target_planets[0])
+            needed_strength=global_target_planets[0].networth * ATCK_SURP_RATIO)
 
+    def maybe_create_ga(self, our_strength=None, leave=12):
+
+        targets = self.get_ga_targets(max_strength=our_strength)
+        if len(targets) == 0:
+            return 0
+
+        target_realm = targets[0]
+
+        group_attack = Attack()
+        group_attack.planet = self.data.find_planet(target_realm.planet_name)
+        group_attack.leave = leave
+        group_attack.realm = target_realm
+
+        return self.create_group_attack(
+            attack=group_attack,
+            needed_strength=target_realm.networth * ATCK_SURP_RATIO)
+
+
+    def maybe_create_group_attack(self, max_strength=None, leave=12,
+                                  planetary_attack=False):
+        if planetary_attack:
+            return self.maybe_create_global_ga(
+                our_strength=max_strength,
+                leave=leave)
+        else:
+            return self.maybe_create_ga(
+                our_strength=max_strength,
+                leave=leave)
 
 
     def select_group_attacks(self, context, callback_func):
         result = []
         for ga in self.group_attacks:
-            if callback_func(context, result, ga ):
+            if callback_func(context, result, ga):
                 result.append(ga)
         return result
 
@@ -805,49 +1032,51 @@ class War(Strategy):
             return True
 
 
-    def get_group_attacks_in_window(self,t1,t2):
+    def get_group_attacks_in_window(self, t1, t2):
         result = self.select_group_attacks(
-            (t1,t2), self._select_group_attacks_in_window)
+            (t1, t2), self._select_group_attacks_in_window)
         return result
-
 
 
     def maybe_create_group_attacks(self):
 
-        # add up what it would take to fill 24 hours worth of currently
-        # created group attacks.
-        for t1,t2 in zip(range(0, 24 * 5, 24), range(24, 24 * 6, 24)):
-            cur_gas = self.get_group_attacks_in_window(t1,t2)
 
-            # calculate how much strength is needed for all of these attacks
-            # to win
-            total_base_needed_strength = 0
-            for ga in cur_gas:
-                total_base_needed_strength += ga.needed_strength(
-                    cur_gas, base=True)
+        # first try to great global ga's then one realm ga's
+        for planetary_attack in [True, False]:
+            # add up what it would take to fill 24 hours worth of currently
+            # created group attacks, and create global GA's if we think our planet
+            # is capable of filling them
+            for t1, t2 in zip(range(0, 24 * 5, 24), range(24, 24 * 6, 24)):
+                cur_gas = self.get_group_attacks_in_window(t1, t2)
 
-            # calculate how much strength our planet has
-            our_strength = self.get_planet_strength()
+                # calculate how much strength is needed for all of these attacks
+                # to win
+                total_base_needed_strength = 0
+                for ga in cur_gas:
+                    total_base_needed_strength += ga.needed_strength(
+                        cur_gas, base=True)
 
-            # we have already created all of the GA's we can handle
-            if our_strength < total_base_needed_strength:
-                continue
+                # calculate how much strength our planet has
+                our_strength = self.get_planet_strength()
 
-            # we have determined we have some strength left, let us try to
-            # create some globals with it
-            newly_commited_strength = self.maybe_create_global_ga(
-                our_strength - total_base_needed_strength,
-                leave=t2)
+                # we have already created all of the GA's we can handle
+                if our_strength < total_base_needed_strength:
+                    continue
 
-            #TODO stopped here
+                # we have determined we have some strength left, let us try to
+                # create some globals with it
+                planetary_strength_surplus = (
+                    our_strength - total_base_needed_strength)
 
+                # if creating a GA far in the future, don't bother fully committing
+                #   at this time
+                if t1 > 48:
+                    strength_to_commit = 10
 
-
-
-
-
-
-
+                newly_commited_strength = self.maybe_create_group_attack(
+                    planetary_strength_surplus,
+                    leave=t2,
+                    planetary_attack=planetary_attack)
 
 
     def on_interplanetary_menu(self):
@@ -855,40 +1084,26 @@ class War(Strategy):
         if self.group_attacks is None:
             self.parse_group_attacks()
             self.sort_group_attacks()
-            botlog.debug("Parsed ga's:\n" +  str(self.group_attacks))
+            botlog.debug("Parsed ga's:\n" + str(self.group_attacks))
 
-
+        botlog.debug("War phase: maybe_join_winning_group_attacks")
         # join short term GA's that we would cap off to assure victory
         self.maybe_join_winning_group_attacks()
 
+        botlog.debug("War phase: maybe_send_indie_attacks")
         # send indie
         self.maybe_send_indie_attacks()
 
-
+        botlog.debug("War phase: send_sops")
         # send s-ops
         self.send_sops()
 
+        botlog.debug("War phase: send_tops")
         # send t-ops
         self.send_tops()
 
-        # join partial ga's
-
+        botlog.debug("War phase: maybe_create_group_attacks")
         # create GA's
         self.maybe_create_group_attacks()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
