@@ -34,17 +34,20 @@ MAIN_MENUS = [TNSOA_MAIN_REGEX, SHENKS_MAIN_REGEX, XBIT_MAIN_REGEX]
 
 class LogOff(State):
     def transition(self, app, buf):
-        if 'Which or (Q)uit:' in buf:
-            app.send('q')
-        elif 'Which, (Q)uit or [1]:' in buf or 'Trans-Canada Doors Menu' in buf:
-            app.send_seq(['q', 'o', 'y'],comment="Logoff sequence")
-            app.read()
-            return BailOut()
         # logoff sequence for battlestar bbs
-        elif 'Battlenet :' in buf and 'Which door number or (Q)uit:' in buf:
+        if 'Battlenet :' in buf and 'Which door number or (Q)uit:' in buf:
             app.send_seq(['q','q','o','y'],comment="Logoff sequence")
             app.read()
             return BailOut()
+        elif ('Which, (Q)uit or [1]:' in buf or 
+                'Trans-Canada Doors Menu' in buf or
+                'Q) Quit back to Main Menu' in buf or
+                'Which door number or (Q)uit:' in buf):
+            app.send_seq(['q', 'o', 'y'],comment="Logoff sequence")
+            app.read()
+            return BailOut()
+        elif 'Which or (Q)uit:' in buf:
+            app.send('q')
 
 
 class ExitGame(State):
@@ -64,6 +67,10 @@ class EndTurn(StatsState):
         StatsState.__init__(self, statsParser=EndTurnParser())
 
     def transition(self, app, buf):
+
+        # i guess this is a good place to reset the emergency vars
+        app.metadata.low_cash = False
+        app.metadata.low_food = False
 
         self.parse(app, buf)
         if '[Attack Menu]' in buf:
@@ -246,6 +253,7 @@ class Maint(StatsState):
             if self.money_reconsider_turn == app.data.realm.turns.current:
                 botlog.warn("Unable to prevent not paying bills")
                 app.send('n')
+                app.metadata.low_cash = True
             else:
                 app.send('y')
                 botlog.warn("Turn income was not enough to pay bills")
@@ -269,6 +277,7 @@ class Maint(StatsState):
             if self.food_reconsider_turn == app.data.realm.turns.current:
                 botlog.warn("Unable to prevent not feeding realm")
                 app.send('n')
+                app.metadata.low_food = True
             else:
                 botlog.warn("Turn food production was not enough to feed empire")
                 app.send_seq(['y', 'b', '\r', '0'])
@@ -596,7 +605,9 @@ class BBSMenus(State):
             return StartGame()
 
         # sequence for Battlestar
-        elif 'Main' in buf and ' Battlestar BBS ' in buf:
+        elif ('Main' in buf and 
+                ('Battlestar BBS' in buf or 
+                self.get_app_value("address") == 'battlestarbbs.dyndns.org')):
             app.send_seq(['x', '33', app.get_app_value('game')])
             return StartGame()
 

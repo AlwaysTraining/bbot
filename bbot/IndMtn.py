@@ -40,6 +40,7 @@ class IndMtn(Strategy):
         Strategy.__init__(self, app)
         self.data = self.app.data
         self.app.metadata.get_region_ratio_func = get_region_ratio
+        self.app.metadata.get_region_ratio_context = self
         self.sp = SpendingParser()
         self.do_specialize = False
         self.protection_sell_ratio = self.get_strategy_option(
