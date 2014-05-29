@@ -37,20 +37,61 @@ class Attack(object):
         self.leave = None
 
     def __str__(self):
-        # TODO make sexy
-        return (str(self.realm.name) + " of " + str(self.planet.name) )
+
+        msg = ""
+        msg += "Target: "
+        msg += self.planet.name
+        if self.realm is not None:
+            msg += " (" + self.realm.name + ")"
+
+        if self.troopers is not None and self.troopers > 0:
+            msg += ", Troopers: " + readable_num(self.troopers)
+
+        if self.jets is not None and self.jets > 0:
+            msg += ", Jets: " + readable_num(self.jets)
+
+        if self.tanks is not None and self.tanks > 0:
+            msg += ", Tanks: " + readable_num(self.tanks)
+
+        if self.bombers is not None and self.bombers > 0:
+            msg += ", Bombers: " + readable_num(self.bombers)
+
+        return msg
 
     def get_strength(self):
         return (self.troopers + (self.jets * 2) +
                 (self.tanks * 4))
 
-    def is_filled(self):
-        return self.get_strength() >= (self.realm.networth * ATCK_SURP_RATIO)
+    def get_target_strength(self):
+        # for attack on one realm
+        target_strength = self.planet.networth
+
+        if self.realm is not None:
+            # for planetary attack
+            target_strength = self.realm.networth
+
+        return  target_strength
+
+    def is_filled(self, num_reduces=0):
+
+        # for attack on one realm
+        target_strength = self.get_target_strength()
+
+        win_strength = target_strength * ATCK_SURP_RATIO
+
+        for i in range(num_reduces):
+            win_strength *= MULTIPLE_ATTACK_REDUCER
+
+        return (self.get_strength() >= win_strength)
+
+
+    def is_global(self):
+        return self.realm is None
 
     def needed_strength(self, group_attacks, base=False):
 
         # base needed strength
-        base = (self.realm.networth * ATCK_SURP_RATIO)
+        base = (self.get_target_strength() * ATCK_SURP_RATIO)
 
         if group_attacks is None:
             if not base:
@@ -61,36 +102,53 @@ class Attack(object):
         # reduce needed stringth by some ratio for each loaded attack facing
         # the same realm
         reducer = 1.0
-        num_reduces = 1
+        num_reduces = 0
         for ga in group_attacks:
 
-            # stop iterating when we get to this attack
-            if ga.id == self.id:
-                break
+            # group attacks should always be in order of leaving
+            # stop iterating when we get later than this attack
             if ga.leave > self.leave:
-                botlog.warn("Itterating to many GA's, are they sorted?")
+                break
+            # skip this attack
+            if self.id == ga.id:
                 continue
 
-            if (ga.realm.name == self.realm.name and
-                        ga.planet.name == self.planet.name):
+            # skip attacks to a differnt planet
+            same_planet = self.planet.name == ga.planet.name
+            if not same_planet:
+                continue
 
-                if self.get_strength() >= base:
-                    base *= MULTIPLE_ATTACK_REDUCER
-                    num_reduces += 1
+            reduce_strength = False
+
+            if self.is_global():
+                if ga.is_global():
+                    reduce_strength = ga.is_filled(num_reduces)
+                else:
+                    # if this is a global, and the considered GA is a non
+                    # global, we will not consider any strength reduction.
+                    # this will be conservative
+                    continue
+            else:
+                if ga.is_global():
+                    # this attack is non global, but considered GA is global.
+                    # In this case a filled GA should give us a reduction
+                    reduce_strength = ga.is_filled(num_reduces)
+                else:
+                    # both attacks are non global, reduce if same realm is
+                    # being attacked, and attack is filled
+                    reduce_strength = (self.realm.name == self.realm.name and
+                                       ga.is_filled(num_reduces))
+
+            if reduce_strength:
+                # reduce the needed ratio
+                base *= MULTIPLE_ATTACK_REDUCER
+                num_reduces += 1
 
         if num_reduces > 0:
             botlog.debug("Multiple Ga's have reduced needed strength " + str(
                 num_reduces) + " times")
 
-        if not base:
-            return int(math.ceil(base)) - self.get_strength()
-        else:
-            return int(math.ceil(base))
-
-
-    def __str__(self):
-        return _printvisitor(self, 0)
-
+        return math.max(0, int(math.ceil(base)) - self.get_strength())
 
 class War(Strategy):
     def __init__(self, app):
@@ -594,7 +652,9 @@ class War(Strategy):
         i += 1
         ga.planet = self.data.find_planet(t[i])
         i += 1
-        ga.realm = ga.planet.find_realm(t[i])
+        # what would happen if someone named thier realm 'ALL'
+        if t[i] != 'ALL':
+            ga.realm = ga.planet.find_realm(t[i])
         i += 1
         ga.troopers = ToNum(t[i])
         i += 1
@@ -777,6 +837,9 @@ class War(Strategy):
             self.app.sendl(comment="Who the fuck created so many damn GA's")
             max_iterations -= 1
 
+        if max_iterations <= 0:
+            raise Exception("too many iterations when joining GA")
+
         # get how much is needed to put into this attack to make it win
         needed_strength = attack.needed_strength(self.group_attacks)
 
@@ -786,31 +849,28 @@ class War(Strategy):
 
     def create_group_attack(self, attack, needed_strength):
 
-        # check that this is a group attack
-        if attack.planet.name is None or attack.planet.name == '':
-            botlog.warn('Can not send group attack, no planet specified')
 
-        #TODO I did this sequence blind, verify with real text
         self.app.send(4, comment="Enter group attack menu to create global")
+        buf = self.app.read()
+
+        if 'Enter Planet Name or Number' not in buf:
+            raise Exception("Unable to enter Create Group Attack menu")
+
+        self.app.sendl(attack.planet.name,
+                       comment="Attacking this planet with GA")
         buf = self.app.read()
 
         if 'Enemy' not in buf:
             raise Exception("Attempting to group attack planet not marked as "
                             "enemy")
 
-        if 'TODO' not in buf:
-            botlog.warn("Unable to enter Create Group Attack menu")
-            return 0
 
-        self.app.send(attack.planet.name, comment="Attacking this planet with "
-                                                  "GA")
-        buf = self.app.read()
-        if 'TODO' not in buf:
-            botlog.warn("Unable to specify planet for group attack")
-            return 0
+        if 'Do you wish to target (O)ne Dominion or (A)ll' not in buf:
+            raise Exception("Unable to specify planet for group attack")
 
         if attack.realm == None:
             self.app.send('a', comment="Creating a global group attack")
+            buf = self.app.read()
         else:
             self.app.send('o', comment="Creating a one realm group attack")
             buf = self.app.read()
@@ -828,6 +888,14 @@ class War(Strategy):
                 attack.realm.menu_option,
                 comment="creating attacking to realm: " +
                         str(attack.realm.name))
+            buf = self.app.read()
+
+        if 'Wait how many Hours (12-120)?' not in buf:
+            raise Exception("Expected to enter hours before GA leaves")
+
+        self.app.sendl(attack.leave, comment="Sending hours to wait before "
+                                             "launching GA")
+        buf = self.app.read()
 
         sent_strength = self.send_attack(attack, needed_strength)
 
@@ -843,24 +911,77 @@ class War(Strategy):
 
         # if we can top off any GA that leaves soon, lets do it
 
-        first_target = None
 
         ret_val = 0
         for ga in self.group_attacks:
-            # ignore any attack already filled.
-            if ga.is_filled():
-                continue
 
             # ga's are sorted, stop iterating after we are past 24 hours,
-            # we won't fill these
+            # we won't fill these, we can do it tommorrow
             if ga.leave > 24:
                 break
 
             needed_strength_to_win_ga = ga.needed_strength(self.group_attacks)
             if self.data.get_attack_strength() >= needed_strength_to_win_ga:
-                ret_val = self.join_group_attack(ga)
-                if ret_val > 0:
+                val = self.join_group_attack(ga)
+                if val > 0:
+                    ret_val += val
                     self.attacked_targets.append(ga.realm)
+
+        return ret_val
+
+
+    def maybe_fill_group_attacks(self):
+
+        # we only join Ga's at the end of our day, theory being, we have
+        # already filled any ga's that will win as first priority, and
+        # we have also sent any winnable indies
+        if self.data.realm.turns.remaining > 3:
+            return  0
+
+        # if we have no army, don't join
+        if self.data.get_attack_strength() < 1000:
+            return 0
+
+        # itterate ga's in 24 hour windows
+        for t1, t2 in zip(range(0, 24 * 5, 24), range(24, 24 * 6, 24)):
+            cur_gas = self.get_group_attacks_in_window(t1, t2)
+
+            global_gas = []
+            indie_gas = []
+
+            # classify ga's into global and non global lists
+            for ga in cur_gas:
+                if ga.is_global():
+                    global_gas.append(ga)
+                else:
+                    indie_gas.append(ga)
+
+            # sort the lists by fattest targets
+            global_gas.sort(key = lambda x: x.planet.regions, reverse=True)
+            indie_gas.sort(key=lambda x: x.realm.regions, reverse=True)
+
+            # recombine ga's to new prefered fill order
+            # NOTE it could be posisble that an indie GA would yield more
+            # regions then a global, but in generall I would rather fill
+            # globals
+            cur_gas = global_gas + indie_gas
+
+            ret_val = 0
+
+            for ga in cur_gas:
+
+                val = self.join_group_attack(ga)
+                if val > 0:
+                    ret_val += val
+                    self.attacked_targets.append(ga.realm)
+
+                # if we don't have much more army, stop joining
+                if self.data.get_attack_strength() < 1000:
+                    break
+
+                # if we don't have much more army, stop joining
+            if self.data.get_attack_strength() < 1000:
+                break
 
         return ret_val
 
@@ -889,8 +1010,7 @@ class War(Strategy):
             raise Exception("Attempting to attack planet not marked as enemy")
 
         if 'Choose a target' not in buf:
-            botlog.warn("Unable to select target for indie attack")
-            return 0
+            raise  Exception("Unable to select target for indie attack")
 
         self.app.send('?',
                       comment="Listing planets for indie attack, for your pleasure")
@@ -1031,6 +1151,8 @@ class War(Strategy):
         if cur_attack.leave >= t1 and cur_attack.leave < t2:
             return True
 
+        return False
+
 
     def get_group_attacks_in_window(self, t1, t2):
         result = self.select_group_attacks(
@@ -1063,18 +1185,28 @@ class War(Strategy):
                 if our_strength < total_base_needed_strength:
                     continue
 
-                # we have determined we have some strength left, let us try to
-                # create some globals with it
-                planetary_strength_surplus = (
-                    our_strength - total_base_needed_strength)
+                # # we have determined we have some strength left, let us try to
+                # # create some ga's with it
+                # planetary_strength_surplus = (
+                #     our_strength - total_base_needed_strength)
+                #
+                # # if creating a GA far in the future, don't bother fully committing
+                # #   at this time
+                # if t1 > 48:
+                #     strength_to_commit = 10
+                # else:
+                #     # we know we often can't contribute the planetary ammount
+                #     # ourselves, but we don't want to contribute more then that
+                #     # for sure
+                #     strength_to_commit = planetary_strength_surplus
 
-                # if creating a GA far in the future, don't bother fully committing
-                #   at this time
-                if t1 > 48:
-                    strength_to_commit = 10
+                # because we have seperate functionality for filling the
+                # correct GA, we just create GA with minimal ammount
+                strength_to_commit = 10
+
 
                 newly_commited_strength = self.maybe_create_group_attack(
-                    planetary_strength_surplus,
+                    strength_to_commit,
                     leave=t2,
                     planetary_attack=planetary_attack)
 
@@ -1105,5 +1237,10 @@ class War(Strategy):
         botlog.debug("War phase: maybe_create_group_attacks")
         # create GA's
         self.maybe_create_group_attacks()
+
+        # join partially filled GA's
+        botlog.debug("War phase: maybe_fill_group_attacks")
+        self.maybe_fill_group_attacks()
+
 
 

@@ -60,7 +60,7 @@ class Strategy:
 
         if isinstance(unit_types, basestring):
             if ',' in unit_types:
-                strats = [x.strip() for x in unit_types.split(',')]
+                unit_types = [x.strip() for x in unit_types.split(',')]
             else:
                 unit_types = [unit_types]
 
