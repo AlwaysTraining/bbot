@@ -72,6 +72,8 @@ class LocalLackey(LackeyBase):
         # early in the game, we don't trade
         tradeRatio = self.get_trade_ratio()
         if not self.check_can_trade(tradeRatio):
+            botlog.info(
+                "Not trading this turn because: " + self.not_trading_reason)
             return
 
         self.app.send('*', comment="Entering System menu")

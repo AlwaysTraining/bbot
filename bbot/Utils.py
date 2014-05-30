@@ -243,3 +243,16 @@ def split_list(terms, bins):
     splitterms = [terms[x:x + termsPerCred] for x in
                   xrange(0, len(terms), termsPerCred)]
     return splitterms
+
+def make_string_list(items):
+
+    if items is None:
+        raise Exception("No items provided")
+
+    if isinstance(items, basestring):
+        if ',' in items:
+            items = [x.strip() for x in items.split(',')]
+        else:
+            items = [items]
+
+    return items

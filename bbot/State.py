@@ -34,12 +34,22 @@ MAIN_MENUS = [TNSOA_MAIN_REGEX, SHENKS_MAIN_REGEX, XBIT_MAIN_REGEX]
 
 class LogOff(State):
     def transition(self, app, buf):
-        if 'Which or (Q)uit:' in buf:
-            app.send('q')
-        elif 'Which, (Q)uit or [1]:' in buf or 'Trans-Canada Doors Menu' in buf:
-            app.send_seq(['q', 'o', 'y'], comment="Logoff sequence")
+
+        # logoff sequence for battlestar bbs
+        if 'Battlenet :' in buf and 'Which door number or (Q)uit:' in buf:
+            app.send_seq(['q','q','o','y'],comment="Logoff sequence")
             app.read()
             return BailOut()
+        elif ('Which, (Q)uit or [1]:' in buf or 
+                'Trans-Canada Doors Menu' in buf or
+                'Q) Quit back to Main Menu' in buf or
+                'Which door number or (Q)uit:' in buf):
+            app.send_seq(['q', 'o', 'y'],comment="Logoff sequence")
+
+            app.read()
+            return BailOut()
+        elif 'Which or (Q)uit:' in buf:
+            app.send('q')
 
 
 class ExitGame(State):
@@ -60,6 +70,10 @@ class EndTurn(StatsState):
 
 
     def transition(self, app, buf):
+
+        # i guess this is a good place to reset the emergency vars
+        app.metadata.low_cash = False
+        app.metadata.low_food = False
 
         self.parse(app, buf)
         if '[Attack Menu]' in buf:
@@ -167,6 +181,12 @@ class Spending(StatsState):
             self.parse(app, buf)
 
 
+        # TODO write a function to determine when we are almost out of
+        # protection, then only start headquarters at that time
+        if (app.data.is_oop() and 
+                app.data.realm.army.headquarters.number == 0):
+            self.app.send(5, comment="Starting construction on headquarters")
+
         # based on the strategies registered with the app we do differnt
         #   things, tell the app we are ready for the strategies to act
         app.on_spending_menu()
@@ -244,6 +264,7 @@ class Maint(StatsState):
             if self.money_reconsider_turn == app.data.realm.turns.current:
                 botlog.warn("Unable to prevent not paying bills")
                 app.send('n')
+                app.metadata.low_cash = True
             else:
                 app.send('y')
                 botlog.warn("Turn income was not enough to pay bills")
@@ -267,6 +288,7 @@ class Maint(StatsState):
             if self.food_reconsider_turn == app.data.realm.turns.current:
                 botlog.warn("Unable to prevent not feeding realm")
                 app.send('n')
+                app.metadata.low_food = True
             else:
                 botlog.warn(
                     "Turn food production was not enough to feed empire")
@@ -434,7 +456,10 @@ class PreTurns(StatsState):
             return EndTurn()
 
         elif ' Regions left] Your Choice?' in buf:
-            RegionBuy(app)
+            SpendingParser().parse(app,buf)
+            botlog.info("Restarted turn on region allocate with " +
+                        str(app.metadata.regions_left) + " regions")
+            RegionBuy(app,num_regions=app.metadata.regions_left)
 
 
 from bbot.PlanetParser import PlanetParser
@@ -705,6 +730,13 @@ class BBSMenus(State):
         # sequence for trans canada
         elif 'Main' in buf and ' Trans-Canada ' in buf:
             app.send_seq(['x', '7', app.get_app_value('game')])
+            return StartGame()
+
+        # sequence for Battlestar
+        elif ('Main' in buf and 
+                ('Battlestar BBS' in buf or 
+                app.get_app_value("address") == 'battlestarbbs.dyndns.org')):
+            app.send_seq(['x', '33', app.get_app_value('game')])
             return StartGame()
 
 

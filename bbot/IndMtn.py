@@ -40,6 +40,7 @@ class IndMtn(Strategy):
         Strategy.__init__(self, app)
         self.data = self.app.data
         self.app.metadata.get_region_ratio_func = get_region_ratio
+        self.app.metadata.get_region_ratio_context = self
         self.sp = SpendingParser()
         self.do_specialize = False
         self.protection_sell_ratio = self.get_strategy_option(
@@ -95,7 +96,7 @@ class IndMtn(Strategy):
 
         if (self.app.has_strategy("Investor") and
             (self.data.realm.bank.investments) > 0 and  # TODO a better way to learn if investments are unparsed, or try to garantee that they are parsed before calling this funciton
-            not self.data.has_full_investments(days_missing=1)):
+            not self.data.has_full_investments(days_missing=2)):
             # if only missing one day of investments, this is normal, don't
             # sell anything, otherwise sell a chunk
             return self.investing_sell_ratio
@@ -106,13 +107,32 @@ class IndMtn(Strategy):
 
     def get_army_buy_ratio(self):
 
+        # if we are going to try to trade, don't buy anything
+        will_attempt_to_trade = False
+        if self.app.has_strategy("LocalLackey"):
+            lackey = self.app.get_strategy(
+                    "LocalLackey")
+            will_attempt_to_trade = lackey.check_can_trade(
+                    lackey.get_trade_ratio())
+
+        if self.app.has_strategy("Lackey"):
+            lackey = self.app.get_strategy(
+                    "Lackey")
+            will_attempt_to_trade = lackey.check_can_trade(
+                    lackey.get_trade_ratio())
+
+        if will_attempt_to_trade:
+            botlog.info("We may trade this round, do not buyi anything")
+            return 0
+
+
         if not self.data.is_oop():
             return self.protection_buy_ratio
 
         if (self.app.has_strategy("Investor") and
                     (
                             self.data.realm.bank.investments) > 0 and  # TODO a better way to learn if investments are unparsed, or try to garantee that they are parsed before calling this funciton
-                not self.data.has_full_investments(days_missing=1)):
+                not self.data.has_full_investments(days_missing=2)):
             # if only missing one day of investments, this is normal, don't
             # buy anything, otherwise buy a chunk
             return self.investing_buy_ratio
@@ -135,6 +155,11 @@ class IndMtn(Strategy):
             if str(saleItem) != '6':
 
                 ammount = self.data.get_number(saleItem)
+
+                if ammount is None:
+                    botlog.warn('can not sell item, ' + 
+                            'ammount has not been parsed')
+                    continue
 
                 if ammount == 0:
                     continue

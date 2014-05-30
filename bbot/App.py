@@ -313,6 +313,12 @@ class App:
                 return True
         return False
 
+    def get_strategy(self, strategy_name):
+        for s in self.strategies:
+            if strategy_name == s.get_name():
+                return s
+        raise Exception("No strategy named: " + str(strategy_name))
+
     def call_strategies(self, func_name):
         ret = Strategy.UNHANDLED
         for s in self.strategies:
@@ -459,8 +465,7 @@ class App:
             return
 
         to = self.get_app_value('notify')
-        if isinstance(to, basestring):
-            to = [to]
+        to = Utils.make_string_list(to)
 
         botlog.info("Sending Notification emails to " + str(to))
 

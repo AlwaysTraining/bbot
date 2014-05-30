@@ -85,6 +85,8 @@ class SpendingParser(StatsParser):
             "Sell how many " + STR + "\? \(0\; " + N + "\)": 2701,
             "Buy how many " + STR + "\? \(0\; " + N + "\)": 2701,
 
+            '\[' + N + ' Regions left\] Your choice\?': 2702,
+
         }
 
     def on_match(self, app, line, which):
@@ -236,5 +238,5 @@ class SpendingParser(StatsParser):
             advisors.technology.food_decay_tech = self.get_num()
         elif which == 2701:
             app.metadata.max_ammount = self.get_num(1)
-
-
+        elif which == 2702:
+            app.metadata.regions_left = self.get_num()

@@ -8,6 +8,7 @@ from bbot.Utils import *
 from bbot.Data import *
 from bbot.Strategy import Strategy
 from bbot.SpendingParser import SpendingParser
+from bbot.MetaData import MetaData
 
 
 class RegionBuy(Strategy):
@@ -93,7 +94,15 @@ class RegionBuy(Strategy):
             return
 
         if region_ratio is None:
-            r = self.app.metadata.get_region_ratio_func(self.app, None)
+            r = self.app.metadata.get_region_ratio_func(
+                    self.app, 
+                    self.app.metadata.get_region_ratio_context)
+
+            # in case of emergency use the default region ratio
+            if self.app.metadata.low_cash or self.app.metadata.low_food:
+                botlog.warn("Using emergency region ratio")
+                r = self.app.metadata.default_region_ratio_func(
+                        self.app, None)
         else:
             r = region_ratio
 
