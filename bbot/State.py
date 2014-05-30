@@ -607,7 +607,7 @@ class BBSMenus(State):
         # sequence for Battlestar
         elif ('Main' in buf and 
                 ('Battlestar BBS' in buf or 
-                self.get_app_value("address") == 'battlestarbbs.dyndns.org')):
+                app.get_app_value("address") == 'battlestarbbs.dyndns.org')):
             app.send_seq(['x', '33', app.get_app_value('game')])
             return StartGame()
 
