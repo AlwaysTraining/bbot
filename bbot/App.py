@@ -465,7 +465,7 @@ class App:
             return
 
         to = self.get_app_value('notify')
-        to = make_string_list(to)
+        to = Utils.make_string_list(to)
 
         botlog.info("Sending Notification emails to " + str(to))
 

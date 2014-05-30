@@ -144,6 +144,12 @@ class Spending(StatsState):
         # parse the buy menu
         self.parse(app, buf)
 
+        # TODO write a function to determine when we are almost out of
+        # protection, then only start headquarters at that time
+        if (app.data.is_oop() and 
+                app.data.realm.army.headquarters.number == 0):
+            self.app.send(5, comment="Starting construction on headquarters")
+
         # commentin out this because we don't really need it until we heavily start to mine data
         #
         # # if game setup has not been read, # parse it
