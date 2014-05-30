@@ -148,7 +148,9 @@ class Spending(StatsState):
         # protection, then only start headquarters at that time
         if (app.data.is_oop() and 
                 app.data.realm.army.headquarters.number == 0):
-            self.app.send(5, comment="Starting construction on headquarters")
+            app.send(5, comment="Starting construction on headquarters")
+            app.buf = app.read()
+            self.parse(app, buf)
 
         # commentin out this because we don't really need it until we heavily start to mine data
         #
