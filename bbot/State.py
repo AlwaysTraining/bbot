@@ -185,7 +185,9 @@ class Spending(StatsState):
         # protection, then only start headquarters at that time
         if (app.data.is_oop() and 
                 app.data.realm.army.headquarters.number == 0):
-            self.app.send(5, comment="Starting construction on headquarters")
+            app.send(5, comment="Starting construction on headquarters")
+            app.buf = app.read()
+            self.parse(app, buf)
 
         # based on the strategies registered with the app we do differnt
         #   things, tell the app we are ready for the strategies to act
