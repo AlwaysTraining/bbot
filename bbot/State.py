@@ -34,6 +34,11 @@ MAIN_MENUS = [TNSOA_MAIN_REGEX, SHENKS_MAIN_REGEX, XBIT_MAIN_REGEX]
 
 class LogOff(State):
     def transition(self, app, buf):
+        if 'PLEASE MAKE A SELECTION OR "Q" = EXIT' in buf:
+            app.send_seq(['q','o','y'],comment="Logoff Sequence")
+            app.read()
+            return BailOut()
+
         # logoff sequence for battlestar bbs
         if 'Battlenet :' in buf and 'Which door number or (Q)uit:' in buf:
             app.send_seq(['q','q','o','y'],comment="Logoff sequence")
@@ -551,7 +556,7 @@ class NewRealm(State):
 
 class StartGame(State):
     def transition(self, app, buf):
-        if '<Paused>' in buf or '>Paused<' in buf:
+        if '<Paused>' in buf or '>Paused<' in buf or '<MORE>' in buf:
             app.sendl()
         elif 'Do you want ANSI Graphics? (Y/n)' in buf:
             app.send('n')
@@ -619,10 +624,23 @@ class BBSMenus(State):
             app.send_seq(['x', '33', app.get_app_value('game')])
             return StartGame()
 
+        # sequence for The Loonie Bin
+        elif ('Main' in buf and ('The Loonie Bin' in buf or
+                app.get_app_value("address") == 'thelooniebin.net')):
+            # there is a "Hit a key" in there because this menu is so big
+            app.send_seq(['x', '\r', app.get_app_value('game')])
+            return StartGame()
+
+        # sequence for The Section One
+        elif ('Main' in buf and ('Section One BBS' in buf or
+                app.get_app_value("address") == 'sectiononebbs.com')):
+            # there is a "Hit a key" in there because this menu is so big
+            app.send_seq(['x', '4', app.get_app_value('game')])
+            return StartGame()
 
 class Password(State):
     def transition(self, app, buf):
-        if "Password:" in buf:
+        if "Password:" in buf or "PW:" in buf:
             app.sendl(app.get_app_value('password'))
             buf = app.read_until("[Hit a key]")
             app.sendl(comment="Is this the any key?")
@@ -631,7 +649,7 @@ class Password(State):
 
 class Login(State):
     def transition(self, app, buf):
-        if "Login:" in buf:
+        if "Login:" in buf or "Enter Name, Number, 'New', or 'Guest'" in buf or 'NN:' in buf:
             app.sendl(app.get_app_value('username'))
             return Password()
         elif 'Hit a key' in buf:
