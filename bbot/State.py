@@ -12,6 +12,7 @@ from bbot.BaseStates import *
 from bbot.Data import *
 from bbot.Data import *
 from bbot.RegionBuy import RegionBuy
+from bbot.Strategy import Strategy
 
 
 #rom BaseStates.State import State
@@ -482,6 +483,8 @@ class MainMenu(StatsState):
         self.app = None
 
     def set_interplanetary_score(self, context, planet, num):
+        # botlog.debug("Setting " + self.cur_score_list +
+        #              " for: " + str(planet.name) + " to " + str(num))
         if self.cur_score_list == "score":
             planet.score = num
         elif self.cur_score_list == "networth":
@@ -517,8 +520,9 @@ class MainMenu(StatsState):
             raise Exception("Too many iterations when listing diplomacy")
 
 
-    def parse_other_realms(self, app):
-        league = self.app.data.league
+    def parse_other_realms(self):
+        app = self.app
+        league = app.data.league
         planets = league.planets
         for cur_planet in planets:
             if cur_planet.relation is None:
@@ -536,7 +540,7 @@ class MainMenu(StatsState):
 
 
             if '-=<Paused>=-' in buf:
-                self.app.sendl(comment="Continuing after displaying other "
+                app.sendl(comment="Continuing after displaying other "
                                        "realms")
 
             app.sendl(comment="Returning to interplanetary menu from send "
@@ -588,6 +592,8 @@ class MainMenu(StatsState):
         self.parse_diplomacy_list()
 
         self.parse_other_realms()
+
+        app.send(0, comment="going back to main game menu")
 
     def parse_info(self, app):
         self.app = app

@@ -586,7 +586,7 @@ class Data(dict):
 
     def __str__(self):
         return _printvisitor(self.realm, 0) + "\n" + _printvisitor(
-                self.planet, 0)
+                self.planet, 0) + "\n" + _printvisitor(self.league, 0)
 
 
     def set(self, key, value):

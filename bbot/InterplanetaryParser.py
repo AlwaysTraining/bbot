@@ -30,7 +30,8 @@ class InterplanetaryParser(StatsParser):
     def on_match(self, app, line, which):
 
         if which == 26184:
-            planet_name = self.get_str(0)
+            planet_name = self.get_str(0).strip()
+            # sbotlog.debug("Planet name parsed as: " + str(planet_name))
 
             planet = None
             for cur_planet in app.data.league.planets:
@@ -40,6 +41,7 @@ class InterplanetaryParser(StatsParser):
             if planet is None:
                 planet = Planet()
                 planet.name = planet_name
+                app.data.league.planets.append(planet)
 
             num = self.get_num(1)
 

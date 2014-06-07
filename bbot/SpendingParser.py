@@ -238,5 +238,6 @@ class SpendingParser(StatsParser):
             advisors.technology.food_decay_tech = self.get_num()
         elif which == 2701:
             app.metadata.max_ammount = self.get_num(1)
+            botlog.debug("Set max ammount to" + str(app.metadata.max_ammount))
         elif which == 2702:
             app.metadata.regions_left = self.get_num()

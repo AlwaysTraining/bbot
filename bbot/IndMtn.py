@@ -183,15 +183,15 @@ class IndMtn(Strategy):
                     # read max ammount for sale
                     self.sp.parse(self.app, self.app.read())
 
-                    botlog.info("Max sale amount is " +
-                                str(self.app.metadata.max_ammount) +
-                                " desired sale ammount is " +
-                                str(ammount) + ", t1 is " +
-                                str(type(self.app.metadata.max_ammount)) +
-                                " and t2 is " + str(type(ammount)) +
-                                ", too much? " +
-                                str(self.app.metadata.max_ammount <
-                                    ammount))
+                    # botlog.info("Max sale amount is " +
+                    #             str(self.app.metadata.max_ammount) +
+                    #             " desired sale ammount is " +
+                    #             str(ammount) + ", t1 is " +
+                    #             str(type(self.app.metadata.max_ammount)) +
+                    #             " and t2 is " + str(type(ammount)) +
+                    #             ", too much? " +
+                    #             str(self.app.metadata.max_ammount <
+                    #                 ammount))
 
                     # if max ammoutn for sale is less than what we are selling
                     if self.app.metadata.max_ammount < ammount:

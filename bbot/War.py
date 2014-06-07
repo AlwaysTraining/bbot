@@ -302,6 +302,10 @@ class War(Strategy):
 
     def on_spending_menu(self):
 
+        if self.data.setup.local_game:
+            botlog.warn("War Strategy is not for local games")
+            return Strategy.UNHANDLED
+
         if self.first_turn:
 
             self.first_turn = False
@@ -327,7 +331,7 @@ class War(Strategy):
             self.buy_army_units(
                 "agents",
                 buyratio=None,
-                ammount=1000 - self.army.agents.number)
+                desired_ammount=1000 - self.army.agents.number)
             if self.army.agents.number < 1000:
                 botlog.warn("Could not buy 1k agents")
 
@@ -339,7 +343,7 @@ class War(Strategy):
             self.buy_army_units(
                 "agents",
                 buyratio=None,
-                ammount=10000 - self.army.bombers.number)
+                desired_ammount=10000 - self.army.bombers.number)
             if self.army.agents.number < 10000:
                 botlog.warn("Could not buy 10k bombers")
 
@@ -1212,6 +1216,11 @@ class War(Strategy):
 
 
     def on_interplanetary_menu(self):
+
+        if self.data.setup.local_game:
+            raise Exception("War Strategy is not for local games, how can a "
+                            "local game be in the interplanetary menu?")
+
 
         if self.group_attacks is None:
             self.parse_group_attacks()

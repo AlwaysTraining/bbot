@@ -7,7 +7,6 @@
 import imp
 import os, sys
 import botlog
-import Strategy
 
 bbot_TOOL_VERSION = "0.1"
 ENVIRON_PREFIX = "bbot_"
