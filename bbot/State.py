@@ -445,7 +445,10 @@ class PreTurns(StatsState):
             app.skip_next_read = True
             return Maint()
 
-        # another hanger
+        elif '[Food Unlimited]' in buf:
+            app.skip_next_read = True
+            return Maint()
+
         elif '[Spending Menu]' in buf:
             app.skip_next_read = True
             return Spending()
