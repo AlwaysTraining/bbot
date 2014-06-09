@@ -166,7 +166,10 @@ class War(Strategy):
         self.first_turn = True
         self.group_attacks = None
         self.attacked_targets = None
+        self.at_war = None
 
+    def get_priority(self):
+        return VERYHIGH_PRIORITY
 
     def select_enemy_realms(self, context, select_func):
         league = self.app.data.league
@@ -298,6 +301,11 @@ class War(Strategy):
     #         wishlist.append(wish)
 
 
+    def return_true(self):
+        return True
+    def get_num_enemies(self):
+        realms = self.select_enemy_realms(None,self.return_true)
+        return len(realms)
 
 
     def on_spending_menu(self):
@@ -305,6 +313,19 @@ class War(Strategy):
         if self.data.setup.local_game:
             botlog.warn("War Strategy is not for local games")
             return Strategy.UNHANDLED
+
+        if not self.data.is_oop():
+            return
+
+        if self.at_war is None:
+            self.at_war = self.get_num_enemies() > 0
+            if not self.at_war:
+                botlog.info("No Enemies Found")
+
+        if not self.at_war:
+            return
+
+
 
         if self.first_turn:
 
@@ -341,7 +362,7 @@ class War(Strategy):
         # buy bombers if necessarry
         elif self.army.bombers.number < 1000:
             self.buy_army_units(
-                "agents",
+                "bombers",
                 buyratio=None,
                 desired_ammount=10000 - self.army.bombers.number)
             if self.army.agents.number < 10000:
@@ -359,9 +380,9 @@ class War(Strategy):
             ammount = needed_carriers - self.army.carriers.number
             if ammount > 0:
                 self.buy_army_units(
-                    "bombers",
+                    "carriers",
                     buyratio=None,
-                    ammount=ammount)
+                    desired_ammount=ammount)
 
 
     def get_highest_networth_enemy_realm(self):
@@ -1221,6 +1242,11 @@ class War(Strategy):
             raise Exception("War Strategy is not for local games, how can a "
                             "local game be in the interplanetary menu?")
 
+        if not self.data.is_oop():
+            return
+
+        if not self.at_war:
+            return
 
         if self.group_attacks is None:
             self.parse_group_attacks()

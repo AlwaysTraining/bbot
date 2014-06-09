@@ -53,6 +53,7 @@ class StatsParser(object):
     def parse(self, app, buf):
         lines = buf.splitlines()
         for line in lines:
+            # botlog.debug("Matching -->" + line + "<--")
             which = self.get_match(line)
             self.on_match(app, line, which)
 

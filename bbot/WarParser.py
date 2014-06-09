@@ -46,8 +46,11 @@ class WarParser(StatsParser):
             if planet is None:
                 planet = Planet()
                 planet.name = planet_name
+                league.planets.append(planet)
 
             planet.relation = relation
+            botlog.debug("Diplomacy parser setting " + planet_name + " to " +
+                str(relation))
 
 
 

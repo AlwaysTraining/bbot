@@ -181,17 +181,20 @@ class IndMtn(Strategy):
                                   comment="selling item " + str(saleItem))
 
                     # read max ammount for sale
+                    self.app.metadata.max_ammount = -1
                     self.sp.parse(self.app, self.app.read())
+                    if self.app.metadata.max_ammount == -1:
+                        raise Exception("Unable to read max sale amount")
 
-                    # botlog.info("Max sale amount is " +
-                    #             str(self.app.metadata.max_ammount) +
-                    #             " desired sale ammount is " +
-                    #             str(ammount) + ", t1 is " +
-                    #             str(type(self.app.metadata.max_ammount)) +
-                    #             " and t2 is " + str(type(ammount)) +
-                    #             ", too much? " +
-                    #             str(self.app.metadata.max_ammount <
-                    #                 ammount))
+                    botlog.info("Max sale amount is " +
+                                str(self.app.metadata.max_ammount) +
+                                " desired sale ammount is " +
+                                str(ammount) + ", t1 is " +
+                                str(type(self.app.metadata.max_ammount)) +
+                                " and t2 is " + str(type(ammount)) +
+                                ", too much? " +
+                                str(self.app.metadata.max_ammount <
+                                    ammount))
 
                     # if max ammoutn for sale is less than what we are selling
                     if self.app.metadata.max_ammount < ammount:
@@ -223,19 +226,18 @@ class IndMtn(Strategy):
 
         sell_ratio = self.get_army_sell_ratio()
 
-        sellItems = [
-            Troopers.menu_option,
-            Turrets.menu_option,
-            Jets.menu_option,
-            Tanks.menu_option,
-            Bombers.menu_option,
-            Carriers.menu_option
-        ]
-
-        # don't bother selling rinky dink pirate winnings if we arn't going
-        # whole hog liquidate
-        if sell_ratio < 0.5:
+        # in protection sell everything, otherwise just tanks
+        if self.data.is_oop():
             sellItems = [Tanks.menu_option]
+        else:
+            sellItems = [
+                Troopers.menu_option,
+                Turrets.menu_option,
+                Jets.menu_option,
+                Tanks.menu_option,
+                Bombers.menu_option,
+                Carriers.menu_option
+            ]
 
         botlog.info("Selling " + str(round(sell_ratio * 100, 1)) +
                     "% of " + str(sellItems))

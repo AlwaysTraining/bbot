@@ -156,6 +156,7 @@ class Spending(StatsState):
 
         # if game setup has not been read, # parse it
         if app.data.setup is None:
+
             app.data.setup = Setup()
             app.send_seq(['*', 'g'])
             buf = app.read()
@@ -163,14 +164,124 @@ class Spending(StatsState):
             if '-=<Paused>=-' in buf:
                 app.sendl()
                 buf = app.read()
-            app.send('0')
-            buf = app.read()
-            self.parse(app, buf)
+
+            if ('Coordinator Vote' in buf and
+                    app.has_app_value('coordinator_vote')):
+                app.send(5,comment='Voting for coordinator')
+                buf = app.read()
+                coord_name = app.get_app_value('coordinator_vote')
+                coord_realm = app.data.get_realm_by_name(
+                    coord_name)
+                coord_menu_option = coord_realm.menu_option
+                app.send(coord_menu_option,
+                         comment='Placing vote for ' + coord_name)
+                buf = app.read()
+
+            if ('Coordinator Menu' in buf and
+                    (   app.has_app_value('enemy_planets') or
+                        app.has_app_value('peace_planets') or
+                        app.has_app_value('allied_planets') or
+                        app.has_app_value('no_relation_planets')
+                    )
+                ):
+
+                relation_dict = {
+                    'enemy_planets': 'e',
+                    'peace_planets': 'p',
+                    'allied_planets': 'a',
+                    'no_relation_planets': 'n'}
+                relations = {}
+
+                relation_name_option_dict = {
+                    'Enemy': 'e',
+                    'Peace': 'p',
+                    'Allied': 'a',
+                    'None': 'n'
+                }
+
+                botlog.debug("iterating relation types")
+
+                for relation in relation_dict.keys():
+                    if not app.has_app_value(relation):
+                        botlog.debug('No ' + str(relation) +
+                                     " planets set in options")
+                        continue
+                    botlog.debug('processing ' + relation + ' relations')
+                    planets = make_string_list(app.get_app_value(relation))
+                    botlog.debug(str(planets) + 'being set as ' + relation)
+                    for planet_name in planets:
+                        relations[planet_name] = relation_dict[relation]
+
+                botlog.debug('Intermediate relation dict is:\n' +
+                             str(relations))
+
+                changed_relations = {}
+                botlog.debug('Iterating all planets to compare old and new '
+                             'relations')
+                for planet in app.data.league.planets:
+                    planet_name = planet.name
+                    botlog.debug('Processing planet ' +
+                                 str(planet_name) +
+                                 ', looking for a similar name')
+
+                    matched_name = None
+                    for new_planet_name in relations.keys():
+                        if new_planet_name.lower() in planet_name.lower():
+                            matched_name = new_planet_name
+                            break
+
+                    if matched_name is None:
+                        botlog.debug('Could not match planet ' +
+                                     str(planet_name))
+                        continue
+
+                    relation_changed = (
+                        relation_name_option_dict[planet.relation] !=
+                        relations[matched_name])
+                    botlog.debug('planet ' + str(planet_name) + ', matches ' +
+                                 str(matched_name) + ', did relation change?' +
+                                 str(relation_changed))
+
+                    if not relation_changed:
+                        continue
+
+                    changed_relations[planet_name] = relations[matched_name]
+
+                botlog.debug("The following relations have changed:\n" +
+                             str(changed_relations))
+
+                if len(changed_relations) > 0:
+                    app.send('*', comment="Entering coordinator menu")
+                    app.read()
+                    app.send(2, comment='Modifying diplomacy')
+                    app.read()
+
+                    for planet_name in changed_relations.keys():
+
+                        app.sendl(planet_name, comment="Entering planet name")
+                        app.read()
+
+                        app.send(changed_relations[planet_name],
+                                 'Changing disposition to ' + planet_name)
+                        app.read()
+
+
+                    app.sendl(comment="Leaving modify diplomacy menu")
+                    app.read()
+
+                    _parse_diplomacy_list('4', '[Coordinator Ops]')
+
+                    app.sendl(comment="exiting coordinator menu")
+                    app.read()
+
+
+
+
 
             # parse the information from the advisors, we are only doing this
             # on the first turn, even though this could change every turn, that
             # would be TMI
-            app.send_seq(['*', 'a'])
+            app.send('a')
             for advisor in range(1, 5):
                 app.data.realm.advisors.reset_advisor(advisor)
                 app.send(advisor)
@@ -475,6 +586,30 @@ from bbot.InterplanetaryParser import InterplanetaryParser
 from bbot.OtherPlanetParser import OtherPlanetParser
 
 
+def _parse_diplomacy_list(app, menu_option, calling_menu):
+    wp = WarParser()
+    app.send(menu_option, comment="Listing diplomacy")
+
+    max_iterations = 10
+    while max_iterations > 0:
+        buf = app.read()
+        wp.parse(app, buf)
+
+        if '-=<Paused>=-' in buf:
+            app.sendl(comment="Continuing to list diplomacy")
+        elif calling_menu in buf:
+            botlog.info("returned to interplanetary menu")
+            break
+
+        max_iterations -= 1
+
+    botlog.debug("After parsing diplomacy, league is:\n" +
+        str(app.data.league))
+
+    if max_iterations <= 0:
+        raise Exception("Too many iterations when listing diplomacy")
+
+
 class MainMenu(StatsState):
     def __init__(self, should_exit=False):
         StatsState.__init__(self, statsParser=PlanetParser())
@@ -497,27 +632,6 @@ class MainMenu(StatsState):
             raise Exception("Unexpected score list: " +
                             str(self.cur_score_list))
 
-
-    def parse_diplomacy_list(self):
-
-        wp = WarParser()
-        self.app.send('d', comment="Listing diplomacy")
-
-        max_iterations = 10
-        while max_iterations > 0:
-            buf = self.app.read()
-            wp.parse(self.app, buf)
-
-            if '-=<Paused>=-' in buf:
-                self.app.sendl(comment="Continuing to list diplomacy")
-            elif '[InterPlanetary Operations]' in buf:
-                botlog.info("returned to interplanetary menu")
-                break
-
-            max_iterations -= 1
-
-        if max_iterations <= 0:
-            raise Exception("Too many iterations when listing diplomacy")
 
 
     def parse_other_realms(self):
@@ -587,9 +701,10 @@ class MainMenu(StatsState):
                     "Too many iterations when displaying scores")
 
         app.send(0, comment='Leaving scores menu')
+        app.read()
         self.cur_score_list = None
 
-        self.parse_diplomacy_list()
+        _parse_diplomacy_list(app, 'd', '[InterPlanetary Operations]')
 
         self.parse_other_realms()
 

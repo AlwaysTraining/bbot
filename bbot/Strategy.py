@@ -101,13 +101,10 @@ class Strategy:
                 self.app.send(item, comment="buying " + unit_type)
 
                 self.app.metadata.max_ammount = -1
-                max_iteration = 10
-                while max_iteration >= 0:
-                    sp.parse(self.app, self.app.read())
-                    botlog.debug("Just tried to parse:\n" + self.app.buf)
-                    if self.app.metadata.max_ammount != -1:
-                        break
+                sp.parse(self.app, self.app.read())
 
+                if self.app.metadata.max_ammount == -1:
+                    raise Exception("Unable to read max buy amount")
 
                 # if amount for buy is more than possible
                 if self.app.metadata.max_ammount < ammount:
