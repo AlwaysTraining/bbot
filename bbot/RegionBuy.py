@@ -30,6 +30,9 @@ class RegionBuy(Strategy):
             self.sp.parse(self.app, buf)
             if '-=<Paused>=-' in buf:
                 self.app.sendl(comment="continue from region menu")
+            elif 'No land is available at this time.' in buf:
+                botlog.warn("No more land available to buy")
+                return
 
 
         # we should be at the region menu here loaded into the current buffer
