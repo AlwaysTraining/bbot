@@ -82,10 +82,10 @@ class SpendingParser(StatsParser):
             "Our maintenance costs have been reduced to " + N + "\% of standard costs.": 2600,
             "Our SDI yearly funding needs have been lowered to " + N + "\% normal expenses.": 2610,
             "Food decay is at " + N + "\% of standard levels.": 2620,
-            "Sell how many " + STR + "\? \(0\; " + N + "\)[ ]*": 2701,
-            "Buy how many " + STR + "\? \(0\; " + N + "\)[ ]*": 2701,
+            "Sell how many " + STR + "\? \(0\; " + N + "\)": 2701,
+            "Buy how many " + STR + "\? \(0\; " + N + "\)": 2702,
 
-            '\[' + N + ' Regions left\] Your choice\?': 2702,
+            '\[' + N + ' Regions left\] Your choice\?': 2703,
 
         }
 
@@ -236,8 +236,8 @@ class SpendingParser(StatsParser):
             advisors.technology.sdi_tech = self.get_num()
         elif which == 2620:
             advisors.technology.food_decay_tech = self.get_num()
-        elif which == 2701:
+        elif which == 2701 or which == 2702:
             app.metadata.max_ammount = self.get_num(1)
             botlog.debug("Set max ammount to " + str(app.metadata.max_ammount))
-        elif which == 2702:
+        elif which == 2703:
             app.metadata.regions_left = self.get_num()

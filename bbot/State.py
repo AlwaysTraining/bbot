@@ -649,7 +649,8 @@ class MainMenu(StatsState):
             buf = app.read()
             app.send('?',comment="List enemy planet realms")
             buf = app.read()
-            opp = OtherPlanetParser(cur_planet.realms, planet=cur_planet)
+            opp = OtherPlanetParser(
+                cur_planet.realms, planet_name=cur_planet.name)
             opp.parse(app, buf)
 
 

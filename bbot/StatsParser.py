@@ -13,6 +13,7 @@ class StatsParser(object):
         self.regexs = None
         self.match = None
         self.get_patterns_method = get_patterns_method
+        self.debug = False
 
     def get_patterns(self):
         return {}
@@ -35,6 +36,9 @@ class StatsParser(object):
 
         regexs = self.get_regexs()
         for rid, regex in regexs.items():
+            if self.debug:
+                botlog.debug("Matching pattern '" + str(regex.pattern) +
+                        "' on line: '" + line + "'")
             m = regex.match(line)
             if m is not None:
                 self.match = m
@@ -50,12 +54,18 @@ class StatsParser(object):
         """
         return self.match.groups()[matchIndex]
 
-    def parse(self, app, buf):
+    def parse(self, app, buf, debug=False):
+        olddbg = self.debug
+        self.debug = debug
         lines = buf.splitlines()
         for line in lines:
-            # botlog.debug("Matching -->" + line + "<--")
+
             which = self.get_match(line)
+            if debug and which is not None:
+                botlog.debug(str(which) + " matches: '" + line + "'")
+
             self.on_match(app, line, which)
+        self.debug = olddbg
 
     def on_match(self, app, line, which):
         pass

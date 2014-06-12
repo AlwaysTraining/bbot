@@ -21,8 +21,7 @@ class WarParser(StatsParser):
 
     def get_patterns(self):
         return {
-            # note if someone puts spaces in thier bbs name, it will break this
-            '\( 0-9]+\) ' + S + '   ' + W + S : 5532
+            '\([ 0-9]+\) ' + S + " (Enemy|None|Peace|Allied)" : 5532
         }
 
 
@@ -35,8 +34,8 @@ class WarParser(StatsParser):
                 app.data.league = League()
                 league = app.data.league
 
-            planet_name = self.get_str(0)
-            relation = self.get_str(1)
+            planet_name = self.get_str(0).strip()
+            relation = self.get_str(1).strip()
 
             planet = None
             for cur_planet in league.planets:
