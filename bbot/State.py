@@ -562,7 +562,10 @@ class PreTurns(StatsState):
             app.skip_next_read = True
             return Maint()
 
-        # another hanger
+        elif '[Food Unlimited]' in buf:
+            app.skip_next_read = True
+            return Maint()
+
         elif '[Spending Menu]' in buf:
             app.skip_next_read = True
             return Spending()
@@ -580,6 +583,11 @@ class PreTurns(StatsState):
             botlog.info("Restarted turn on region allocate with " +
                         str(app.metadata.regions_left) + " regions")
             RegionBuy(app,num_regions=app.metadata.regions_left)
+        
+        elif '[InterPlanetary Operations]' in buf:
+            app.skip_next_read = True
+            return EndTurn()
+
 
 
 from bbot.PlanetParser import PlanetParser
