@@ -53,6 +53,9 @@ class Strategy:
     def on_interplanetary_menu(self):
         return UNHANDLED
 
+    def has_strategy_option(self, name):
+        option = self.get_name() + "_" + name
+        return self.app.has_app_value(option)
 
     def get_strategy_option(self, name):
         option = self.get_name() + "_" + name

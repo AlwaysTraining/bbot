@@ -366,9 +366,6 @@ class War(Strategy):
 
             self.first_turn = False
 
-            # record the ammount of money we might need to spend in wishlist
-            # self.make_initial_wishes()
-
             # setup the tops we plan on sending, game setup is read by now
             for i in range(self.data.setup.num_tops):
                 self.tops = random.choice(self.possible_tops)
@@ -559,11 +556,12 @@ class War(Strategy):
                 botlog.debug("Just sent the last bomb for today")
                 break
 
-# STOPPED DOCULOGGING HERE
 
 
         # send s-op undermines
         if not self.all_undermines_sent:
+            botlog.debug("I don't think I have sent all undermines yet")
+
             max_iterations = 20
             while max_iterations > 0:
                 self.app.send("4", comment="Undermining Investments")
@@ -585,6 +583,9 @@ class War(Strategy):
                                 "menu")
                     buf = self.app.read()
                     return
+
+                # TODO, check this logic against game text, in the case where
+                # we are turn splitting and already sent all agents
 
                 if "Enter Planet Name or Number" not in buf:
                     raise Exception("Not able to send undermine s-op: \n" + buf)
@@ -756,13 +757,16 @@ class War(Strategy):
         ga.bombers = ToNum(t[i])
         i += 1
         ga.leave = ToNum(t[i][0:-1])
+
+        botlog.debug("GA token string: " + ', '.join(tokens) +
+                     ": yeilds attack:\n" + str(ga))
         return ga
 
     def parse_group_attacks(self):
         self.group_attacks = []
         gas = self.group_attacks
 
-        self.app.send('5')
+        self.app.send('5',comment="selected join attacks, just to list them")
 
         max_iterations = 50
 
@@ -776,6 +780,7 @@ class War(Strategy):
 
             # check if there are no GA's
             if 'There are not any attack parties at this time.' in buf:
+                botlog.debug("Not parsing any ga's because there arn't any")
                 return
 
             lines = buf.split(os.linesep)
@@ -787,15 +792,19 @@ class War(Strategy):
             #TODO get training text for multipage list
             for line in lines:
                 if 'Individual Target' in line:
+                    botlog.debug("next line is header: " + line)
                     next_line_header = True
                 elif next_line_header:
                     sepchar = line[0]
+                    botlog.debug("reading body, sep char is: " + sepchar)
                     next_line_header = False
                     reading_body = True
                 elif reading_body and 'Join which group?' in line:
+                    botlog.debug("Done reading body on line: " + line)
                     reading_body = False
                     break
                 elif reading_body:
+                    botlog.debug("Reading body line: " + line)
                     tokens = [x.strip() for x in line.split(sepchar)]
                     ga = self.create_ga_from_tokens(tokens)
                     gas.append(ga)
@@ -832,6 +841,8 @@ class War(Strategy):
         numjets = 0
         power = 2
         sent_strength = 0
+        botlog.debug("Army before sending attack:\n" +
+                     str(self.data.realm.army))
         if army.jets.number > 0:
             jetsstrength = army.jets.number * power
             if jetsstrength > needed_strength:
@@ -918,6 +929,9 @@ class War(Strategy):
                 attack.bombers += numbombers
 
             ret_val = sent_strength
+
+            botlog.debug("Army AFTER sending attack:\n" +
+                         str(self.data.realm.army))
 
         # double check we are back at the interplanetary menu
         if '[InterPlanetary Operations]' not in buf:
@@ -1077,15 +1091,20 @@ class War(Strategy):
         # already filled any ga's that will win as first priority, and
         # we have also sent any winnable indies
         if self.data.realm.turns.remaining > 3:
+            botlog.debug("Not filling GA, more than 3 turns remain")
             return 0
 
         # if we have no army, don't join
         if self.data.get_attack_strength() < 1000:
+            botlog.debug("Not filling GA, we have very low strength")
             return 0
 
         # itterate ga's in 24 hour windows
         for t1, t2 in zip(range(0, 24 * 5, 24), range(24, 24 * 6, 24)):
+            botlog.debug("Filling GA's that leave in window: " + str((t1,t2)))
             cur_gas = self.get_group_attacks_in_window(t1, t2)
+
+            botlog.debug(str(len(cur_gas)) + "ga's leave in current window")
 
             global_gas = []
             indie_gas = []
@@ -1101,29 +1120,41 @@ class War(Strategy):
             global_gas.sort(key=lambda x: x.planet.regions, reverse=True)
             indie_gas.sort(key=lambda x: x.realm.regions, reverse=True)
 
+            botlog.debug(str(len(global_gas)) +
+                         "global ga's leave in current window")
+            botlog.debug(str(len(indie_gas)) +
+                         "indie ga's leave in current window")
+
             # recombine ga's to new prefered fill order
             # NOTE it could be posisble that an indie GA would yield more
-            # regions then a global, but in generall I would rather fill
+            # regions then a global, (in multi planet war)
+            # but in generall I would rather fill
             # globals
             cur_gas = global_gas + indie_gas
 
             ret_val = 0
 
             for ga in cur_gas:
+                botlog.debug("Considering GA: " + str(ga.id))
 
                 val = self.join_group_attack(ga)
                 if val > 0:
+                    botlog.debug("Joined GA: " + str(ga.id) + ", " +
+                                 "with strength: " + str(val))
                     ret_val += val
                     self.attacked_targets.append(ga.realm)
 
                 # if we don't have much more army, stop joining
                 if self.data.get_attack_strength() < 1000:
+                    botlog.debug("Army is too low, not filling any more GA's")
                     break
 
                     # if we don't have much more army, stop joining
             if self.data.get_attack_strength() < 1000:
+                botlog.debug("Army is too low, stop joining all GA's")
                 break
 
+        botlog.debug("Filled " + str(ret_val) + " strength worth of GA's")
         return ret_val
 
     def send_indie_attack(self, target):

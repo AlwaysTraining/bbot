@@ -100,6 +100,10 @@ class EndTurn(StatsState):
             app.send('n', comment='Not attacking gooie')
         elif '[InterPlanetary Operations]' in buf:
 
+            # in case diplomacy changed we will parse any planet realms that
+            # we now have a new relationship with that we previously didn't
+            _parse_other_realms(app)
+
             app.on_interplanetary_menu()
 
             app.send('0', comment='Exiting Inter Planetary menu')
@@ -253,29 +257,27 @@ class Spending(StatsState):
                 if len(changed_relations) > 0:
                     app.send('*', comment="Entering coordinator menu")
                     app.read()
-                    app.send(2, comment='Modifying diplomacy')
-                    app.read()
 
                     for planet_name in changed_relations.keys():
+
+                        app.send(2, comment='Modifying diplomacy')
+                        app.read()
 
                         app.sendl(planet_name, comment="Entering planet name")
                         app.read()
 
                         app.send(changed_relations[planet_name],
-                                 'Changing disposition to ' + planet_name)
+                                 comment='Changing disposition to ' +
+                                 planet_name)
                         app.read()
-
 
                     app.sendl(comment="Leaving modify diplomacy menu")
                     app.read()
 
-                    _parse_diplomacy_list('4', '[Coordinator Ops]')
+                    _parse_diplomacy_list(app, '4', '[Coordinator Ops]')
 
                     app.sendl(comment="exiting coordinator menu")
                     app.read()
-
-
-
 
 
             # parse the information from the advisors, we are only doing this
@@ -586,6 +588,47 @@ from bbot.InterplanetaryParser import InterplanetaryParser
 from bbot.OtherPlanetParser import OtherPlanetParser
 
 
+def _parse_other_realm(app, cur_planet):
+    app.send_seq([7, 1, '?'], comment="Fake sending a message to read "
+                                      "realm stats")
+    buf = app.read()
+    app.sendl(cur_planet.name, comment="Fake send message to this "
+                                       "enemy planet")
+    buf = app.read()
+    app.send('?', comment="List enemy planet realms")
+    buf = app.read()
+    opp = OtherPlanetParser(
+        cur_planet.realms, planet_name=cur_planet.name)
+    opp.parse(app, buf, debug=True)
+    return buf
+
+
+def _parse_other_realms(app):
+    league = app.data.league
+    planets = league.planets
+    for cur_planet in planets:
+        # our own relation to our own planet is None
+        # our relation ship to another planet will be 'None'
+        # sorry it is confusing, but thats how it works out
+        if cur_planet.relation is None or cur_planet.relation == "None":
+            continue
+
+        if len(cur_planet.realms) > 0:
+            botlog.debug("Not sending fake message to " +
+                         cur_planet.name + ", because there are already" +
+                         " realms loaded")
+        buf = _parse_other_realm(app, cur_planet)
+
+        if '-=<Paused>=-' in buf:
+            app.sendl(comment="Continuing after displaying other "
+                              "realms")
+            app.read()
+
+        app.sendl(comment="Returning to interplanetary menu from send "
+                          "message menu")
+    return app.read()
+
+
 def _parse_diplomacy_list(app, menu_option, calling_menu):
     wp = WarParser()
     app.send(menu_option, comment="Listing diplomacy")
@@ -634,33 +677,6 @@ class MainMenu(StatsState):
 
 
 
-    def parse_other_realms(self):
-        app = self.app
-        league = app.data.league
-        planets = league.planets
-        for cur_planet in planets:
-            if cur_planet.relation is None:
-                continue
-            app.send_seq([7, 1, '?'], comment="Fake sending a message to read "
-                                              "realm stats")
-            buf = app.read()
-            app.sendl(cur_planet.name,comment="Fake send message to this "
-                                              "enemy planet")
-            buf = app.read()
-            app.send('?',comment="List enemy planet realms")
-            buf = app.read()
-            opp = OtherPlanetParser(
-                cur_planet.realms, planet_name=cur_planet.name)
-            opp.parse(app, buf)
-
-
-            if '-=<Paused>=-' in buf:
-                app.sendl(comment="Continuing after displaying other "
-                                       "realms")
-
-            app.sendl(comment="Returning to interplanetary menu from send "
-                              "message menu")
-
 
     def parse_interplanetary_data(self, app):
         app.data.league = League()
@@ -707,9 +723,10 @@ class MainMenu(StatsState):
 
         _parse_diplomacy_list(app, 'd', '[InterPlanetary Operations]')
 
-        self.parse_other_realms()
+        _parse_other_realms(app)
 
         app.send(0, comment="going back to main game menu")
+        app.read()
 
     def parse_info(self, app):
         self.app = app
