@@ -190,14 +190,14 @@ class Spending(StatsState):
                 ):
 
                 relation_dict = {
-                    'enemy_planets': 'e',
+                    'enemy_planets': 'w',
                     'peace_planets': 'p',
                     'allied_planets': 'a',
                     'no_relation_planets': 'n'}
                 relations = {}
 
                 relation_name_option_dict = {
-                    'Enemy': 'e',
+                    'Enemy': 'w',
                     'Peace': 'p',
                     'Allied': 'a',
                     'None': 'n'
@@ -258,10 +258,10 @@ class Spending(StatsState):
                     app.send('*', comment="Entering coordinator menu")
                     app.read()
 
-                    for planet_name in changed_relations.keys():
+                    app.send(2, comment='Modifying diplomacy')
+                    app.read()
 
-                        app.send(2, comment='Modifying diplomacy')
-                        app.read()
+                    for planet_name in changed_relations.keys():
 
                         app.sendl(planet_name, comment="Entering planet name")
                         app.read()
@@ -597,7 +597,7 @@ from bbot.OtherPlanetParser import OtherPlanetParser
 
 
 def _parse_other_realm(app, cur_planet):
-    app.send_seq([7, 1, '?'], comment="Fake sending a message to read "
+    app.send_seq([7, 1], comment="Fake sending a message to read "
                                       "realm stats")
     buf = app.read()
     app.sendl(cur_planet.name, comment="Fake send message to this "
@@ -607,13 +607,24 @@ def _parse_other_realm(app, cur_planet):
     buf = app.read()
     opp = OtherPlanetParser(
         cur_planet.realms, planet_name=cur_planet.name)
-    opp.parse(app, buf, debug=True)
+    opp.parse(app, buf)
+
+    if '-=<Paused>=-' in buf:
+        app.sendl(comment="Continuing after displaying other "
+                          "realms")
+        buf = app.read()
+
+    app.sendl(comment="Not sending message, returning to ip menu ")
+    buf = app.read()
+
     return buf
 
 
 def _parse_other_realms(app):
     league = app.data.league
     planets = league.planets
+    buf = app.buf
+
     for cur_planet in planets:
         # our own relation to our own planet is None
         # our relation ship to another planet will be 'None'
@@ -625,16 +636,11 @@ def _parse_other_realms(app):
             botlog.debug("Not sending fake message to " +
                          cur_planet.name + ", because there are already" +
                          " realms loaded")
+            continue
+
         buf = _parse_other_realm(app, cur_planet)
 
-        if '-=<Paused>=-' in buf:
-            app.sendl(comment="Continuing after displaying other "
-                              "realms")
-            app.read()
-
-        app.sendl(comment="Returning to interplanetary menu from send "
-                          "message menu")
-    return app.read()
+    return buf
 
 
 def _parse_diplomacy_list(app, menu_option, calling_menu):

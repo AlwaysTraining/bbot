@@ -52,4 +52,4 @@ class OtherPlanetParser(StatsParser):
             r.regions = self.get_num(2)
             r.score = self.get_num(3)
             r.networth = self.get_num(4)
-            r.planet = self.planet_name
+            r.planet_name = self.planet_name

@@ -40,7 +40,8 @@ class Attack(object):
 
         msg = ""
         msg += "Target: "
-        msg += self.planet.name
+        if self.planet is not None:
+            msg += str(self.planet.name)
         if self.realm is not None:
             msg += " (" + self.realm.name + ")"
 
@@ -337,7 +338,11 @@ class War(Strategy):
     #         wishlist.append(wish)
 
 
-    def return_true(self):
+    def return_true(self,
+                    context,
+                    selectedrealms,
+                    planet,
+                    realm):
         return True
 
     def get_num_enemies(self):
@@ -352,6 +357,7 @@ class War(Strategy):
             return Strategy.UNHANDLED
 
         if not self.data.is_oop():
+            botlog.debug("We are in protection, not taking any war actions")
             return
 
         if self.at_war is None:
@@ -360,6 +366,7 @@ class War(Strategy):
                 botlog.info("No Enemies Found")
 
         if not self.at_war:
+            botlog.debug("We are not at war, not taking any war actions")
             return
 
         if self.first_turn:
@@ -489,10 +496,10 @@ class War(Strategy):
                                 "target realm to s-op")
 
             botlog.debug("Target realm for s op's is: " +
-                         target_realm.planet_name)
+                         str(target_realm.planet_name))
 
             # check if we have already sent this type of bomb
-            menu_string = '(' + self.sop_bombs[0] + ')'
+            menu_string = '(' + str(self.sop_bombs[0]) + ')'
             if menu_string not in buf:
                 botlog.debug("Already sent bomb: " + menu_string)
                 # this bomb is not available, try next one
@@ -551,7 +558,7 @@ class War(Strategy):
 
             self.sop_bombs.pop(0)
             # TODO verify it is always 500 bombers per sop
-            self.data.realm.army.bombers -= 500
+            self.data.realm.army.bombers.num_per_carrier -= 500
             if len(self.sop_bombs) <= 0:
                 botlog.debug("Just sent the last bomb for today")
                 break
@@ -609,7 +616,7 @@ class War(Strategy):
                 if "Mission Specialists sent out." not in buf:
                     raise Exception("Could not send undermine to enemy planet")
 
-                self.data.realm.army.bombers -= 500
+                self.data.realm.army.bombers.number -= 500
 
                 if 'You have 0 bombing ops left today' in buf:
                     self.all_undermines_sent = True
@@ -688,7 +695,7 @@ class War(Strategy):
 
         self.app.send(
             target.menu_option,
-            comment="Sending t-ops to " + target.name)
+            comment="Sending t-ops to " + str(target.name))
         buf = self.app.read()
 
         if "[Terrorist Ops]" not in buf:
@@ -1041,7 +1048,7 @@ class War(Strategy):
                          " group attacks")
         else:
             botlog.debug("For some reason or another we were unable to send "
-                         "an attack with strength + " + str(needed_strength))
+                         "an attack with strength " + str(needed_strength))
 
         return sent_strength
 
@@ -1467,14 +1474,21 @@ class War(Strategy):
 
     def on_interplanetary_menu(self):
 
+        if self.data.setup is None:
+            botlog.warn("Game may have restarted mid turn, "
+                        "not doing any war activities")
+            return
+
         if self.data.setup.local_game:
             raise Exception("War Strategy is not for local games, how can a "
                             "local game be in the interplanetary menu?")
 
         if not self.data.is_oop():
+            botlog.debug("We are in protection, not taking any war actions")
             return
 
         if not self.at_war:
+            botlog.debug("We are not at war, not taking any war actions")
             return
 
         if self.group_attacks is None:
