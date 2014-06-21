@@ -274,6 +274,7 @@ def date_to_string(d):
 def is_date(s):
     if s is None:
         return False
+
     try:
         string_to_date(s)
         return True

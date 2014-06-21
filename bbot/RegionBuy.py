@@ -72,9 +72,16 @@ class RegionBuy(Strategy):
 
                 return
 
+
+        # in a nuke or victory region allocation, we must allocate
+
         # during wartime we do not but regions unless in danger of bank
         # overflow, and then we will only buy 1/8th of what we can afford
-        if self.app.has_strategy("War") and self.app.data.has_enemy():
+        must_allocate = num_regions is not None
+
+        if (not must_allocate and 
+                self.app.has_strategy("War") and 
+                self.app.data.has_enemy()):
             if self.data.realm.gold > 0.75 * TWOBIL:
                 botlog.info("buying some regions in wartime so we don't "
                             "overflow our cash")
@@ -85,7 +92,9 @@ class RegionBuy(Strategy):
             enter_to_exit = True
 
         # We want some money for investments, but only out of protection
-        if (self.app.has_strategy("Investor") and self.data.is_oop() and
+        if (not must_allocate and
+                self.app.has_strategy("Investor") and 
+                self.data.is_oop() and
                 not self.data.has_full_investments()):
             self.a = int(math.ceil(self.a * 0.125))
             enter_to_exit = True

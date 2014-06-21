@@ -13,14 +13,25 @@ import getpass
 import pprint
 
 import signal
+import json
 
 app = None
+
+ctrl_c_cnt=0
 
 
 def signal_handler(signal, frame):
     code = 1
+    global ctrl_c_cnt
+
+    ctrl_c_cnt += 1
+
     try:
         if app is not None:
+
+            if ctrl_c_cnt < 10 and app.debug:
+                app.interact()
+
             if 'smtp_password' in app.options or 'bbot_smtp_password' in os.environ:
                 app.send_notification(
                     KeyboardInterrupt('ctrl-c triggered an interrupt'))
@@ -51,6 +62,7 @@ defaults = {
         'debug': False,
         'strategies': ['IndMtn', ],
         'data_dir': '.',
+        'arg_file': None,
     },
 
     'tnsoa3': {
@@ -66,6 +78,7 @@ defaults = {
         'debug': False,
         'strategies': ['IndMtn', ],
         'data_dir': '.',
+        'arg_file': None,
     },
 
     'tnsoa4': {
@@ -81,6 +94,7 @@ defaults = {
         'debug': False,
         'strategies': ['IndMtn', ],
         'data_dir': '.',
+        'arg_file': None,
     },
 
     'tnsoa5': {
@@ -107,6 +121,7 @@ defaults = {
                                     'Tanks', 'Bombers', 'Agents',
                                     'Gold'],
         'Lackey_tribute_ratio': 0.25,
+        'arg_file': None,
     },
 }
 
@@ -208,6 +223,11 @@ parser.add_argument("--data-dir",
                     help="Set the directory used to store log files",
                     default=get_default('data_dir'))
 
+parser.add_argument("--arg-file",
+                    action="store",
+                    help="Set the argument file to read options from",
+                    default=get_default('arg_file'))
+
 parser.add_argument("strategies", nargs='*',
                     help="a list of strategies to govern gameplay",
                     default=get_default('strategies')
@@ -233,6 +253,12 @@ def query(prompt):
 def query_secret(prompt):
     return getpass.getpass(prompt + ': ')
 
+if ('arg_file' in options and
+        options['arg_file'] is not None and
+        options['arg_file'] is not ''):
+
+    with open(options['arg_file']) as arg_file:
+        options = json.load(arg_file)
 
 pprint.pprint(options)
 

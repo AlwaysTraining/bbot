@@ -19,6 +19,8 @@ import botlog
 import string
 import State
 import re
+import json
+from datetime import datetime
 
 MAXWAIT = 60
 
@@ -68,9 +70,30 @@ class App:
 
         return logfile
 
+    class ArgsEncoder(json.JSONEncoder):
+
+        def default(self, obj):
+            if isinstance(obj, datetime):
+                return str(obj)
+
+            return json.JSONEncoder.default(self, obj)
+
+    def write_options_dict(self):
+
+        argfile = self.file_roll("arg")
+        with open(argfile, 'w') as outfile:
+            json.dump(self.options, outfile, cls=App.ArgsEncoder, indent=3,
+                      sort_keys=True)
+
     def __init__(self, options, query_func, secret_query_func):
-        self.debug = True
+        self.debug = False
         self.options = options
+
+        # if reading options from file, dates will still be strings
+        for key, value in options.items():
+            if Utils.is_date(value):
+                options[key] = Utils.string_to_date(value)
+
         self.query_func = query_func
         self.secret_query_func = secret_query_func
         self.data = Data.Data()
@@ -110,6 +133,8 @@ class App:
             logpath=self.logfile,
             tracepath=self.tracefile)
 
+        self.write_options_dict()
+
     def has_app_value(self, key):
         if key in self.options and self.options[key] is not None:
             return True
@@ -138,12 +163,8 @@ class App:
 
         # otherwise call query function, or secretquery Func
         if secret:
-            if not self.debug: raise Exception(
-                "can not use query function in non debug mode, must provide value for: " + key)
             return self.secret_query_func('Please enter ' + key)
 
-        if not self.debug: raise Exception(
-            "can not use query function in non debug mode, must provide value for: " + key)
         return self.query_func(key)
 
     def get_close_float(self, x):
@@ -385,6 +406,44 @@ class App:
         self.strategies = Strategy.Strategies(self, strats)
 
     def run_loop(self):
+        exitState = State.BailOut().get_name()
+
+        while self.state.get_name() != exitState and not self.EOF:
+
+            if self.skip_next_read:
+                self.skip_next_read = False
+            else:
+                self.read()
+
+            if self.wait_time > MAXWAIT:
+                botlog.warn("Last full buffer:\n" + str(self.last_full_buf))
+                raise Exception(
+                    "Waited for about " + str(
+                        MAXWAIT) + " seconds in main loop and nothing happened")
+
+            if not self.debug:
+                if random.random() < self.human_pause_ratio:
+                    rpause = random.random() * 30
+                    botlog.info("Random human pause for " +
+                                str(round(rpause, 0)) + " seconds")
+                    time.sleep(rpause)
+            nextstate = self.state.transition(self, self.buf)
+
+            transitioned = nextstate is not None and nextstate != self.state
+
+            if transitioned:
+                self.state = nextstate
+                botlog.cur_state = self.state.get_name()
+
+        if not self.EOF:
+            botlog.debug("Performing final read")
+            self.read()
+
+        if self.state.get_name() != exitState:
+            raise Exception("Unexpected end of session in state: " +
+                            self.state.get_name())
+
+    def run_init(self):
 
 
         # begin the telnet session
@@ -395,46 +454,14 @@ class App:
 
         self.init_strategies()
 
-        exitState = State.BailOut().get_name()
 
-        state = State.Login()
-        botlog.cur_state = state.get_name()
+        self.state = State.Login()
+        botlog.cur_state = self.state.get_name()
 
         self.skip_next_read = False
+        self.run_loop()
 
-        while state.get_name() != exitState and not self.EOF:
 
-            if self.skip_next_read:
-                self.skip_next_read = False
-            else:
-                self.read()
-
-            if self.wait_time > MAXWAIT:
-                botlog.warn("Last full buffer:\n" + str(self.last_full_buf))
-                raise Exception(
-                    "Waited for about " + str(MAXWAIT) + " seconds in main loop and nothing happened")
-
-            if not self.debug:
-                if random.random() < self.human_pause_ratio:
-                    rpause = random.random() * 30
-                    botlog.info("Random human pause for " +
-                                str(round(rpause, 0)) + " seconds")
-                    time.sleep(rpause)
-            nextstate = state.transition(self, self.buf)
-
-            transitioned = nextstate is not None and nextstate != state
-
-            if transitioned:
-                state = nextstate
-                botlog.cur_state = state.get_name()
-
-        if not self.EOF:
-            botlog.debug("Performing final read")
-            self.read()
-
-        if state.get_name() != exitState:
-            raise Exception("Unexpected end of session in state: " +
-                            state.get_name())
 
     def format_msgmap_text(self, msgmap):
         warntext = ""
@@ -465,7 +492,7 @@ class App:
                 "No notification email sent because: " + self.no_email_reason)
             return
 
-        if (self.get_app_value('debug')):
+        if (self.debug):
             botlog.debug("No notification email is sent in debug mode")
             return
 
@@ -521,18 +548,43 @@ class App:
             server_user_pass=self.get_app_value('smtp_password', secret=True))
 
 
+    def interact(self):
+        try:
+
+            botlog.debug("Exception occured in debug, going to " +
+                         "interactive mode. Use 'ESC' to attempt to " +
+                         "return to bot control, last buffer was:\n" +
+                         self.buf)
+
+            self.telnet.interact(escape_character='\x1b')
+            botlog.debug("Interactive mode has ended, returning to game "
+                         "loop")
+
+            self.state = State.PreTurns()
+            self.skip_next_read = True
+
+            self.run_loop()
+
+        except Exception, e:
+            botlog.exception(e)
+
     def run(self):
 
         game_exception = None
         try:
             botlog.info("bbot has begun")
 
-            self.run_loop()
+            self.run_init()
 
             botlog.info("bbot has completed")
         except Exception, e:
             botlog.exception(e)
             game_exception = e
+
+        if self.debug:
+            self.interact()
+
+
 
         self.send_notification(game_exception)
 

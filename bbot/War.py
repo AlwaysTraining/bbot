@@ -375,7 +375,7 @@ class War(Strategy):
 
             # setup the tops we plan on sending, game setup is read by now
             for i in range(self.data.setup.num_tops):
-                self.tops = random.choice(self.possible_tops)
+                self.tops[i] = random.choice(self.possible_tops)
 
 
         #TODO group agent pool feature
@@ -561,7 +561,7 @@ class War(Strategy):
 
             self.sop_bombs.pop(0)
             # TODO verify it is always 500 bombers per sop
-            self.data.realm.army.bombers.num_per_carrier -= 500
+            self.data.realm.army.bombers.number -= 500
             if len(self.sop_bombs) <= 0:
                 botlog.debug("Just sent the last bomb for today")
                 break
@@ -661,7 +661,7 @@ class War(Strategy):
 
             target = self.get_highest_networth_enemy_realm()
 
-        botlog.debug("Sending out tops to: " + str(top_target.name))
+        botlog.debug("Sending out tops to: " + str(target.name))
 
         self.app.send(2, comment="Entering t-op menu")
         buf = self.app.read()
@@ -737,7 +737,6 @@ class War(Strategy):
                     botlog.warn("Agent not sent out")
                     return
 
-            self.tops.pop(0)
             self.tops.pop(0)
 
             if "[InterPlanetary Operations]" in buf:
