@@ -464,7 +464,7 @@ class War(Strategy):
             return
 
         self.app.send(8, comment="Entering s-op menu")
-        self.app.read()
+        buf = self.app.read()
 
 
         # send s-op missles
@@ -496,10 +496,12 @@ class War(Strategy):
                                 "target realm to s-op")
 
             botlog.debug("Target realm for s op's is: " +
-                         str(target_realm.planet_name))
+                         str(target_realm.name))
 
             # check if we have already sent this type of bomb
             menu_string = '(' + str(self.sop_bombs[0]) + ')'
+            botlog.debug("Checking if '" + menu_string + "' is in buffer:\n" +
+                         buf)
             if menu_string not in buf:
                 botlog.debug("Already sent bomb: " + menu_string)
                 # this bomb is not available, try next one
@@ -508,7 +510,8 @@ class War(Strategy):
 
 
             self.app.send(self.sop_bombs[0], comment="Sending bomb")
-            buf = self.app.read()
+
+            buf = self.app.read_until_full_buffer()
 
             if "All missiles and bombs require 500 Bombers to deliver their " \
                "payloads." in buf:
@@ -531,7 +534,7 @@ class War(Strategy):
             # because this is what a human would do, and we might like to read
             # it in the log
             self.app.send('?', comment="Displaying realms at missle s-op menu")
-            self.app.read()
+            buf = self.app.read()
             self.app.send(target_realm.menu_option)
             buf = self.app.read()
 

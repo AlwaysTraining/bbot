@@ -149,6 +149,15 @@ class App:
     def get_close_float(self, x):
         return random.uniform(x * 0.9, x * 1.1)
 
+    def read_until_full_buffer(self,timeout=-1):
+        buf = ""
+        max_iterations = 10
+        while buf == "" and max_iterations >= 0:
+            buf = self.read(timeout=timeout)
+        if buf == "":
+            raise Exception("Could not read full buffer")
+        return buf
+
     def read_until(self, stop_text, timeout=-1, maxwait=MAXWAIT):
         return self.read_until_any([stop_text], timeout=timeout,
                                    maxwait=maxwait)

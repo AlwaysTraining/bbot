@@ -7,6 +7,7 @@
 import imp
 import os, sys
 import botlog
+from datetime import datetime
 
 bbot_TOOL_VERSION = "0.1"
 ENVIRON_PREFIX = "bbot_"
@@ -255,3 +256,26 @@ def make_string_list(items):
             items = [items]
 
     return items
+
+#coppied and pasted time functionality to bbot s WebData, maintain in both
+# places
+
+TIME_FORMAT_STR = "%a %b %d %H:%M:%S %Y"
+
+
+def string_to_date(s):
+    return datetime.strptime(s, TIME_FORMAT_STR)
+
+
+def date_to_string(d):
+    return d.strftime(TIME_FORMAT_STR)
+
+
+def is_date(s):
+    if s is None:
+        return False
+    try:
+        string_to_date(s)
+        return True
+    except:
+        return False
