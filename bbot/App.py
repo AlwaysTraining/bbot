@@ -581,7 +581,7 @@ class App:
             botlog.exception(e)
             game_exception = e
 
-        if self.debug:
+        if self.debug and game_exception is not None:
             self.interact()
 
 

@@ -30,19 +30,41 @@ class Investor(Strategy):
         # are not fully invested
         realm = self.data.realm
 
-        # returning UNHANDLED prevents investments from being re parsed when we know they didn't changed
-        if realm.bank.gold < TWOBIL:
+        full_bank = realm.bank.gold >= 0.95 * TWOBIL
+        high_cash = realm.bank.gold <= 0.75 * TWOBIL
+        low_cash = realm.bank.gold <= HUNMIL
+        war_time = self.app.has_strategy("War") and self.app.data.has_enemy()
+        full_investments = self.data.has_full_investments()
+        mostly_full_investments = self.data.has_full_investments(days_missing=2)
+        end_of_day = realm.turns.remaining <= 3
+
+        if full_investments:
             botlog.info("Not investing because there is less than 2 Bil in "
                         "the bank")
             return Strategy.UNHANDLED
-        if realm.gold < HUNMIL:
+
+        if not full_bank:
+            botlog.info("Not investing because there is less than 2 Bil in "
+                        "the bank")
+            return Strategy.UNHANDLED
+
+        if low_cash:
             botlog.info("Not investing because there is less than 100 Mil on "
                         "hand")
             return Strategy.UNHANDLED
-        if self.data.has_full_investments():
-            botlog.info("Not investing because there is are already full "
-                        "investments")
+
+        if war_time and not high_cash and not end_of_day:
+            botlog.info("Not investing because it is wartime and we " +
+                        "are not in danger of overflowing cash, and " +
+                        "it is not the end of the day")
             return Strategy.UNHANDLED
+
+        if not mostly_full_investments and not high_cash and not end_of_day:
+            botlog.info("No need to invest now, investments are mostly full, "
+                        "it is early in the day, and we are not in danger of "
+                        "overflowing cash")
+            return Strategy.UNHANDLED
+
 
         max_iters = 12
 

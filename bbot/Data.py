@@ -144,6 +144,9 @@ class Army(ManufacturedArmy):
         self.food = None
         self.sdi = None
 
+    def __str__(self):
+        return _printvisitor(self, 0)
+
 
 class Region(object):
     def __init__(self):

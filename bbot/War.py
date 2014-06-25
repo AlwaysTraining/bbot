@@ -202,7 +202,7 @@ class War(Strategy):
         self.all_undermines_sent = False
         self.first_turn = True
         self.group_attacks = None
-        self.attacked_targets = None
+        self.attacked_targets = []
         self.at_war = None
 
     def get_priority(self):
@@ -270,7 +270,7 @@ class War(Strategy):
         if atkstrength >= defstrength:
             # add the realm, and sort it in descending order of regions
             selectedrealms.append(realm)
-            selectedrealms.sort(key=lambda x: x.regions, reversed=True)
+            selectedrealms.sort(key=lambda x: x.regions, reverse=True)
 
 
         # we always return false, because we handle maintenance of the
@@ -375,7 +375,7 @@ class War(Strategy):
 
             # setup the tops we plan on sending, game setup is read by now
             for i in range(self.data.setup.num_tops):
-                self.tops[i] = random.choice(self.possible_tops)
+                self.tops.append(random.choice(self.possible_tops))
 
 
         #TODO group agent pool feature
@@ -463,33 +463,38 @@ class War(Strategy):
             self.all_undermines_sent = True
             return
 
+        if self.data.realm.army.bombers.number < 500:
+            botlog.debug("Not enough bombers to send s-ops")
+            return
+
         self.app.send(8, comment="Entering s-op menu")
         buf = self.app.read()
+
+        # pick the correct target for this type of missle if the user
+        # has not specified a desired target
+        if caller_supplied_target_realm is None:
+            if len(self.sop_bombs) > 0 and self.sop_bombs[0] == 5:
+                botlog.debug("Caller did not supply target realm, " +
+                             "picking bug region target for nuke")
+                # nuke big region target
+                target_realm = self.get_highest_regions_enemy_realm()
+            elif len(self.sop_bombs) > 0 and self.sop_bombs[0] == 6:
+                botlog.debug("Caller did not supply target realm, " +
+                             "picking big region target for chem")
+                # chem big region target
+                target_realm = self.get_highest_regions_enemy_realm()
+            else:
+                botlog.debug("Caller did not supply target realm, " +
+                             "picking big networth target for sabre")
+                # sabre big net target
+                target_realm = self.get_highest_networth_enemy_realm()
+        else:
+            target_realm = caller_supplied_target_realm
 
 
         # send s-op missles
         while not self.sent_sops and len(self.sop_bombs) > 0:
 
-            # pick the correct target for this type of missle if the user
-            # has not specified a desired target
-            if caller_supplied_target_realm is None:
-                if self.sop_bombs[0] == 5:
-                    botlog.debug("Caller did not supply target realm, " +
-                                 "picking bug region target for nuke")
-                    # nuke big region target
-                    target_realm = self.get_highest_regions_enemy_realm()
-                elif self.sop_bombs[0] == 6:
-                    botlog.debug("Caller did not supply target realm, " +
-                                 "picking big region target for chem")
-                    # chem big region target
-                    target_realm = self.get_highest_regions_enemy_realm()
-                else:
-                    botlog.debug("Caller did not supply target realm, " +
-                                 "picking big networth target for sabre")
-                    # sabre big net target
-                    target_realm = self.get_highest_networth_enemy_realm()
-            else:
-                target_realm = caller_supplied_target_realm
 
             if target_realm is None:
                 raise Exception("Could not find and was not supplied with a "
@@ -500,8 +505,7 @@ class War(Strategy):
 
             # check if we have already sent this type of bomb
             menu_string = '(' + str(self.sop_bombs[0]) + ')'
-            botlog.debug("Checking if '" + menu_string + "' is in buffer:\n" +
-                         buf)
+            botlog.debug("Checking if '" + menu_string + "' has been sent")
             if menu_string not in buf:
                 botlog.debug("Already sent bomb: " + menu_string)
                 # this bomb is not available, try next one
@@ -560,8 +564,9 @@ class War(Strategy):
                 break
 
             self.sop_bombs.pop(0)
-            # TODO verify it is always 500 bombers per sop
             self.data.realm.army.bombers.number -= 500
+            botlog.note("Sent bomb to " + str(target_realm.planet_name) +
+                        " : " + str(target_realm.name))
             if len(self.sop_bombs) <= 0:
                 botlog.debug("Just sent the last bomb for today")
                 break
@@ -570,7 +575,14 @@ class War(Strategy):
 
         # send s-op undermines
         if not self.all_undermines_sent:
+
+            if target_realm is None:
+                raise Exception("Could not find and was not supplied with a "
+                                "target realm to undermine")
+
+
             botlog.debug("I don't think I have sent all undermines yet")
+
 
             max_iterations = 20
             while max_iterations > 0:
@@ -620,6 +632,8 @@ class War(Strategy):
                     raise Exception("Could not send undermine to enemy planet")
 
                 self.data.realm.army.bombers.number -= 500
+                botlog.note("Sent undermine to " +
+                            str(target_realm.planet_name))
 
                 if 'You have 0 bombing ops left today' in buf:
                     self.all_undermines_sent = True
@@ -737,6 +751,9 @@ class War(Strategy):
                     botlog.warn("Agent not sent out")
                     return
 
+            self.data.realm.army.agents.number -= 1
+            botlog.note("Sent t-op to " + str(target.planet_name) +
+                        " : " + str(target.name))
             self.tops.pop(0)
 
             if "[InterPlanetary Operations]" in buf:
@@ -894,7 +911,7 @@ class War(Strategy):
                         " by: " + str(needed_strength))
 
             botlog.debug("Sending attack with " + readable_num(numtroopers) +
-                         "troopers, " + readable_num(numjets) + " jets, " +
+                         " troopers, " + readable_num(numjets) + " jets, " +
                          readable_num(numtanks) + " tanks, and " +
                          readable_num(numbombers) + " bombers")
 
@@ -1183,8 +1200,8 @@ class War(Strategy):
             botlog.warn("Could not send indie attack")
             return 0
 
-        self.app.sendl(target.planet_name, "Comment enter planet name for "
-                                           "indie attack")
+        self.app.sendl(target.planet_name, comment=
+                "Comment enter planet name for indie attack")
         buf = self.app.read()
 
         if 'Enemy' not in buf:
@@ -1213,6 +1230,7 @@ class War(Strategy):
         if ret_val > 0:
             msg = ("Sent indie Attack:\n" + str(indie))
             botlog.note(msg)
+        return ret_val
 
 
     def maybe_send_indie_attacks(self):
@@ -1401,10 +1419,14 @@ class War(Strategy):
 
     def maybe_create_group_attacks(self):
 
+        # I am taking this out, because you may want to use GA's if you
+        # have exausted your indies
+
+
         # if we are the only realm, we won't create a group attack
-        if len(self.data.planet.realms) <= 1:
-            botlog.debug("We are the only realm, not creating GA's")
-            return 0
+        # if len(self.data.planet.realms) <= 1:
+        #     botlog.debug("We are the only realm, not creating GA's")
+        #     return 0
 
         commited_strength = 0
 
@@ -1491,6 +1513,10 @@ class War(Strategy):
 
         if not self.at_war:
             botlog.debug("We are not at war, not taking any war actions")
+            return
+
+        if self.data.realm.gold < HUNMIL:
+            botlog.info("Skipping War operations, less than 100 mil on hand")
             return
 
         if self.group_attacks is None:
