@@ -585,6 +585,7 @@ class Data(dict):
         self.yesterdaynewstext = ''
         self.todaynewstext = ''
         self.league = None
+        self.ipscorestext = ''
 
 
     def __str__(self):

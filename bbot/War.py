@@ -43,7 +43,7 @@ class Attack(object):
         if self.planet is not None:
             msg += str(self.planet.name)
         if self.realm is not None:
-            msg += " (" + self.realm.name + ")"
+            msg += " : " + self.realm.name
 
         if self.troopers is not None and self.troopers > 0:
             msg += ", Troopers: " + readable_num(self.troopers)
@@ -56,6 +56,9 @@ class Attack(object):
 
         if self.bombers is not None and self.bombers > 0:
             msg += ", Bombers: " + readable_num(self.bombers)
+
+        if self.leave is not None:
+            msg += ", Leaves in " + str(self.leave) + " hours"
 
         return msg
 
@@ -345,9 +348,22 @@ class War(Strategy):
                     realm):
         return True
 
-    def get_num_enemies(self):
+    def get_num_enemy_realms(self):
         realms = self.select_enemy_realms(None, self.return_true)
         return len(realms)
+
+    def get_num_enemy_planets(self):
+        league = self.app.data.league
+        if league is None:
+            raise Exception("League scores have not been read to get number "
+                            "of enemies")
+        planets = league.planets
+
+        e = 0
+        for p in planets:
+            if p.relation == "Enemy":
+                e += 1
+        return e
 
 
     def on_spending_menu(self):
@@ -361,7 +377,7 @@ class War(Strategy):
             return
 
         if self.at_war is None:
-            self.at_war = self.get_num_enemies() > 0
+            self.at_war = self.get_num_enemy_planets() > 0
             if not self.at_war:
                 botlog.info("No Enemies Found")
 
@@ -992,6 +1008,9 @@ class War(Strategy):
 
         ret_val = self.send_attack(attack, needed_strength)
 
+        if ret_val > 0:
+            botlog.note("Joined attack: " + str(attack))
+
         return ret_val
 
     def create_group_attack(self, attack, strength_to_commit=10):
@@ -1065,6 +1084,9 @@ class War(Strategy):
 
             botlog.debug("There are now " + str(len(self.group_attacks)) +
                          " group attacks")
+
+            botlog.note("Created group attack: " + str(attack))
+
         else:
             botlog.debug("For some reason or another we were unable to send "
                          "an attack with strength " + str(needed_strength))
@@ -1298,6 +1320,9 @@ class War(Strategy):
 
                 self.attacked_targets.append(target)
 
+                if ret_val > 0:
+                    botlog.note("Sent indie attack: " + str(attack))
+
                 # no more indies left today
                 if self.sent_indies:
                     botlog.debug("We have sent all possible indies, not looking"
@@ -1479,7 +1504,7 @@ class War(Strategy):
                 # though the filling GA's occurs before creating GA's in the
                 # War strategy sequence, this is not expected to be a
                 # problem, as we can just fill it on the next turn
-                strength_to_commit = 10
+                strength_to_commit = 1
 
                 botlog.debug("Continuing to attempt to create a group attack")
                 newly_commited_strength = self.maybe_create_group_attack(

@@ -705,6 +705,7 @@ class MainMenu(StatsState):
         # the score options to parse
         scoredict = {1: 'score', 2: 'networth', 3: 'regions',
                      4: 'nwdensity'}
+        app.data.ipscorestext = ''
         # parse each of the score lists
         for menu_option, score_list in scoredict.items():
             app.send(menu_option, comment="Reading stats by planet")
@@ -716,6 +717,7 @@ class MainMenu(StatsState):
 
                 app.buf = app.read()
                 ipp.parse(app, app.buf)
+                app.data.ipscorestext += app.buf
                 max_iteration -= 1
 
                 if 'Continue? (Y/n)' in app.buf:
