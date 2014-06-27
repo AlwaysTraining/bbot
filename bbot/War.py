@@ -306,41 +306,6 @@ class War(Strategy):
     def can_send_ga(self, max_strength=None):
         return len(self.get_ga_targets(max_strength=max_strength)) > 0
 
-
-    # def get_estimated_attack_cost(self, realm=None):
-    #     # this will take some work to reverse engineer the formular for
-    #     # low/med/high
-    #     return 200000000
-    #
-    # def get_estimated_top_cost(self,realm=None):
-    #     return 10000000
-    #
-
-
-    # def make_initial_wishes(self):
-    #     setup = self.app.data.setup
-    #     wishlist = self.app.metadata.wishlist
-    #
-    #     #TODO decide if we are going to try to keep wishlist
-    #     for top in range(setup.num_tops):
-    #         wish = CashWish(
-    #             name="terror_wish",
-    #             ammount=self.get_estimated_top_cost())
-    #         wishlist.append(wish)
-    #
-    #     if self.can_join_ga():
-    #         wish = CashWish("ga_wish", self.get_estimated_attack_cost())
-    #         wishlist.append(wish)
-    #
-    #     if self.can_send_indie():
-    #         wish = CashWish("indie_wish", self.get_estimated_attack_cost())
-    #         wishlist.append(wish)
-    #
-    #     for bop in range(setup.num_bops):
-    #         wish = CashWish(name="undermine_wish",ammount=75000000)
-    #         wishlist.append(wish)
-
-
     def return_true(self,
                     context,
                     selectedrealms,
@@ -1094,6 +1059,23 @@ class War(Strategy):
         return sent_strength
 
 
+    def check_morale_and_hq(self):
+        have_tanks = self.data.realm.army.tanks.number > 5000
+        low_hq = self.data.realm.army.headquarters.number < 100
+        low_morale = False  # TODO, parse morale
+        end_of_day = self.data.realm.turns.remaining <= 3
+
+        delay_attack = low_morale or (have_tanks and low_hq)
+
+        if (delay_attack and not end_of_day):
+            botlog.debug("Should not attack at this time, low morale or hq")
+            return False
+
+        if delay_attack:
+            botlog.warn("Considering attacking even though morale or HQ is low")
+
+        return True
+
     def maybe_join_winning_group_attacks(self):
 
         # if we can top off any GA that leaves soon, lets do it
@@ -1101,6 +1083,9 @@ class War(Strategy):
         botlog.debug("Checking the " + str(len(self.group_attacks)) +
                      " to see if we can cap any of them off that are leaving "
                      "soon")
+
+        if not self.check_morale_and_hq():
+            return 0
 
         ret_val = 0
         for ga in self.group_attacks:
@@ -1258,6 +1243,9 @@ class War(Strategy):
     def maybe_send_indie_attacks(self):
 
         if not self.can_send_indie():
+            return 0
+
+        if not self.check_morale_and_hq():
             return 0
 
         # targets are listed in order of sexyness
