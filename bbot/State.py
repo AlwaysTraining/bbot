@@ -723,8 +723,8 @@ class MainMenu(StatsState):
                 # remove all zero score planets from the message test
                 lines = app.buf.splitlines()
                 for line in lines:
-                    if (" 0" not in line or
-                    "Planetary Post" in line):
+                    if (" 0" in line or
+                            "Planetary Post" in line):
                         continue
                     app.data.ipscorestext += app.buf
 
