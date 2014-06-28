@@ -891,8 +891,11 @@ class War(Strategy):
         # integrety check, this should be true, we should only be sending
         # enough to win
         if needed_strength > 10 or needed_strength < -1:
+            rname = "ALL"
+            if attack.realm is not None:
+                rname = attack.realm.name
             botlog.warn("Attack force too big or too small for " +
-                        attack.planet.name + " : " + attack.realm.name +
+                        str(attack.planet.name) + " : " + str(rname) +
                         " by: " + str(needed_strength))
 
             botlog.debug("Sending attack with " + readable_num(numtroopers) +

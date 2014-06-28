@@ -724,9 +724,10 @@ class MainMenu(StatsState):
                 lines = app.buf.splitlines()
                 for line in lines:
                     if (" 0" in line or
-                            "Planetary Post" in line):
+                            "Planetary Post" in line or
+                            "" == line):
                         continue
-                    app.data.ipscorestext += app.buf
+                    app.data.ipscorestext += line
 
                 max_iteration -= 1
 
