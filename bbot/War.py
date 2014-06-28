@@ -15,7 +15,7 @@ import math
 S = SPACE_REGEX
 N = NUM_REGEX
 
-# % of attack strength compared to target networth
+# % of attack strength compared to target strength
 ATCK_SURP_RATIO = 1.125
 MULTIPLE_ATTACK_REDUCER = 0.9
 
@@ -23,6 +23,9 @@ MULTIPLE_ATTACK_REDUCER = 0.9
 # TODO use this
 DEFENSIIVE_RESERVE_RATIO = 0.1
 
+
+def _networth_to_strength(self, net):
+    return net * 4
 
 class Attack(object):
     def __init__(self):
@@ -75,14 +78,13 @@ class Attack(object):
 
         return strength
 
-
     def get_target_strength(self):
         # for attack on one realm
-        target_strength = self.planet.networth
+        target_strength = _networth_to_strength(self.planet.networth)
 
         if self.realm is not None:
             # for planetary attack
-            target_strength = self.realm.networth
+            target_strength = _networth_to_strength( self.realm.networth)
 
         return target_strength
 
@@ -199,6 +201,7 @@ class War(Strategy):
         self.sent_tops = False
         self.sent_sops = False
         self.sent_indies = False
+        self.created_group_attacks = False
         self.sop_bombs = [5, 7, 6]
         self.possible_tops = [2, 3, 4, 9]
         self.tops = []
@@ -267,7 +270,7 @@ class War(Strategy):
             realm):
 
 
-        defstrength = (realm.networth * ATCK_SURP_RATIO)
+        defstrength = (_networth_to_strength(realm.networth) * ATCK_SURP_RATIO)
 
         # if an attack on the realm is winable
         if atkstrength >= defstrength:
@@ -506,8 +509,9 @@ class War(Strategy):
                 buf = self.app.read()
                 return
 
+
             if "Enter Planet Name or Number" not in buf:
-                raise Exception("Not able to send missle s-op")
+                return
 
             self.app.sendl(target_realm.planet_name)
             buf = self.app.read()
@@ -980,6 +984,13 @@ class War(Strategy):
 
     def create_group_attack(self, attack, strength_to_commit=10):
 
+        if self.created_group_attacks:
+            return 0
+
+        if attack.leave is None:
+            raise Exception("How long to wait is not set in proposed group "
+                            "attack")
+
         botlog.debug("Commiting strength " + str(strength_to_commit) +
                      " and creating group attack: " + str(attack))
 
@@ -988,8 +999,14 @@ class War(Strategy):
         self.app.send(4, comment="Enter group attack menu to create global")
         buf = self.app.read()
 
+        if 'You can only create' in buf and 'Group Strike(s) per day!' in buf:
+            botlog.debug("Can not create any more GA's")
+            self.created_group_attacks = True
+            return 0
+
         if 'Enter Planet Name or Number' not in buf:
-            raise Exception("Unable to enter Create Group Attack menu")
+            botlog.warn("Unable to enter Create Group Attack menu")
+            return 0
 
         self.app.sendl(attack.planet.name,
                        comment="Attacking this planet with GA")
@@ -1008,29 +1025,10 @@ class War(Strategy):
         else:
             self.app.send('o', comment="Creating a one realm group attack")
             buf = self.app.read()
-
-            #
-            #
-            # TODO GRAB THIS TEXT from a game and implment below
-            #
-            #
-
-            botlog.debug('TODO GRAB THIS TEXT from a game and implment below')
-
-            if 'TODO' not in buf:
-                botlog.warn("Unable to create one realm GA")
-                max_ter = 10
-                while "[InterPlanetary Operations]" not in buf and max_ter > 0:
-                    max_ter -= 1
-                    self.app.sendl(comment="trying to get back to " \
-                                           "interplanetary menu")
-                    buf = self.app.read()
-                return 0
-
-            self.app.send(
-                attack.realm.menu_option,
-                comment="creating attacking to realm: " +
-                        str(attack.realm.name))
+            if 'Choose a target' not in buf:
+                raise Exception("Was not asked which target when creating GA")
+            self.app.send(attack.realm.menu_option,
+                          comment="create ga to this realm")
             buf = self.app.read()
 
         if 'Wait how many Hours (12-120)?' not in buf:
@@ -1233,7 +1231,9 @@ class War(Strategy):
         indie.tanks = 0
         indie.bombers = 0
 
-        ret_val = self.send_attack(indie, target.networth * ATCK_SURP_RATIO)
+        ret_val = self.send_attack(
+            indie,
+            _networth_to_strength(target.networth) * ATCK_SURP_RATIO)
         if ret_val > 0:
             msg = ("Sent indie Attack:\n" + str(indie))
             botlog.note(msg)
@@ -1309,7 +1309,7 @@ class War(Strategy):
                 self.attacked_targets.append(target)
 
                 if ret_val > 0:
-                    botlog.note("Sent indie attack: " + str(attack))
+                    botlog.note("Sent indie attack" )
 
                 # no more indies left today
                 if self.sent_indies:
@@ -1325,7 +1325,7 @@ class War(Strategy):
         # get our current strength
         our_strength = 0
         for realm in self.data.planet.realms:
-            our_strength += realm.networth
+            our_strength += _networth_to_strength(realm.networth)
 
         botlog.debug("Determined our planet has a combined strength of " +
                      str(our_strength))
@@ -1344,7 +1344,8 @@ class War(Strategy):
         for planet in self.data.league.planets:
             if planet.relation != "Enemy":
                 continue
-            if our_strength * ATCK_SURP_RATIO >= planet.networth:
+            if (our_strength * ATCK_SURP_RATIO >=
+                    _networth_to_strength(planet.networth)):
                 global_target_planets.append(planet)
 
         # sort beatable enemies in order of most regions
@@ -1368,6 +1369,9 @@ class War(Strategy):
     def maybe_create_ga(self, our_strength=None, leave=12,
                         strength_to_commit=10):
 
+        if self.created_group_attacks:
+            return 0
+
         targets = self.get_ga_targets(max_strength=our_strength)
         if len(targets) == 0:
             return 0
@@ -1387,6 +1391,9 @@ class War(Strategy):
     def maybe_create_group_attack(self, max_strength=None, leave=12,
                                   planetary_attack=False,
                                   strength_to_commit=10):
+        if self.created_group_attacks:
+            return 0
+
         botlog.debug("Attempting to create a planetary group attack " +
                      " with max strength: " + str(max_strength) +
                      ", leaving in: " + str(leave) + ", planetary: " +
@@ -1431,6 +1438,10 @@ class War(Strategy):
 
 
     def maybe_create_group_attacks(self):
+
+        if self.created_group_attacks:
+            botlog.debug("All Group attacks have already been created")
+            return 0
 
         # I am taking this out, because you may want to use GA's if you
         # have exausted your indies
@@ -1505,6 +1516,13 @@ class War(Strategy):
                              " was committed to a new group attack")
 
                 commited_strength += newly_commited_strength
+
+                if self.created_group_attacks:
+                    break
+
+            if self.created_group_attacks:
+                break
+
 
         return commited_strength
 

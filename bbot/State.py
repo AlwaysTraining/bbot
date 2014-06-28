@@ -578,11 +578,13 @@ class PreTurns(StatsState):
             app.skip_next_read = True
             return EndTurn()
 
-        elif ' Regions left] Your Choice?' in buf:
+        elif ' Regions left] Your choice?' in buf:
             SpendingParser().parse(app,buf)
             botlog.info("Restarted turn on region allocate with " +
                         str(app.metadata.regions_left) + " regions")
             RegionBuy(app,num_regions=app.metadata.regions_left)
+            botlog.debug("Allocated victory regions")
+            app.skip_next_read = True
         
         elif '[InterPlanetary Operations]' in buf:
             app.skip_next_read = True
@@ -713,11 +715,19 @@ class MainMenu(StatsState):
             max_iteration = 10
 
             # keep reading while there are more scores
-            while (max_iteration > 0):
+            while max_iteration > 0:
 
                 app.buf = app.read()
                 ipp.parse(app, app.buf)
-                app.data.ipscorestext += app.buf
+
+                # remove all zero score planets from the message test
+                lines = app.buf.splitlines()
+                for line in lines:
+                    if (" 0" not in line or
+                    "Planetary Post" in line):
+                        continue
+                    app.data.ipscorestext += app.buf
+
                 max_iteration -= 1
 
                 if 'Continue? (Y/n)' in app.buf:
