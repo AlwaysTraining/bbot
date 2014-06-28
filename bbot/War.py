@@ -24,7 +24,7 @@ MULTIPLE_ATTACK_REDUCER = 0.9
 DEFENSIIVE_RESERVE_RATIO = 0.1
 
 
-def _networth_to_strength(self, net):
+def _networth_to_strength(net):
     return net * 4
 
 class Attack(object):
