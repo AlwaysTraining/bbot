@@ -802,6 +802,10 @@ class War(Strategy):
 
             #TODO get training text for multipage list
             for line in lines:
+                line = line.strip()
+                if line == '':
+                    continue
+
                 if 'Individual Target' in line:
                     botlog.debug("next line is header: " + line)
                     next_line_header = True
@@ -819,7 +823,6 @@ class War(Strategy):
                     tokens = [x.strip() for x in line.split(sepchar)]
                     ga = self.create_ga_from_tokens(tokens)
                     gas.append(ga)
-
                 else:
                     raise Exception("Could not parse group attacks")
 
@@ -828,8 +831,8 @@ class War(Strategy):
         if max_iterations <= 0:
             raise Exception("Too many iterations when listing GA's")
 
-        self.app.send_seq([0, 0, 0, 0], comment="Not joining GA, just reading "
-                                                "list of current ga's")
+        self.app.send(0, comment="Not joining GA, just reading list of "
+                                 "current ga's")
         buf = self.app.read()
         if "[InterPlanetary Operations]" not in buf:
             raise Exception("Not back at ip menu after parsing group attacks")

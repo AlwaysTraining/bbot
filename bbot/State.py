@@ -725,7 +725,9 @@ class MainMenu(StatsState):
                 for line in lines:
                     if (" 0" in line or
                             "Planetary Post" in line or
-                            "" == line):
+                            "" == line or
+                            'Continue? (Y/n)' in line or
+                            'Barren Realms Elite: ' in line):
                         continue
                     app.data.ipscorestext += line
 

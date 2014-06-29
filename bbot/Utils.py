@@ -224,18 +224,33 @@ def try_get_recent_changes():
 
         return "Could not get recent source code changes"
 
+def _basenum(num,factor):
+    fnum = float(num)
+    fnum /= factor
+    rnum = round(fnum,1)
+
+    if (abs(rnum - fnum) < 0.1):
+        rnum = int(rnum)
+
+    return str(rnum)
+
+
+
 def readable_num(num):
     if num == 0:
         return "0"
     num = float(num)
     if num > 1000000000:
-        return str(round(num / 1000000000.0,1)) + "b"
-    if num > 1000000:
-        return str(round(num / 1000000.0,1)) + "m"
-    if num > 1000:
-        return str(round(num / 1000.0,1)) + "k"
+        s = _basenum(num, 1000000000) + "b"
+    elif num > 1000000:
+        s = _basenum(num, 1000000) + "m"
+    elif num > 1000:
+        s = _basenum(num, 1000) + "k"
     else:
-        return str(num)
+        s = _basenum(num,1)
+
+    return s
+
 
 def split_list(terms, bins):
     numcreds = bins
