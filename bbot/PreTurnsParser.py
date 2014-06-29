@@ -12,11 +12,16 @@ from bbot.StatsParser import StatsParser
 S = SPACE_REGEX
 N = NUM_REGEX
 
+class Event:
+    def __init__(self):
+        self.number=None
+        self.time=None
 
 class PreTurnsParser(StatsParser):
     def __init__(self):
         StatsParser.__init__(self)
         self.buymenu = True
+        self.event = None
 
     def get_patterns(self):
         return {
@@ -26,6 +31,7 @@ class PreTurnsParser(StatsParser):
             'Bombers' + S + ':' + S + N + '\%' + S + '\(' + N + ' per year\)': 1340,
             'Tanks' + S + ':' + S + N + '\%' + S + '\(' + N + ' per year\)': 1350,
             'Carriers' + S + ':' + S + N + '\%' + S + '\(' + N + ' per year\)': 1360,
+            '.+\(([0-9]+)\).+([0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]  [0-9][0-9]:[0-9][0-9]:[0-9][0-9]).*':1370
         }
 
 
@@ -52,6 +58,13 @@ class PreTurnsParser(StatsParser):
         elif which == 1360:
             manufacture.carriers.allocation = self.get_num(0)
             manufacture.carriers.production = self.get_num(1)
+        elif which == 1370:
+            self.event = Event()
+            self.event.number = self.get_num(0)
+            s = self.get_str(1)
+            d = datetime.strptime(s, "%d/%m/%Y  %H:%M:%S")
+
+
 
 
 
