@@ -727,7 +727,10 @@ class MainMenu(StatsState):
                 # remove this filler line
                             "Planetary Post" in line or
                 # remove all empty lines
-                            "" == line.strip()):
+                            "" == line.strip() or
+                # remove filler lines
+                            'Continue? (Y/n)' in line or
+                            'Barren Realms Elite: ' in line):
                         continue
                     app.data.ipscorestext += line + "\n"
 
