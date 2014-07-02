@@ -115,7 +115,7 @@ class Attack(object):
         botlog.debug("The base needed strength is " + str(base))
 
         if group_attacks is None:
-            strength = math.max(0, int(math.ceil(base)) - self.get_strength())
+            strength = max(0, int(math.ceil(base)) - self.get_strength())
             botlog.debug("No group attacks specified, not attempting to " +
                          "reduce attack strength requirement, strength " +
                          "needed is: " + str(strength))
@@ -187,7 +187,7 @@ class Attack(object):
             botlog.debug("Multiple Ga's have reduced needed strength " + str(
                 num_reduces) + " times")
 
-        strength = math.max(0, int(math.ceil(base)) - self.get_strength())
+        strength = max(0, int(math.ceil(base)) - self.get_strength())
         botlog.debug("Determined remaining needed strength in ga: " +
                      str(self.id) + ". is " + str(strength))
 
@@ -748,6 +748,7 @@ class War(Strategy):
 
 
     def create_ga_from_tokens(self, tokens):
+
         t = tokens
         ga = Attack()
         i = 0
@@ -784,7 +785,7 @@ class War(Strategy):
         next_line_header = False
         reading_body = False
 
-        sepchar = None
+        sepchar = ';' #hopefully no one puts this char in their realm name
 
         while max_iterations > 0:
             buf = self.app.read()
@@ -802,34 +803,49 @@ class War(Strategy):
 
             #TODO get training text for multipage list
             for line in lines:
+
+                botlog.debug("Parsing Line: '" + line + "'")
+                line = line.strip()
+                if line == '':
+                    continue
+
                 if 'Individual Target' in line:
-                    botlog.debug("next line is header: " + line)
+                    botlog.debug("next line is header")
                     next_line_header = True
                 elif next_line_header:
-                    sepchar = line[0]
-                    botlog.debug("reading body, sep char is: " + sepchar)
+                    botlog.debug("reading body")
                     next_line_header = False
                     reading_body = True
                 elif reading_body and 'Join which group?' in line:
-                    botlog.debug("Done reading body on line: " + line)
+                    botlog.debug("Done reading body")
                     reading_body = False
                     break
                 elif reading_body:
-                    botlog.debug("Reading body line: " + line)
-                    tokens = [x.strip() for x in line.split(sepchar)]
+                    botlog.debug("Reading body line")
+
+                    nline = []
+                    for c in line:
+                        if c.isalnum() or c.isspace:
+                            nline.append(c)
+                        else:
+                            nline.append(sepchar)
+
+                    cleanline = ''.join(nline)
+                    botlog.debug("Cleanline is: '" + cleanline +"'")
+                    tokens = [x.strip() for x in cleanline.split(sepchar)]
+                    botlog.debug("Tokens are: " + str(tokens) )
                     ga = self.create_ga_from_tokens(tokens)
                     gas.append(ga)
-
                 else:
-                    raise Exception("Could not parse group attacks")
+                    botlog.warn("Unhandled line '" + line + "'")
 
             max_iterations -= 1
 
         if max_iterations <= 0:
             raise Exception("Too many iterations when listing GA's")
 
-        self.app.send_seq([0, 0, 0, 0], comment="Not joining GA, just reading "
-                                                "list of current ga's")
+        self.app.send(0, comment="Not joining GA, just reading list of "
+                                 "current ga's")
         buf = self.app.read()
         if "[InterPlanetary Operations]" not in buf:
             raise Exception("Not back at ip menu after parsing group attacks")

@@ -720,14 +720,19 @@ class MainMenu(StatsState):
                 app.buf = app.read()
                 ipp.parse(app, app.buf)
 
-                # remove all zero score planets from the message test
                 lines = app.buf.splitlines()
                 for line in lines:
+                # remove all zero score planets from the message test
                     if (" 0" in line or
+                # remove this filler line
                             "Planetary Post" in line or
-                            "" == line):
+                # remove all empty lines
+                            "" == line.strip() or
+                # remove filler lines
+                            'Continue? (Y/n)' in line or
+                            'Barren Realms Elite: ' in line):
                         continue
-                    app.data.ipscorestext += line
+                    app.data.ipscorestext += line + "\n"
 
                 max_iteration -= 1
 
