@@ -9,6 +9,7 @@
 import sys, os
 from argparse import ArgumentParser
 from bbot import App
+from bbot import Utils
 import getpass
 import pprint
 
@@ -63,6 +64,7 @@ defaults = {
         'strategies': ['IndMtn', ],
         'data_dir': '.',
         'arg_file': None,
+        'test': None,
     },
 
     'tnsoa3': {
@@ -79,6 +81,7 @@ defaults = {
         'strategies': ['IndMtn', ],
         'data_dir': '.',
         'arg_file': None,
+        'test': None,
     },
 
     'tnsoa4': {
@@ -95,6 +98,7 @@ defaults = {
         'strategies': ['IndMtn', ],
         'data_dir': '.',
         'arg_file': None,
+        'test': None,
     },
 
     'tnsoa5': {
@@ -122,6 +126,7 @@ defaults = {
                                     'Gold'],
         'Lackey_tribute_ratio': 0.25,
         'arg_file': None,
+        'test': None,
     },
 }
 
@@ -228,6 +233,11 @@ parser.add_argument("--arg-file",
                     help="Set the argument file to read options from",
                     default=get_default('arg_file'))
 
+parser.add_argument("--test",
+                    action="store",
+                    help="Special test specification",
+                    default=get_default('test'))
+
 parser.add_argument("strategies", nargs='*',
                     help="a list of strategies to govern gameplay",
                     default=get_default('strategies')
@@ -263,7 +273,16 @@ if ('arg_file' in options and
 pprint.pprint(options)
 
 app = App.App(options, query, query_secret)
-app.run()
+
+if app.has_app_value("test"):
+    testopt = app.get_app_value("test")
+    codepath = os.path.join(os.path.dirname(App.__file__), testopt + ".py")
+    testinst = Utils.create_instance(codepath, testopt, app=app)
+    if testinst.test(app) is False:
+        print testopt, "FAILED"
+
+else:
+    app.run()
 
 
 

@@ -20,3 +20,6 @@ idea/*
 
 # ignore test scripts
 bin/*_9.sh
+
+# test logs
+test/old

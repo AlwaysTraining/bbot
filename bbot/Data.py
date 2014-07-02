@@ -509,6 +509,11 @@ class Pirates(object):
         self.regions = None
 
 
+class Event:
+    def __init__(self):
+        self.number = None
+        self.time = None
+
 class Realm(object):
     def __init__(self):
         self.regions = Regions()
@@ -524,6 +529,7 @@ class Realm(object):
         self.networth = None
         self.advisors = Advisors()
         self.pirates = Pirates()
+        self.events = []
 
     def reset_pirates(self):
         self.pirates = Pirates()

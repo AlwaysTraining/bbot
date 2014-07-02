@@ -62,7 +62,7 @@ class PreTurnsParser(StatsParser):
             self.event = Event()
             self.event.number = self.get_num(0)
             s = self.get_str(1)
-            d = datetime.strptime(s, "%d/%m/%Y  %H:%M:%S")
+            d = datetime.strptime(s, "%m/%d/%Y  %H:%M:%S")
 
 
 
