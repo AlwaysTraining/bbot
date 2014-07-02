@@ -115,7 +115,7 @@ class Attack(object):
         botlog.debug("The base needed strength is " + str(base))
 
         if group_attacks is None:
-            strength = math.max(0, int(math.ceil(base)) - self.get_strength())
+            strength = max(0, int(math.ceil(base)) - self.get_strength())
             botlog.debug("No group attacks specified, not attempting to " +
                          "reduce attack strength requirement, strength " +
                          "needed is: " + str(strength))
@@ -187,7 +187,7 @@ class Attack(object):
             botlog.debug("Multiple Ga's have reduced needed strength " + str(
                 num_reduces) + " times")
 
-        strength = math.max(0, int(math.ceil(base)) - self.get_strength())
+        strength = max(0, int(math.ceil(base)) - self.get_strength())
         botlog.debug("Determined remaining needed strength in ga: " +
                      str(self.id) + ". is " + str(strength))
 
@@ -802,6 +802,8 @@ class War(Strategy):
 
             #TODO get training text for multipage list
             for line in lines:
+
+                botlog.debug("Parsing Line: '" + line + "'")
                 line = line.strip()
                 if line == '':
                     continue
@@ -824,7 +826,7 @@ class War(Strategy):
                     ga = self.create_ga_from_tokens(tokens)
                     gas.append(ga)
                 else:
-                    raise Exception("Could not parse group attacks")
+                    botlog.warn("Unhandled line '" + line + "'")
 
             max_iterations -= 1
 
