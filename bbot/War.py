@@ -748,6 +748,7 @@ class War(Strategy):
 
 
     def create_ga_from_tokens(self, tokens):
+
         t = tokens
         ga = Attack()
         i = 0
@@ -784,7 +785,7 @@ class War(Strategy):
         next_line_header = False
         reading_body = False
 
-        sepchar = None
+        sepchar = ';' #hopefully no one puts this char in their realm name
 
         while max_iterations > 0:
             buf = self.app.read()
@@ -809,20 +810,30 @@ class War(Strategy):
                     continue
 
                 if 'Individual Target' in line:
-                    botlog.debug("next line is header: " + line)
+                    botlog.debug("next line is header")
                     next_line_header = True
                 elif next_line_header:
-                    sepchar = line[0]
-                    botlog.debug("reading body, sep char is: " + sepchar)
+                    botlog.debug("reading body")
                     next_line_header = False
                     reading_body = True
                 elif reading_body and 'Join which group?' in line:
-                    botlog.debug("Done reading body on line: " + line)
+                    botlog.debug("Done reading body")
                     reading_body = False
                     break
                 elif reading_body:
-                    botlog.debug("Reading body line: " + line)
-                    tokens = [x.strip() for x in line.split(sepchar)]
+                    botlog.debug("Reading body line")
+
+                    nline = []
+                    for c in line:
+                        if c.isalnum() or c.isspace:
+                            nline.append(c)
+                        else:
+                            nline.append(sepchar)
+
+                    cleanline = ''.join(nline)
+                    botlog.debug("Cleanline is: '" + cleanline +"'")
+                    tokens = [x.strip() for x in cleanline.split(sepchar)]
+                    botlog.debug("Tokens are: " + str(tokens) )
                     ga = self.create_ga_from_tokens(tokens)
                     gas.append(ga)
                 else:
