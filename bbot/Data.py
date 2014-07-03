@@ -592,6 +592,7 @@ class Data(dict):
         self.todaynewstext = ''
         self.league = None
         self.ipscorestext = ''
+        self.eventtext = ''
 
 
     def __str__(self):

@@ -625,6 +625,7 @@ def _parse_other_realm(app, cur_planet):
 def _parse_other_realms(app):
     league = app.data.league
     planets = league.planets
+
     buf = app.buf
 
     for cur_planet in planets:
@@ -803,6 +804,19 @@ class MainMenu(StatsState):
             app.send('y', comment="Continue reading today's news")
             buf = app.read()
             app.data.todaynewstext += "\n" + buf
+        if '-=<Paused>=-' in buf:
+            app.sendl()
+        buf = app.read()
+
+        # in the main menu, check the history
+        app.send(6, comment="Reading Messages")
+        buf = app.read()
+        app.data.msgtext = buf
+        while ('[R]  Reply, [D]  Delete, [I]  Ignore, or[Q]  Quit > ' in buf or
+                '[R] Reply, [D] Delete, [I] Ignore, or [Q] Quit>' in buf):
+            app.send('d', comment="Deleting received message")
+            buf = app.read()
+            app.data.msgtext += "\n" + buf
         if '-=<Paused>=-' in buf:
             app.sendl()
         buf = app.read()

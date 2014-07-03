@@ -527,6 +527,7 @@ class App:
         body = self.maybe_append_section(body, "Errors", errortext)
         body = self.maybe_append_section(body, "Warnings", warntext)
         body = self.maybe_append_section(body, "Notes", notetext)
+        body = self.maybe_append_section(body, "Events", self.data.eventtext)
         body = self.maybe_append_section(body, "Messages`", self.data.msgtext)
         body = self.maybe_append_section(body, "IP Scores",self.data.ipscorestext)
         body = self.maybe_append_section(body, "Scores", self.data.planettext)

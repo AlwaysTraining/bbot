@@ -12,16 +12,11 @@ from bbot.StatsParser import StatsParser
 S = SPACE_REGEX
 N = NUM_REGEX
 
-class Event:
-    def __init__(self):
-        self.number=None
-        self.time=None
-
 class PreTurnsParser(StatsParser):
     def __init__(self):
         StatsParser.__init__(self)
         self.buymenu = True
-        self.event = None
+        self.recordevents = False
 
     def get_patterns(self):
         return {
@@ -31,7 +26,12 @@ class PreTurnsParser(StatsParser):
             'Bombers' + S + ':' + S + N + '\%' + S + '\(' + N + ' per year\)': 1340,
             'Tanks' + S + ':' + S + N + '\%' + S + '\(' + N + ' per year\)': 1350,
             'Carriers' + S + ':' + S + N + '\%' + S + '\(' + N + ' per year\)': 1360,
-            '.+\(([0-9]+)\).+([0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]  [0-9][0-9]:[0-9][0-9]:[0-9][0-9]).*':1370
+            #'.+\(([0-9]+)\).+([0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]  [0-9][0-9]:[0-9][0-9]:[0-9][0-9]).*':1370
+            'Since your last play, this has happened:': 1370,
+            'Would you like to buy a lottery ticket\? \(Y/n\)': 1380,
+            '[R]  Reply, [D]  Delete, [I]  Ignore, or[Q]  Quit > ': 1390,
+            '[R] Reply, [D] Delete, [I] Ignore, or [Q] Quit>': 1400,
+            'You have no messages\.' : 1410
         }
 
 
@@ -59,10 +59,14 @@ class PreTurnsParser(StatsParser):
             manufacture.carriers.allocation = self.get_num(0)
             manufacture.carriers.production = self.get_num(1)
         elif which == 1370:
-            self.event = Event()
-            self.event.number = self.get_num(0)
-            s = self.get_str(1)
-            d = datetime.strptime(s, "%m/%d/%Y  %H:%M:%S")
+            self.recordevents = True
+        elif 1380 <= which <= 1410:
+            self.recordevents = False
+
+
+        if self.recordevents:
+            if line.strip() != "":
+                app.data.eventtext += line
 
 
 
