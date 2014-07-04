@@ -755,7 +755,7 @@ class War(Strategy):
         ga = Attack()
         i = 0
         ga.id = ToNum(t[i])
-        i += 1
+        i += 2 # skip who created the GA
         ga.planet = self.data.find_planet(t[i])
         i += 1
         # what would happen if someone named thier realm 'ALL'
@@ -806,8 +806,10 @@ class War(Strategy):
             # up hardcoding the column widths by manually pulling char positions
             # with some debug code.  This might not work if you are not using
             # the black/white version of bre
-            breaks = [(0, 2), (5, 7), (10, 24), (27, 46), (49, 57),
-                      (60, 66), (69, 76), (79, 86), (89, 94)]
+            # breaks = [(0, 2), (5, 7), (10, 24), (27, 46), (49, 57),
+            #           (60, 66), (69, 76), (79, 86), (89, 94)]
+            breaks = [(0, 1), (2, 4), (5, 19), (20, 39), (40, 48),
+                      (49, 55), (56, 63), (64, 71), (72, 77)]
 
             #TODO get training text for multipage list
             for line in lines:
@@ -820,6 +822,11 @@ class War(Strategy):
                 if 'Individual Target' in line:
                     botlog.debug("next line is header")
                     next_line_header = True
+                    i = 0
+                    for c in line:
+                        dline = str(i) + ": '" + str(c) + "'"
+                        botlog.debug(dline)
+                        i += 1
                 elif next_line_header:
                     botlog.debug("reading body")
                     next_line_header = False
@@ -832,7 +839,8 @@ class War(Strategy):
                     botlog.debug("Reading body line")
                     i = 0
                     for c in line:
-                        print i, c
+                        dline = str(i) + ": '" + str(c) + "'"
+                        botlog.debug(dline)
                         i += 1
 
                     tokens = []
@@ -1085,7 +1093,7 @@ class War(Strategy):
         have_tanks = self.data.realm.army.tanks.number > 5000
         low_hq = self.data.realm.army.headquarters.number < 100
         low_morale = False  # TODO, parse morale
-        end_of_day = self.data.realm.turns.remaining <= 3
+        end_of_day = self.data.realm.turns.remaining <= END_OF_DAY_TURNS
 
         delay_attack = low_morale or (have_tanks and low_hq)
 
@@ -1145,8 +1153,9 @@ class War(Strategy):
         # we only join Ga's at the end of our day, theory being, we have
         # already filled any ga's that will win as first priority, and
         # we have also sent any winnable indies
-        if self.data.realm.turns.remaining > 3:
-            botlog.debug("Not filling GA, more than 3 turns remain")
+        if self.data.realm.turns.remaining > END_OF_DAY_TURNS:
+            botlog.debug("Not filling GA, more than " + str(
+                END_OF_DAY_TURNS) + " turns remain")
             return 0
 
         # if we have no army, don't join
@@ -1303,7 +1312,7 @@ class War(Strategy):
                 # TODO think about reducing needed strength to repeated indie
                 #  target, we already do it for group attacks
 
-                if self.data.realm.turns.remaining <= 3:
+                if self.data.realm.turns.remaining <= END_OF_DAY_TURNS:
 
                     # but by the end of the day if we havn't sent out our indies
                     # we want to make sure we exaustively search the list for

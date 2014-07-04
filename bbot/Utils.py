@@ -26,6 +26,8 @@ NO_PRIORITY = 100 * 1
 TWOBIL = 2000000000
 HUNMIL = 100000000
 
+END_OF_DAY_TURNS = 1
+
 
 def load_modules(
         modulePaths  # list of paths to python modules

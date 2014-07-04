@@ -31,12 +31,22 @@ class Investor(Strategy):
         realm = self.data.realm
 
         full_bank = realm.bank.gold >= 0.95 * TWOBIL
-        high_cash = realm.bank.gold <= 0.75 * TWOBIL
+        high_cash = realm.bank.gold >= 0.75 * TWOBIL
         low_cash = realm.bank.gold <= HUNMIL
         war_time = self.app.has_strategy("War") and self.app.data.has_enemy()
         full_investments = self.data.has_full_investments()
         mostly_full_investments = self.data.has_full_investments(days_missing=2)
-        end_of_day = realm.turns.remaining <= 3
+        # can't rely on parsed turns remaining, because that won't happen yet
+        
+        end_of_day = realm.turns.remaining <= END_OF_DAY_TURNS
+
+        botlog.debug("full_bank? " + str(full_bank) + ", " +
+                     "high_cash? " + str(high_cash) + ", " +
+                     "low_cash? " + str(low_cash) + ", " +
+                     "war_time? " + str(war_time) + ", " +
+                     "full_investments? " + str(full_investments) + ", " +
+                     "mostly_full_investments? " + str(mostly_full_investments) + ", " +
+                     "end_of_day? " + str(end_of_day))
 
         if full_investments:
             botlog.info("Not investing because there is less than 2 Bil in "
