@@ -906,7 +906,7 @@ class War(Strategy):
 
         # integrety check, this should be true, we should only be sending
         # enough to win
-        if needed_strength > 10 or needed_strength < -1:
+        if needed_strength > 10 or needed_strength < -10:
             rname = "ALL"
             if attack.realm is not None:
                 rname = attack.realm.name
@@ -927,9 +927,9 @@ class War(Strategy):
         buf = self.app.read()
         ret_val = 0
         if 'Send this Attack? (Y/n)' not in buf:
-            botlog.warn("Not able to send out attack to " + str(attack.planet
-                                                                .name) + " : " + str(
-                attack.realm.name))
+            botlog.warn("Not able to send out attack to " +
+                        str(attack.planet.name) + " : " +
+                        str(attack.realm.name))
         else:
             self.app.send('y', comment="yes, join the attack")
             buf = self.app.read()
@@ -1326,9 +1326,6 @@ class War(Strategy):
                     str(target.name))
 
                 self.attacked_targets.append(target)
-
-                if ret_val > 0:
-                    botlog.note("Sent indie attack" )
 
                 # no more indies left today
                 if self.sent_indies:
