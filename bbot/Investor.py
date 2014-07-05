@@ -37,7 +37,7 @@ class Investor(Strategy):
         full_investments = self.data.has_full_investments()
         mostly_full_investments = self.data.has_full_investments(days_missing=2)
         # can't rely on parsed turns remaining, because that won't happen yet
-        
+
         end_of_day = realm.turns.remaining <= END_OF_DAY_TURNS
 
         botlog.debug("full_bank? " + str(full_bank) + ", " +

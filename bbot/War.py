@@ -106,7 +106,7 @@ class Attack(object):
 
     def needed_strength(self, group_attacks, base=False):
 
-        botlog.debug("Determining needed strength for attack:\n" +
+        botlog.debug("Determining needed strength for attack: " +
                      str(self))
 
         # base needed strength
@@ -773,7 +773,7 @@ class War(Strategy):
         ga.leave = ToNum(t[i][0:-1])
 
         botlog.debug("GA token string: " + ', '.join(tokens) +
-                     ": yeilds attack:\n" + str(ga))
+                     ": yeilds attack: " + str(ga))
         return ga
 
     def parse_group_attacks(self):
@@ -786,10 +786,11 @@ class War(Strategy):
 
         next_line_header = False
         reading_body = False
+        done_reading = False
 
         sepchar = ';' #hopefully no one puts this char in their realm name
 
-        while max_iterations > 0:
+        while not done_reading and max_iterations > 0:
             buf = self.app.read()
 
             # check if there are no GA's
@@ -822,11 +823,11 @@ class War(Strategy):
                 if 'Individual Target' in line:
                     botlog.debug("next line is header")
                     next_line_header = True
-                    i = 0
-                    for c in line:
-                        dline = str(i) + ": '" + str(c) + "'"
-                        botlog.debug(dline)
-                        i += 1
+                    # i = 0
+                    # for c in line:
+                    #     dline = str(i) + ": '" + str(c) + "'"
+                    #     botlog.debug(dline)
+                    #     i += 1
                 elif next_line_header:
                     botlog.debug("reading body")
                     next_line_header = False
@@ -834,19 +835,20 @@ class War(Strategy):
                 elif reading_body and 'Join which group?' in line:
                     botlog.debug("Done reading body")
                     reading_body = False
+                    done_reading = True
                     break
                 elif reading_body:
-                    botlog.debug("Reading body line")
-                    i = 0
-                    for c in line:
-                        dline = str(i) + ": '" + str(c) + "'"
-                        botlog.debug(dline)
-                        i += 1
+                    # botlog.debug("Reading body line")
+                    # i = 0
+                    # for c in line:
+                    #     dline = str(i) + ": '" + str(c) + "'"
+                    #     botlog.debug(dline)
+                    #     i += 1
 
                     tokens = []
                     for x in breaks:
                         tokens.append(line[x[0]:x[1]].strip())
-                    botlog.debug("Tokens are: " + str(tokens))
+                    # botlog.debug("Tokens are: " + str(tokens))
                     ga = self.create_ga_from_tokens(tokens)
                     gas.append(ga)
                 else:
@@ -857,8 +859,8 @@ class War(Strategy):
         if max_iterations <= 0:
             raise Exception("Too many iterations when listing GA's")
 
-        self.app.send(0, comment="Not joining GA, just reading list of "
-                                 "current ga's")
+        self.app.sendl(0, comment="Not joining GA, just reading list of "
+                                  "current ga's")
         buf = self.app.read()
         if "[InterPlanetary Operations]" not in buf:
             raise Exception("Not back at ip menu after parsing group attacks")
@@ -981,8 +983,8 @@ class War(Strategy):
             raise Exception("Not back at the interplanetary menu after "
                             "sending Attack")
 
-        botlog.debug("Sent strength: " + str(sent_strength) +
-                     " Attack now:\n" + str(attack))
+        # botlog.debug("Sent strength: " + str(sent_strength) +
+        #              " Attack now:\n" + str(attack))
 
         return ret_val
 
@@ -1006,6 +1008,9 @@ class War(Strategy):
 
         botlog.debug("group attack ID: " + str(attack.id) + " needs: " +
                      str(needed_strength) + " strength, joining it now")
+
+        self.app.send(attack.id,comment="joining attack " + str(attack.id))
+        buf = self.app.read()
 
         ret_val = self.send_attack(attack, needed_strength)
 
@@ -1125,7 +1130,7 @@ class War(Strategy):
             if ga.leave > 24:
                 break
 
-            botlog.debug("Group attack + " + str(ga.id) + " leaves in " +
+            botlog.debug("Group attack " + str(ga.id) + " leaves in " +
                          str(ga.leave) + " hours")
 
             needed_strength_to_win_ga = ga.needed_strength(self.group_attacks)
@@ -1586,7 +1591,10 @@ class War(Strategy):
         if self.group_attacks is None:
             self.parse_group_attacks()
             self.sort_group_attacks()
-            botlog.debug("Parsed ga's:\n" + str(self.group_attacks))
+            botlog.debug("Parsed " + str(len(self.group_attacks)) + " ga's")
+            for ga in self.group_attacks:
+                botlog.debug(str(ga))
+
 
         botlog.debug("War phase: maybe_join_winning_group_attacks")
         # join short term GA's that we would cap off to assure victory
