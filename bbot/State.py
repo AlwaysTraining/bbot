@@ -811,15 +811,14 @@ class MainMenu(StatsState):
         # in the main menu, check the history
         app.send(6, comment="Reading Messages")
         buf = app.read()
-        app.data.msgtext = buf
-        while ('[R]  Reply, [D]  Delete, [I]  Ignore, or[Q]  Quit > ' in buf or
-                '[R] Reply, [D] Delete, [I] Ignore, or [Q] Quit>' in buf):
-            app.send('d', comment="Deleting received message")
-            buf = app.read()
-            app.data.msgtext += "\n" + buf
-        if '-=<Paused>=-' in buf:
-            app.sendl()
-        buf = app.read()
+        if 'You have no messages.' not in buf:
+            app.data.msgtext = buf
+            while (
+                   '[R]  Reply, [D]  Delete, [I]  Ignore, or[Q]  Quit > ' in buf or
+                   '[R] Reply, [D] Delete, [I] Ignore, or [Q] Quit>' in buf):
+                app.send('d', comment="Deleting received message")
+                buf = app.read()
+                app.data.msgtext += "\n" + buf
 
         # if we have not read in league scores, and if
         # this is an IP game

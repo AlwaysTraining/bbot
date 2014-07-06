@@ -65,8 +65,9 @@ class PreTurnsParser(StatsParser):
 
 
         if self.recordevents:
-            if line.strip() != "":
-                app.data.eventtext += line
+            if (line.strip() != "" and
+                    'Since your last play, this has happened:' not in line):
+                app.data.eventtext += line + "\n"
 
 
 
