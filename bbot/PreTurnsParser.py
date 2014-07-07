@@ -31,7 +31,6 @@ class PreTurnsParser(StatsParser):
             'Would you like to buy a lottery ticket\? \(Y/n\)': 1380,
             '[R]  Reply, [D]  Delete, [I]  Ignore, or[Q]  Quit > ': 1390,
             '[R] Reply, [D] Delete, [I] Ignore, or [Q] Quit>': 1400,
-            'You have no messages\.' : 1410
         }
 
 
@@ -66,7 +65,8 @@ class PreTurnsParser(StatsParser):
 
         if self.recordevents:
             if (line.strip() != "" and
-                    'Since your last play, this has happened:' not in line):
+                    'Since your last play, this has happened:' not in line and
+                    'You have no messages.' not in line):
                 app.data.eventtext += line + "\n"
 
 

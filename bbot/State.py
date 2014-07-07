@@ -811,7 +811,7 @@ class MainMenu(StatsState):
         # in the main menu, check the history
         app.send(6, comment="Reading Messages")
         buf = app.read()
-        if 'You have no messages.' not in buf:
+        if '(1) Play Game' not in buf:
             app.data.msgtext = buf
             while (
                    '[R]  Reply, [D]  Delete, [I]  Ignore, or[Q]  Quit > ' in buf or
