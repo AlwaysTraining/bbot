@@ -162,6 +162,8 @@ class SpendingParser(StatsParser):
             setup.game_start_date = self.get_str()
         elif which == 1810:
             setup.turns_per_day = self.get_num()
+            if realm.turns.current is not None:
+                realm.turns.remaining = setup.turns_per_day - realm.turns.current
         elif which == 1820:
             setup.protection_turns = self.get_num()
         elif which == 1830:

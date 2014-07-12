@@ -7,6 +7,7 @@
 import botlog
 import math
 import random
+from bbot.Utils import readable_num
 
 def _indent(d):
     s = '\n'
@@ -623,10 +624,10 @@ class Data(dict):
         #   so subtract 10 of those off by 2's and you get 20
         TWOBIL = 2000000000
         full = (TWOBIL * (10 - days_missing)) - 20
-        botlog.debug(str(full) + " needed for  full investments with " + 
+        botlog.debug(readable_num(full) + " needed for  full investments with " +
                 str(days_missing) + " days missing")
         cur = sum(self.realm.bank.investments) 
-        botlog.debug(str(cur) + " Current total investments")
+        botlog.debug(readable_num(cur) + " Current total investments")
         is_full = cur >= full
         botlog.debug("Are investments full?: " + str(is_full))
 
@@ -808,7 +809,7 @@ class Data(dict):
                     raise Exception("Ambiguously specified planet")
                 found = p
 
-        return p
+        return found
 
 
 

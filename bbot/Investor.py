@@ -29,16 +29,22 @@ class Investor(Strategy):
         # also make sure we have a decent ammount of cash on hand, and we
         # are not fully invested
         realm = self.data.realm
+        setup = self.data.setup
 
         full_bank = realm.bank.gold >= 0.95 * TWOBIL
-        high_cash = realm.bank.gold >= 0.75 * TWOBIL
-        low_cash = realm.bank.gold <= HUNMIL
+        high_cash = realm.gold >= 0.75 * TWOBIL
+        low_cash = realm.gold <= HUNMIL
         war_time = self.app.has_strategy("War") and self.app.data.has_enemy()
         full_investments = self.data.has_full_investments()
         mostly_full_investments = self.data.has_full_investments(days_missing=2)
         # can't rely on parsed turns remaining, because that won't happen yet
 
-        end_of_day = realm.turns.remaining <= END_OF_DAY_TURNS
+        # default end of day to be true so we ar emore conservative, if there
+        # are parsing problems or restarts it may not be absolutely determinable
+        # if this end of the day
+        end_of_day = True
+        if realm.turns.remaining is not None:
+            end_of_day = realm.turns.remaining <= END_OF_DAY_TURNS
 
         botlog.debug("full_bank? " + str(full_bank) + ", " +
                      "high_cash? " + str(high_cash) + ", " +
