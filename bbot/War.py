@@ -885,7 +885,7 @@ class War(Strategy):
         sent_strength = 0
         botlog.debug("Army before sending attack:\n" +
                      str(self.data.realm.army))
-        if army.jets.number > 0:
+        if needed_strength > 0 and army.jets.number > 0:
             jetsstrength = army.jets.number * power
             if jetsstrength > needed_strength:
                 numjets = int(math.ceil(needed_strength / float(power)))
@@ -895,7 +895,7 @@ class War(Strategy):
             needed_strength -= numjets * power
         numtanks = 0
         power = 4
-        if army.tanks.number > 0:
+        if needed_strength > 0 and army.tanks.number > 0:
             tanksstrength = army.tanks.number * power
             if tanksstrength > needed_strength:
                 numtanks = int(math.ceil(needed_strength / float(power)))
@@ -905,7 +905,7 @@ class War(Strategy):
             needed_strength -= numtanks * power
         numtroopers = 0
         power = 1
-        if army.troopers.number > 0:
+        if needed_strength > 0 and army.troopers.number > 0:
             troopersstrength = army.troopers.number * power
             if troopersstrength > needed_strength:
                 numtroopers = int(math.ceil(needed_strength / float(power)))
@@ -942,9 +942,7 @@ class War(Strategy):
         buf = self.app.read()
         ret_val = 0
         if 'Send this Attack? (Y/n)' not in buf:
-            botlog.warn("Not able to send out attack to " +
-                        str(attack.planet.name) + " : " +
-                        str(attack.realm.name))
+            botlog.warn("Not able to send out attack: " + str(attack))
         else:
             self.app.send('y', comment="yes, join the attack")
             buf = self.app.read()
@@ -1009,7 +1007,10 @@ class War(Strategy):
         botlog.debug("group attack ID: " + str(attack.id) + " needs: " +
                      str(needed_strength) + " strength, joining it now")
 
-        self.app.send(attack.id,comment="joining attack " + str(attack.id))
+        if attack.id is None:
+            raise Exception("No attack id")
+
+        self.app.sendl(attack.id,comment="joining attack " + str(attack.id))
         buf = self.app.read()
 
         ret_val = self.send_attack(attack, needed_strength)
@@ -1079,6 +1080,8 @@ class War(Strategy):
 
         # if a new GA was created, add it to our list of GA's
         if sent_strength > 0:
+            attack.id = len(self.group_attacks) + 1
+            botlog.debug("Assigning new ID of " + str(attack.id) + " to GA")
             self.group_attacks.append(attack)
             self.sort_group_attacks()
 
@@ -1273,7 +1276,7 @@ class War(Strategy):
             indie,
             _networth_to_strength(target.networth) * ATCK_SURP_RATIO)
         if ret_val > 0:
-            msg = ("Sent indie Attack:\n" + str(indie))
+            msg = ("Sent indie Attack: " + str(indie))
             botlog.note(msg)
         return ret_val
 
