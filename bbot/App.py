@@ -109,7 +109,7 @@ class App:
         self.adaptive_timeout = self.get_app_value('human_delay')
         self.timeout_alpha = 0.1
         self.min_timeout = self.adaptive_timeout
-        self.max_timeout = 10.0
+        self.max_timeout = 20.0
         self.no_email_reason = None
         self.last_full_buf = None
         self.last_buf = None

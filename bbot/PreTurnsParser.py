@@ -29,8 +29,8 @@ class PreTurnsParser(StatsParser):
             #'.+\(([0-9]+)\).+([0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]  [0-9][0-9]:[0-9][0-9]:[0-9][0-9]).*':1370
             'Since your last play, this has happened:': 1370,
             'Would you like to buy a lottery ticket\? \(Y/n\)': 1380,
-            '[R]  Reply, [D]  Delete, [I]  Ignore, or[Q]  Quit > ': 1390,
-            '[R] Reply, [D] Delete, [I] Ignore, or [Q] Quit>': 1400,
+            '\[R\]  Reply, \[D\]  Delete, \[I\]  Ignore, or \[Q\]  Quit> ': 1390,
+            '\[R\] Reply, \[D\] Delete, \[I\] Ignore, or \[Q\] Quit>': 1400,
         }
 
 

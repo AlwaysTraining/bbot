@@ -814,7 +814,7 @@ class MainMenu(StatsState):
         if '(1) Play Game' not in buf:
             app.data.msgtext = buf
             while (
-                   '[R]  Reply, [D]  Delete, [I]  Ignore, or[Q]  Quit > ' in buf or
+                   '[R]  Reply, [D]  Delete, [I]  Ignore, or [Q]  Quit > ' in buf or
                    '[R] Reply, [D] Delete, [I] Ignore, or [Q] Quit>' in buf):
                 app.send('d', comment="Deleting received message")
                 buf = app.read()
