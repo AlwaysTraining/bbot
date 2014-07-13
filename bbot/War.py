@@ -751,12 +751,17 @@ class War(Strategy):
 
     def create_ga_from_tokens(self, tokens):
 
+        botlog.debug("GA parsing tokens: " + ', '.join(tokens))
+
         t = tokens
         ga = Attack()
         i = 0
         ga.id = ToNum(t[i])
         i += 2 # skip who created the GA
         ga.planet = self.data.find_planet(t[i])
+        if ga.planet is None:
+            raise Exception("Unable to determine planet name from token: " +
+                            str(t[i]))
         i += 1
         # what would happen if someone named thier realm 'ALL'
         if t[i] != 'ALL':
@@ -838,12 +843,32 @@ class War(Strategy):
                     done_reading = True
                     break
                 elif reading_body:
-                    # botlog.debug("Reading body line")
-                    # i = 0
-                    # for c in line:
-                    #     dline = str(i) + ": '" + str(c) + "'"
-                    #     botlog.debug(dline)
-                    #     i += 1
+                    botlog.debug("Reading body line")
+                    i = 0
+                    reading_id = 0
+                    idtok=""
+                    for c in line:
+                        dline = str(i) + ": '" + str(c) + "'"
+                        botlog.debug(dline)
+                        i += 1
+                        if reading_id == 0 and c in "0123456789":
+                            idtok += c
+
+                        elif reading_id == 0 and c not in "0123456789":
+                            reading_id = 1
+                            break
+
+                    start_tok = len(idtok) - 1
+
+                    breaks = [(0, 1 + start_tok) ,
+                              (2 + start_tok, 4 + start_tok),
+                              (5 + start_tok, 19 + start_tok),
+                              (20 + start_tok, 39 + start_tok),
+                              (40 + start_tok, 48 + start_tok),
+                              (49 + start_tok, 55 + start_tok),
+                              (56 + start_tok, 63 + start_tok),
+                              (64 + start_tok, 71 + start_tok),
+                              (72 + start_tok, 77 + start_tok)]
 
                     tokens = []
                     for x in breaks:
@@ -996,6 +1021,7 @@ class War(Strategy):
         max_iterations = 20
         while max_iterations > 0:
             buf = self.app.read()
+            self.data.gatext += buf + "\n"
             if "Join which group?" in buf:
                 break
             self.app.sendl(comment="Who the fuck created so many damn GA's")

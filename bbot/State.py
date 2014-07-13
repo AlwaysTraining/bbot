@@ -607,6 +607,8 @@ def _parse_other_realm(app, cur_planet):
     buf = app.read()
     app.send('?', comment="List enemy planet realms")
     buf = app.read()
+    app.data.enemyscores += cur_planet.name + ":\n" + buf + "\n"
+
     opp = OtherPlanetParser(
         cur_planet.realms, planet_name=cur_planet.name)
     opp.parse(app, buf)

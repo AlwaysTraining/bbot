@@ -531,6 +531,8 @@ class App:
         body = self.maybe_append_section(body, "Messages`", self.data.msgtext)
         body = self.maybe_append_section(body, "IP Scores",self.data.ipscorestext)
         body = self.maybe_append_section(body, "Scores", self.data.planettext)
+        body = self.maybe_append_section(body, "Enemies", self.data.enemyscores)
+        body = self.maybe_append_section(body, "Group Attacks", self.data.gatext)
         body = self.maybe_append_section(body, "Income", self.data.earntext)
         body = self.maybe_append_section(body, "Status", self.data.statstext)
         body = self.maybe_append_section(body, "Inventory", self.data.spendtext)
