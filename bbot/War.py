@@ -512,7 +512,11 @@ class War(Strategy):
 
             if "All missiles and bombs require 500 Bombers to deliver their " \
                "payloads." in buf:
-                botlog.warn("Not enough bombers to send S-op")
+
+                if (self.data.realm.turns.remaining is not None and
+                            self.data.realm.turns.remaining <=
+                            END_OF_DAY_TURNS):
+                    botlog.warn("Not enough bombers to send S-op")
                 self.app.sendl(comment="Returning from S-Op to interplanetary "
                                        "menu")
                 buf = self.app.read()
@@ -537,7 +541,10 @@ class War(Strategy):
             buf = self.app.read()
 
             if "You cannot afford it." in buf:
-                botlog.warn("Could not afford to send S-Op missle/bomb")
+                if (self.data.realm.turns.remaining is not None and
+                            self.data.realm.turns.remaining <=
+                            END_OF_DAY_TURNS):
+                    botlog.warn("Could not afford to send S-Op missle/bomb")
                 # though we can't afford it, we don't quit, we break,
                 # which will then cause us to send undermines in the next
                 # turn.
