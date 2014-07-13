@@ -136,8 +136,7 @@ class EndTurn(StatsState):
                         return MainMenu(should_exit=True)
 
             else:
-                botlog.warn("Not known what turn we are on when exiting the "
-                            "turn, did the turn start in mid turn?")
+                botlog.warn("Game was restarted in middle of a turn")
 
             app.send('y', comment='Yes I wish to continue')
 
@@ -335,7 +334,7 @@ def list_investments(app, maintParser):
     app.data.realm.bank.investments = []
     maintParser.parse(app, buf)
     botlog.info("Current Investments : $" +
-                str(sum(app.data.realm.bank.investments)) +
+                readable_num(sum(app.data.realm.bank.investments)) +
                 "\n" +
                 pprint.pformat(app.data.realm.bank.investments))
 
@@ -607,7 +606,7 @@ def _parse_other_realm(app, cur_planet):
     buf = app.read()
     app.send('?', comment="List enemy planet realms")
     buf = app.read()
-    app.data.enemyscores += cur_planet.name + ":\n" + buf + "\n"
+    app.data.otherrealmscores += buf.replace('(A-Y,Z=All,?=List) Send to: ','') + "\n"
 
     opp = OtherPlanetParser(
         cur_planet.realms, planet_name=cur_planet.name)

@@ -100,7 +100,7 @@ class Investor(Strategy):
             buf = self.app.read()
             self.ip.parse(self.app, buf)
             botlog.info("After investing, " +
-                        str(realm.gold) +
+                        readable_num(realm.gold) +
                         " gold remains onhand")
 
             # if the day  is fully invested, go to next day

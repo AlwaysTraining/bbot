@@ -295,7 +295,7 @@ class Regions(object):
         ra = r.number * length
         ia = int(ra)
 
-        # randomly choose greather than or greatherthan or equal
+        # randomly choose greather than or greather than or equal
         if random.choice([True,False]):
             newmax = ra >= mra
         else:
@@ -594,8 +594,8 @@ class Data(dict):
         self.league = None
         self.ipscorestext = ''
         self.eventtext = ''
-        self.gatext = ''
-        self.enemyscores = ''
+        self.gatextdict = {}
+        self.otherrealmscores = ''
 
 
     def __str__(self):
@@ -754,10 +754,10 @@ class Data(dict):
             raise Exception("Not known what current food consumption is")
 
         botlog.info("last population food consumption was " + 
-                str(a.civilian.food_consumption) +
+                readable_num(a.civilian.food_consumption) +
             ". at a " + str(round(g*100,2)) +
             "% growth rate, we should need a surplus of " +
-            str(r))
+            readable_num(r))
 
 
         return r

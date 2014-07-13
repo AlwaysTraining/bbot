@@ -465,7 +465,7 @@ class App:
 
     def format_msgmap_text(self, msgmap):
         warntext = ""
-        for warning,count in msgmap.items():
+        for warning,count in sorted(msgmap.items(), key=lambda x: x[0]):
             warntext += str(warning)
             if count > 1:
                 warntext += " (x" + str(count) + ")"
@@ -531,8 +531,9 @@ class App:
         body = self.maybe_append_section(body, "Messages`", self.data.msgtext)
         body = self.maybe_append_section(body, "IP Scores",self.data.ipscorestext)
         body = self.maybe_append_section(body, "Scores", self.data.planettext)
-        body = self.maybe_append_section(body, "Enemies", self.data.enemyscores)
-        body = self.maybe_append_section(body, "Group Attacks", self.data.gatext)
+        body = self.maybe_append_section(body, "Other Realms", self.data.otherrealmscores)
+        for key, val in self.data.gatextdict.items():
+            body = self.maybe_append_section(body, key + " Scores", val)
         body = self.maybe_append_section(body, "Income", self.data.earntext)
         body = self.maybe_append_section(body, "Status", self.data.statstext)
         body = self.maybe_append_section(body, "Inventory", self.data.spendtext)

@@ -62,7 +62,7 @@ class LackeyBase(Strategy):
             return 0.0
 
         # grow fat before giving up the goods
-        if self.data.realm.regions.number < 1000:
+        if self.data.realm.regions.number < 200:
             self.not_trading_reason += "Empire has too few regions, "
             return 0.0
 

@@ -112,7 +112,7 @@ class Attack(object):
         # base needed strength
         base = (self.get_target_strength() * ATCK_SURP_RATIO)
 
-        botlog.debug("The base needed strength is " + str(base))
+        botlog.debug("The base needed strength is " + readable_num(base))
 
         if group_attacks is None:
             strength = max(0, int(math.ceil(base)) - self.get_strength())
@@ -180,7 +180,7 @@ class Attack(object):
                 # reduce the needed ratio
                 base *= MULTIPLE_ATTACK_REDUCER
                 num_reduces += 1
-                botlog.debug("New base needed strength is " + str(base) +
+                botlog.debug("New base needed strength is " + readable_num(base) +
                              " after " + str(num_reduces) + " reduces")
 
         if num_reduces > 0:
@@ -378,7 +378,11 @@ class War(Strategy):
                 "agents",
                 buyratio=None,
                 desired_ammount=1000 - self.army.agents.number)
-            if self.army.agents.number < 1000:
+            if (self.army.agents.number < 1000 and
+                        self.data.realm.turns.remaining is not None and
+                        self.data.realm.turns.remaining <=
+                        END_OF_DAY_TURNS):
+
                 botlog.warn("Could not buy 1k agents")
 
         if self.army.bombers is None or self.army.bombers.number is None:
@@ -390,7 +394,10 @@ class War(Strategy):
                 "bombers",
                 buyratio=None,
                 desired_ammount=10000 - self.army.bombers.number)
-            if self.army.agents.number < 10000:
+            if (self.army.agents.number < 10000 and
+                        self.data.realm.turns.remaining is not None and
+                        self.data.realm.turns.remaining <=
+                        END_OF_DAY_TURNS):
                 botlog.warn("Could not buy 10k bombers")
 
         # buy carriers if we don't have enough to send jets
@@ -577,7 +584,10 @@ class War(Strategy):
                 buf = self.app.read()
 
                 if "You can't afford that!" in buf:
-                    botlog.warn("Could not afford to send undermine")
+                    if (self.data.realm.turns.remaining is not None and
+                            self.data.realm.turns.remaining <=
+                            END_OF_DAY_TURNS):
+                        botlog.warn("Could not afford to send undermine")
                     self.app.sendl(
                         comment="Returning from S-Op to interplanetary "
                                 "menu")
@@ -876,6 +886,8 @@ class War(Strategy):
                     # botlog.debug("Tokens are: " + str(tokens))
                     ga = self.create_ga_from_tokens(tokens)
                     gas.append(ga)
+                elif 'Join Group Attack' in line:
+                    continue
                 else:
                     botlog.warn("Unhandled line '" + line + "'")
 
@@ -1021,7 +1033,10 @@ class War(Strategy):
         max_iterations = 20
         while max_iterations > 0:
             buf = self.app.read()
-            self.data.gatext += buf + "\n"
+            self.data.gatextdict[attack.planet.name] = (
+                buf.replace(
+                    'Join Group Attack','').replace(
+                    'Join which group?','') + "\n")
             if "Join which group?" in buf:
                 break
             self.app.sendl(comment="Who the fuck created so many damn GA's")
@@ -1579,8 +1594,8 @@ class War(Strategy):
     def on_interplanetary_menu(self):
 
         if self.data.setup is None:
-            botlog.warn("Game may have restarted mid turn, "
-                        "not doing any war activities")
+            botlog.warn("Game restarted mid turn, "
+                        "no war activities on first turn")
             return
 
         if self.data.setup.local_game:
