@@ -428,7 +428,7 @@ class War(Strategy):
         return realms[0]
 
     def get_highest_regions_enemy_realm(self):
-        realms = self.select_enemy_realms(
+        realms = selef.select_enemy_realms(
             None,
             self._select_highest_regions_enemy_realm)
         if len(realms) == 0:

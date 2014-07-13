@@ -424,10 +424,12 @@ class TurnStats(StatsState):
         self.reset_earntext = True
 
     def append_stats_text(self, app, buf):
+        buf = buf.replace("Yes\n",'')
+        buf = buf.replace("-==-\n", '')
         if self.reset_earntext:
             self.reset_earntext = False
             app.data.earntext = ''
-        app.data.earntext += "\n" + buf + "\n"
+        app.data.earntext += buf + "\n"
 
     def transition(self, app, buf):
 
@@ -771,7 +773,14 @@ class MainMenu(StatsState):
         app.data.planet = Planet()
         # read in the scores and stats of all the realms
         self.parse(app, buf)
-        app.data.planettext = buf
+        rtext = buf.replace('See Scores','')
+        rtext = buf.replace('See Scores','')
+        rtext = rtext.replace('-*Barren Realms Elite*-','')
+        rtext = rtext.replace('-==-', '')
+        rtext = rtext.strip()
+
+
+        app.data.planettext = rtext
         if '-=<Paused>=-' in buf:
             app.sendl()
         buf = app.read()
@@ -779,7 +788,11 @@ class MainMenu(StatsState):
         # in the main menu, check the empire status
         app.send(2, comment="Checking status")
         buf = app.read()
-        app.data.statstext = buf
+        stext = buf
+        stext = stext.replace('See Status','')
+        stext = stext.replace('-==-','')
+        stext = stext.strip()
+        app.data.statstext = stext
         TurnStatsParser().parse(app, buf)
         if '-=<Paused>=-' in buf:
             app.sendl()

@@ -67,7 +67,10 @@ class PreTurnsParser(StatsParser):
             if (line.strip() != "" and
                     'Since your last play, this has happened:' not in line and
                     'You have no messages.' not in line):
-                app.data.eventtext += line + "\n"
+                line = line.replace('-==-','')
+                line = line.strip()
+                if len(line) > 0:
+                    app.data.eventtext += line + "\n"
 
 
 
