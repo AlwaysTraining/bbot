@@ -919,20 +919,23 @@ class War(Strategy):
         numbombers = int(0.25 * army.bombers.number)
 
 
-        # integrety check, this should be true, we should only be sending
-        # enough to win
-        if needed_strength > 10 or needed_strength < -10:
+        # Log how much we are submitting if this is not known to be a optimized
+        # winning attack
+        if (strength_to_commit > 10 and (
+            needed_strength > 10 or needed_strength < -10)):
             rname = "ALL"
             if attack.realm is not None:
                 rname = attack.realm.name
-            botlog.warn("Attack force too big or too small for " +
-                        str(attack.planet.name) + " : " + str(rname) +
-                        " by: " + str(needed_strength))
+            botlog.debug("Attack to " + rname + " of " +
+                        readable_num(sent_strength) +
+                        " is too big or too small for target force of " +
+                        readable_num(strength_to_commit) + " by " +
+                        readable_num(needed_strength))
 
-            botlog.debug("Sending attack with " + readable_num(numtroopers) +
-                         " troopers, " + readable_num(numjets) + " jets, " +
-                         readable_num(numtanks) + " tanks, and " +
-                         readable_num(numbombers) + " bombers")
+        botlog.debug("Sending attack with " + readable_num(numtroopers) +
+                     " troopers, " + readable_num(numjets) + " jets, " +
+                     readable_num(numtanks) + " tanks, and " +
+                     readable_num(numbombers) + " bombers")
 
         # send the sequence for joining
         self.app.send_seq(
@@ -1281,6 +1284,30 @@ class War(Strategy):
         return ret_val
 
 
+    def maybe_send_indie_attack(self, targets):
+
+        for target in targets:
+
+            botlog.debug("Possibly sending tops to target: " +
+                         str(target.name))
+            # send t-ops
+            self.send_tops(target)
+
+            botlog.debug("Sending an indie attack to target: " +
+                         str(target.name))
+            ret_val = self.send_indie_attack(target)
+
+            if ret_val > 0:
+                botlog.debug(
+                    "Sent strength of " + readable_num(ret_val) + " to target: " +
+                    str(target.name))
+
+                return ret_val
+
+        return 0
+
+
+
     def maybe_send_indie_attacks(self):
 
         if not self.can_send_indie():
@@ -1295,65 +1322,23 @@ class War(Strategy):
         botlog.debug("found " + str(len(targets)) + " indie targets")
         tot_ret = 0
 
-        # so this will send indies to targets from large to small until you
-        # run out of money to send attacks, or run out of attacks.  This
-        # behavior, is then repeated every turn.  It should make for a fairly
-        # good attack strategy on average, but there will be cases where this
-        # will not be ideal, will adjust as needed
+        # plenty of turns left, just send one attack
+        if self.data.realm.turns.remaining > END_OF_DAY_TURNS:
+            tot_ret += self.maybe_send_indie_attack(targets)
+        else:
+            max_iterations = len(targets)
+            while self.can_send_indie() and max_iterations >= 0:
+                max_iterations -= 1
 
+                ret = self.maybe_send_indie_attack(targets)
+                tot_ret += ret
 
-        for target in targets:
-
-            botlog.debug("Possibly sending tops to target: " +
-                         str(target.name))
-            # send t-ops
-            self.send_tops(target)
-
-            botlog.debug("Sending an indie attack to target: " +
-                         str(target.name))
-            ret_val = self.send_indie_attack(target)
-
-            tot_ret += ret_val
-
-            if ret_val == 0:
-
-                # TODO think about reducing needed strength to repeated indie
-                #  target, we already do it for group attacks
-
-                if self.data.realm.turns.remaining <= END_OF_DAY_TURNS:
-
-                    # but by the end of the day if we havn't sent out our indies
-                    # we want to make sure we exaustively search the list for
-                    # possible targets
-
-                    botlog.debug("Could not send indie attack, but it is "
-                                 "getting late in the day, trying smaller "
-                                 "targets")
-                    continue
-                else:
-                    # we do our best to ensure we are attacking targets in the right
-                    # order, if we couldn't attack, it is probably because we
-                    # couldn't afford it, lets just wait until we
-                    # have more money next turn
-
-                    botlog.debug("Could not send indie attack, giving up for "
-                                 "this turn")
-
+                if ret == 0:
                     break
 
-            else:
-
-                botlog.debug(
-                    "Sent strength of " + str(ret_val) + " to target: " +
-                    str(target.name))
-
-                self.attacked_targets.append(target)
-
-                # no more indies left today
-                if self.sent_indies:
-                    botlog.debug("We have sent all possible indies, not looking"
-                                 "to try any more targets")
-                    break
+                botlog.debug("Getting new possible indie targets")
+                targets = self.get_indie_targets()
+                botlog.debug("found " + str(len(targets)) + " indie targets")
 
 
         return tot_ret
