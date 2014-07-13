@@ -21,7 +21,11 @@ class LocalLackey(LackeyBase):
         self.can_send_trade = True
 
         # get the destination realm from the application
-        self.masterName = self.get_strategy_option("master")
+        self.masterNames = make_string_list(self.get_strategy_option("master"))
+        if len(self.masterNames) > 0:
+            self.masterName = self.masterNames[0]
+        self.tradedWithMasterNames = []
+        self.noRelationMasterNames = []
 
     def get_master_name(self):
         return self.masterName
@@ -36,25 +40,33 @@ class LocalLackey(LackeyBase):
         self.app.sendl(comment="leaving paused view of diplomacy list")
         buf = self.app.read()
 
-        masterRealm = self.app.data.get_realm_by_name(self.masterName)
+        for userMasterName in self.masterNames:
+            self.masterName = userMasterName
 
-        if masterRealm is None:
-            raise Exception("Could not locate master realm: " + self.masterName)
+            masterRealm = self.app.data.get_realm_by_name(self.masterName)
 
-        if masterRealm.treaty == "None":
-            self.app.send(2, comment="Send a protective trade agreement")
-            buf = self.app.read()
-            self.app.sendl(masterRealm.menu_option,
-                           comment="send trade agreement to master realm")
-            buf = self.app.read()
-            self.app.send('N',
-                          comment="not attaching message to treaty request")
-            buf = self.app.read()
+            if masterRealm is None:
+                raise Exception("Could not locate master realm: " + self.masterName)
+
+            if masterRealm.treaty == "None":
+                self.app.send(2, comment="Send a protective trade agreement")
+                buf = self.app.read()
+                self.app.sendl(masterRealm.menu_option,
+                               comment="send trade agreement to master realm")
+                buf = self.app.read()
+                self.app.send('N',
+                              comment="not attaching message to treaty request")
+                buf = self.app.read()
+                self.noRelationMasterNames.append(userMasterName)
+                botlog.note("Trade treaty sent to " + str(masterRealm.name))
+
+        if len(self.noRelationMasterNames) == len(self.masterNames):
             self.can_send_trade = False
             self.not_trading_reason += ("we sent relations request with no " +
                                         "response yet, ")
 
-            # we are still in diplomacy menu at this point
+        # we are still in diplomacy menu at this point
+
 
     def on_spending_menu(self):
         # buy carriers if needed
@@ -70,48 +82,75 @@ class LocalLackey(LackeyBase):
     def system_trading_menu(self):
 
         # early in the game, we don't trade
-        tradeRatio = self.get_trade_ratio()
-        if not self.check_can_trade(tradeRatio):
+        totalTradeRatio = self.get_trade_ratio()
+        if not self.check_can_trade(totalTradeRatio):
             botlog.info(
                 "Not trading this turn because: " + self.not_trading_reason)
             return
 
-        self.app.send('*', comment="Entering System menu")
-        self.app.read()
-        self.app.send('t', comment="Entering trading menu")
-        self.app.read()
+        tradeRatioStep = totalTradeRatio / float(len(self.masterNames))
 
-        self.app.send(1, comment="trade with another local empire")
-        buf = self.app.read()
-        # we already read list of realms atbeginning of the
-        # day in scores and diplomacy mwnu
+        for userMasterName in self.masterNames:
+            if userMasterName in self.tradedWithMasterNames:
+                continue
+            if userMasterName in self.noRelationMasterNames:
+                continue
 
-        masterRealm = self.app.data.get_realm_by_name(self.masterName)
+            self.masterName = userMasterName
 
-        if masterRealm is None:
-            raise Exception("Could not locate master realm: " + self.masterName)
+            masterRealm = self.app.data.get_realm_by_name(self.masterName)
 
-        self.app.send(masterRealm.menu_option,
-                      comment="trade with master realm")
-        buf = self.app.read()
+            if masterRealm is None:
+                raise Exception("Could not locate master realm: " + self.masterName)
 
-        if "You do not have relations with that realm." in buf:
-            botlog.warn("Could not trade with master realm")
-            self.can_send_trade = False
-            self.not_trading_reason = (self.get_master_name() +
-                                       " has not yet accepted treaty")
-        else:
-            traded = self.fill_trade_deal(tradeRatio)
-            if traded:
-                self.can_send_trade = False
-                self.not_trading_reason = "Already sent trade deal today, "
+            self.app.send('*', comment="Entering System menu")
+            self.app.read()
+            self.app.send('t', comment="Entering trading menu")
+            self.app.read()
 
+            self.app.send(1, comment="trade with another local empire")
             buf = self.app.read()
 
-        self.app.send_seq([0, 0], comment="Exit from trading menu to buy menu")
+            self.app.send(masterRealm.menu_option,
+                          comment="trade with master realm")
+            buf = self.app.read()
 
-        # we are now back at the spending menu, parse it
-        SpendingParser().parse(self.app, self.app.read())
+            if "You do not have relations with that realm." in buf:
+                botlog.warn("Could not trade with master realm: " +
+                            str(masterRealm.name))
+                self.noRelationMasterNames.append(userMasterName)
+
+            else:
+                tradeRatio = (tradeRatioStep * (
+                    1+len(self.tradedWithMasterNames) + len(
+                        self.noRelationMasterNames)))
+                tradeRatio = min(tradeRatio,1.0)
+                tradeRatio = max(tradeRatio,0.0)
+
+                botlog.debug("Computed actual trade ratio of: " + str(tradeRatio))
+
+                traded = self.fill_trade_deal(
+                    tradeRatio)
+                if traded:
+                    self.tradedWithMasterNames.append(userMasterName)
+
+                buf = self.app.read()
+
+            self.app.send_seq([0, 0],
+                              comment="Exit from trading menu to buy menu")
+
+            # we are now back at the spending menu, parse it
+            SpendingParser().parse(self.app, self.app.read())
+
+        if len(self.noRelationMasterNames) == len(self.masterNames):
+            self.can_send_trade = False
+            self.not_trading_reason = (str(self.noRelationMasterNames) +
+                    " have not yet accepted treaty")
+
+        if len(self.tradedWithMasterNames) == len(self.masterNames):
+            self.can_send_trade = False
+            self.not_trading_reason = "Already sent trade deals today, "
+
 
 
 

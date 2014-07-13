@@ -24,17 +24,11 @@ class LackeyBase(Strategy):
         if self.tribute_ratio < 0.0: self.tribute_ratio = 0.0
 
         # determine what to trade
-        tradeItemStrings = self.get_strategy_option("trade_items")
-        if isinstance(tradeItemStrings, basestring):
-            if ',' in tradeItemStrings:
-                tradeItemStrings = [x.strip() for x in
-                                    tradeItemStrings.split(',')]
-            else:
-                tradeItemStrings = [tradeItemStrings]
-        self.tradeItemStrings = tradeItemStrings
+        self.tradeItemStrings = make_string_list(self.get_strategy_option(
+            "trade_items"))
 
         self.tradeItems = []
-        for tradeItemString in tradeItemStrings:
+        for tradeItemString in self.tradeItemStrings:
             if tradeItemString == "Food":
                 raise Exception(
                     "There is a bug, we can't reliably trade food at this time, fix the problem if you care")
@@ -164,7 +158,7 @@ class LackeyBase(Strategy):
                    " turns remaining:\n")
             for itemName,itemAmmount in trademap.items():
                 msg += "\t" + itemName + ":\t" + readable_num(itemAmmount) +"\n"
-            botlog.note(msg)
+            botlog.note(msg.strip())
 
 
 
