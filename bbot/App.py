@@ -533,7 +533,7 @@ class App:
         body = self.maybe_append_section(body, "Scores", self.data.planettext)
         body = self.maybe_append_section(body, "Other Realms", self.data.otherrealmscores)
         for key, val in self.data.gatextdict.items():
-            body = self.maybe_append_section(body, key + " Scores", val)
+            body = self.maybe_append_section(body, key + " Group Attacks", val)
         body = self.maybe_append_section(body, "Income", self.data.earntext)
         body = self.maybe_append_section(body, "Status", self.data.statstext)
         body = self.maybe_append_section(body, "Inventory", self.data.spendtext)
