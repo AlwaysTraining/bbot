@@ -409,7 +409,7 @@ class Maint(StatsState):
                 app.send('n')
                 app.metadata.low_food = True
             else:
-                botlog.warn(
+                botlog.info(
                     "Turn food production was not enough to feed empire")
                 app.send_seq(['y', 'b', '\r', '0'])
                 self.food_reconsider_turn = app.data.realm.turns.current

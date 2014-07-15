@@ -41,7 +41,7 @@ class RegionBuy(Strategy):
         self.sp.parse(self.app, self.app.buf)
         if (num_regions is None and
             self.app.data.realm.regions.number_affordable == 0):
-            botlog.warn("Can not afford any regions")
+            botlog.info("Can not afford any regions")
             return
 
         self.a = num_regions

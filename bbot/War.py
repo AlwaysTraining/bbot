@@ -603,7 +603,10 @@ class War(Strategy):
 
                 if ("All missiles and bombs require 500 Bombers to deliver "
                     "their payloads." in buf):
-                    botlog.warn("Not enough bombers to send undermine")
+                    if (self.data.realm.turns.remaining is not None and
+                                self.data.realm.turns.remaining <=
+                                END_OF_DAY_TURNS):
+                        botlog.warn("Not enough bombers to send undermine")
                     self.app.sendl(
                         comment="Returning from S-Op to interplanetary "
                                 "menu")
@@ -798,6 +801,12 @@ class War(Strategy):
                      ": yeilds attack: " + str(ga))
         return ga
 
+    def set_ga_text(self,buf):
+        self.data.gatext += (
+            buf.replace(
+                'Join Group Attack', '').replace(
+                'Join which group?', '') + "\n")
+
     def parse_group_attacks(self):
         self.group_attacks = []
         gas = self.group_attacks
@@ -812,6 +821,8 @@ class War(Strategy):
 
         sepchar = ';' #hopefully no one puts this char in their realm name
 
+        self.data.gatext = ""
+
         while not done_reading and max_iterations > 0:
             buf = self.app.read()
 
@@ -819,6 +830,8 @@ class War(Strategy):
             if 'There are not any attack parties at this time.' in buf:
                 botlog.debug("Not parsing any ga's because there arn't any")
                 return
+
+            self.set_ga_text(buf)
 
             lines = buf.split(os.linesep)
 
@@ -1038,12 +1051,10 @@ class War(Strategy):
 
         # read all the attacks until we get to the join prompt
         max_iterations = 20
+        self.data.gatext = ""
         while max_iterations > 0:
             buf = self.app.read()
-            self.data.gatextdict[attack.planet.name] = (
-                buf.replace(
-                    'Join Group Attack','').replace(
-                    'Join which group?','') + "\n")
+            self.set_ga_text(buf)
             if "Join which group?" in buf:
                 break
             self.app.sendl(comment="Who the fuck created so many damn GA's")
