@@ -656,7 +656,8 @@ class War(Strategy):
                 raise Exception("Tried too many times to send bombs")
 
         if '[Special Operations]' in buf:
-            botlog.warn("Unexpected exit from S-Op menu")
+            if 'You cannot afford it.' not in buf:
+                botlog.warn("Unexpected exit from S-Op menu")
             self.app.sendl(
                 comment="Returning from S-Op to interplanetary menu")
             buf = self.app.read()
@@ -1195,6 +1196,10 @@ class War(Strategy):
             if ga.leave > 24:
                 break
 
+            if ga.planet.relation != "Enemy":
+                botlog.debug("Not joining attack to planet who is not enemy")
+                continue
+
             botlog.debug("Group attack " + str(ga.id) + " leaves in " +
                          str(ga.leave) + " hours")
 
@@ -1245,6 +1250,12 @@ class War(Strategy):
 
             # classify ga's into global and non global lists
             for ga in cur_gas:
+
+                if ga.planet.relation != "Enemy":
+                    botlog.debug(
+                        "Not filling group attack to planet who is not enemy")
+                    continue
+
                 if ga.is_global():
                     global_gas.append(ga)
                 else:

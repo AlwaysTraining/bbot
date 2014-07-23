@@ -299,3 +299,13 @@ def is_date(s):
         return True
     except:
         return False
+
+
+def string_to_bool(s):
+    ls = s.lower()
+    if ls == 'true':
+        return True
+    if ls == 'false':
+        return False
+
+    raise Exception("String is not a bool: " + str(s))

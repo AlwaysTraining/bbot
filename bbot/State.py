@@ -839,6 +839,8 @@ class MainMenu(StatsState):
         if app.data.league is None and '(9)' in buf:
             self.parse_interplanetary_data(app)
 
+        self.app.on_main_menu()
+
         return buf
 
 

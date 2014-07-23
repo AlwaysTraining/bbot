@@ -92,7 +92,10 @@ class App:
         # if reading options from file, dates will still be strings
         for key, value in options.items():
             if Utils.is_date(value):
+                print key, "is date"
                 options[key] = Utils.string_to_date(value)
+            else:
+                print key, "is not date"
 
         self.query_func = query_func
         self.secret_query_func = secret_query_func
@@ -359,6 +362,8 @@ class App:
         botlog.cur_strat = ''
         return ret
 
+    def on_main_menu(self):
+        return self.call_strategies("on_main_menu")
 
     def on_bank_menu(self):
         return self.call_strategies("on_bank_menu")

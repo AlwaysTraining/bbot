@@ -124,6 +124,7 @@ class LocalLackey(LackeyBase):
                 tradeRatio = (tradeRatioStep * (
                     1+len(self.tradedWithMasterNames) + len(
                         self.noRelationMasterNames)))
+                tradeRatio = 1.0 - tradeRatio
                 tradeRatio = min(tradeRatio,1.0)
                 tradeRatio = max(tradeRatio,0.0)
 

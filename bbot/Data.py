@@ -531,6 +531,7 @@ class Realm(object):
         self.advisors = Advisors()
         self.pirates = Pirates()
         self.events = []
+        self.menu_option = None
 
     def reset_pirates(self):
         self.pirates = Pirates()

@@ -52,10 +52,16 @@ class RegionBuy(Strategy):
         if self.a is None:
             raise Exception("Not known how many regions there are")
 
+        wartime = self.app.has_strategy("War") and self.app.data.has_enemy()
+
         # we could call buy_ag_regions multiple times per turn, but there is usually no
         #   point to doing it, it takes a lot of time when debugging.  If it is ever
         #   shown necessarry, just call it every time (in non debug mode)
-        if app.metadata.last_ag_buy_turn != self.data.realm.turns.current:
+        # it has been shown necessary in war time, something with how the
+        #   advisor calculates the deficit when there are a lot of waste
+        #   regions
+        if (not wartime and
+                app.metadata.last_ag_buy_turn != self.data.realm.turns.current):
             # buy just enough ag, this sends us back to the spending menu
             self.buy_ag_regions()
             app.metadata.last_ag_buy_turn = self.data.realm.turns.current
@@ -186,11 +192,20 @@ class RegionBuy(Strategy):
             self.app.sendl()
             self.app.read()
 
+            wartime = self.app.has_strategy("War") and self.app.data.has_enemy()
+
+            needed_years_survival = 2
+            needed_surplus = self.app.data.try_get_needed_surplus()
+            if wartime:
+                needed_years_survival *= 3
+                needed_surplus *=3
+
             # no_deficit = advisors.civilian.food_deficit is None
             deficit_but_ok = (advisors.civilian.years_survival is not None and
-                              advisors.civilian.years_survival > 2)
+                              advisors.civilian.years_survival >
+                              needed_years_survival)
             big_enough_surplus = (advisors.civilian.food_surplus >=
-                                  self.app.data.try_get_needed_surplus())
+                                  needed_surplus)
             not_enough_regions = (
                 self.a is None or
                 self.a <= 0)

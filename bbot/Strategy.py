@@ -32,6 +32,9 @@ class Strategy:
     def get_name(self):
         return self.__class__.__name__
 
+    def on_main_menu(self):
+        return UNHANDLED
+
     def on_spending_menu(self):
         return UNHANDLED
 
