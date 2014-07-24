@@ -13,6 +13,7 @@ import botlog
 import Utils
 import Data
 import MetaData
+import Mentat
 import Strategy
 from bbot import *
 import botlog
@@ -101,6 +102,7 @@ class App:
         self.secret_query_func = secret_query_func
         self.data = Data.Data()
         self.metadata = MetaData.MetaData(self)
+        self.mentat = Mentat.Mentat(self)
         self.cur_state = None
         self.match = None
         self.match_index = None

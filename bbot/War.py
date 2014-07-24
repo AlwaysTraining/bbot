@@ -212,6 +212,7 @@ class War(Strategy):
         self.group_attacks = None
         self.attacked_targets = []
         self.at_war = None
+        self.end_of_day = None
 
     def get_priority(self):
         return VERYHIGH_PRIORITY
@@ -338,6 +339,8 @@ class War(Strategy):
 
     def on_spending_menu(self):
 
+        self.end_of_day = self.app.mentat.is_end_of_day()
+
         if self.data.setup.local_game:
             botlog.warn("War Strategy is not for local games")
             return Strategy.UNHANDLED
@@ -379,9 +382,8 @@ class War(Strategy):
                 buyratio=None,
                 desired_ammount=1000 - self.army.agents.number)
             if (self.army.agents.number < 1000 and
-                        self.data.realm.turns.remaining is not None and
-                        self.data.realm.turns.remaining <=
-                        END_OF_DAY_TURNS):
+                        self.end_of_day.is_certain() and
+                        self.end_of_day.answer):
 
                 botlog.warn("Could not buy 1k agents")
 
@@ -395,9 +397,8 @@ class War(Strategy):
                 buyratio=None,
                 desired_ammount=10000 - self.army.bombers.number)
             if (self.army.agents.number < 10000 and
-                        self.data.realm.turns.remaining is not None and
-                        self.data.realm.turns.remaining <=
-                        END_OF_DAY_TURNS):
+                    self.end_of_day.is_certain() and
+                    self.end_of_day.answer):
                 botlog.warn("Could not buy 10k bombers")
 
         # buy carriers if we don't have enough to send jets
@@ -513,9 +514,8 @@ class War(Strategy):
             if "All missiles and bombs require 500 Bombers to deliver their " \
                "payloads." in buf:
 
-                if (self.data.realm.turns.remaining is not None and
-                            self.data.realm.turns.remaining <=
-                            END_OF_DAY_TURNS):
+                if (self.end_of_day.is_certain() and
+                        self.end_of_day.answer):
                     botlog.warn("Not enough bombers to send S-op")
                 self.app.sendl(comment="Returning from S-Op to interplanetary "
                                        "menu")
@@ -541,9 +541,7 @@ class War(Strategy):
             buf = self.app.read()
 
             if "You cannot afford it." in buf:
-                if (self.data.realm.turns.remaining is not None and
-                            self.data.realm.turns.remaining <=
-                            END_OF_DAY_TURNS):
+                if (self.end_of_day.is_certain() and self.end_of_day.answer):
                     botlog.warn("Could not afford to send S-Op missle/bomb")
                 # though we can't afford it, we don't quit, we break,
                 # which will then cause us to send undermines in the next
@@ -591,9 +589,7 @@ class War(Strategy):
                 buf = self.app.read()
 
                 if "You can't afford that!" in buf:
-                    if (self.data.realm.turns.remaining is not None and
-                            self.data.realm.turns.remaining <=
-                            END_OF_DAY_TURNS):
+                    if (self.end_of_day.is_certain() and self.end_of_day.answer):
                         botlog.warn("Could not afford to send undermine")
                     self.app.sendl(
                         comment="Returning from S-Op to interplanetary "
@@ -603,9 +599,7 @@ class War(Strategy):
 
                 if ("All missiles and bombs require 500 Bombers to deliver "
                     "their payloads." in buf):
-                    if (self.data.realm.turns.remaining is not None and
-                                self.data.realm.turns.remaining <=
-                                END_OF_DAY_TURNS):
+                    if self.end_of_day.is_certain() and self.end_of_day.answer:
                         botlog.warn("Not enough bombers to send undermine")
                     self.app.sendl(
                         comment="Returning from S-Op to interplanetary "
@@ -1164,11 +1158,13 @@ class War(Strategy):
         have_tanks = self.data.realm.army.tanks.number > 5000
         low_hq = self.data.realm.army.headquarters.number < 100
         low_morale = False  # TODO, parse morale
-        end_of_day = self.data.realm.turns.remaining <= END_OF_DAY_TURNS
+
 
         delay_attack = low_morale or (have_tanks and low_hq)
 
-        if (delay_attack and not end_of_day):
+        if (delay_attack and
+                self.end_of_day.is_certain and
+                self.end_of_day.answer):
             botlog.debug("Should not attack at this time, low morale or hq")
             return False
 
@@ -1228,7 +1224,7 @@ class War(Strategy):
         # we only join Ga's at the end of our day, theory being, we have
         # already filled any ga's that will win as first priority, and
         # we have also sent any winnable indies
-        if self.data.realm.turns.remaining > END_OF_DAY_TURNS:
+        if self.end_of_day.is_certain() and self.end_of_day.answer:
             botlog.debug("Not filling GA, more than " + str(
                 END_OF_DAY_TURNS) + " turns remain")
             return 0
@@ -1393,7 +1389,7 @@ class War(Strategy):
         tot_ret = 0
 
         # plenty of turns left, just send one attack
-        if self.data.realm.turns.remaining > END_OF_DAY_TURNS:
+        if self.end_of_day.is_certain and not self.end_of_day:
             tot_ret += self.maybe_send_indie_attack(targets)
         else:
             max_iterations = len(targets)
@@ -1621,6 +1617,8 @@ class War(Strategy):
 
 
     def on_interplanetary_menu(self):
+
+        self.end_of_day = self.app.mentat.is_end_of_day()
 
         if self.data.setup is None:
             botlog.warn("Game restarted mid turn, "

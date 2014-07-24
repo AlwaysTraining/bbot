@@ -42,9 +42,11 @@ class Investor(Strategy):
         # default end of day to be true so we ar emore conservative, if there
         # are parsing problems or restarts it may not be absolutely determinable
         # if this end of the day
-        end_of_day = True
-        if realm.turns.remaining is not None:
-            end_of_day = realm.turns.remaining <= END_OF_DAY_TURNS
+        end_of_day = self.app.mentat.is_end_of_day()
+        if not end_of_day.is_certain():
+            end_of_day = True
+        else:
+            end_of_day = end_of_day.answer
 
         botlog.debug("full_bank? " + str(full_bank) + ", " +
                      "high_cash? " + str(high_cash) + ", " +
