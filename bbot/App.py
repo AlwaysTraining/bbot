@@ -75,7 +75,7 @@ class App:
 
         def default(self, obj):
             if isinstance(obj, datetime):
-                return str(obj)
+                return Utils.date_to_string(obj)
 
             return json.JSONEncoder.default(self, obj)
 
@@ -467,6 +467,8 @@ class App:
 
         self.skip_next_read = False
         self.run_loop()
+
+        self.write_options_dict()
 
 
 
