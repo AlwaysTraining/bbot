@@ -41,13 +41,12 @@ class Diplomat(Strategy):
         botlog.debug("Iterating messages in options")
 
         msgdict = {}
-        msgopts = []
         for key in self.app.options:
             if not key.startswith(self.get_name()):
                 continue
 
             parts = key.split("_")
-            botlog.debug("Found parts: " + str(parts))
+            # botlog.debug("Found parts: " + str(parts))
             # remove the diplomat name
 
             if len(parts) != 4:
@@ -79,11 +78,7 @@ class Diplomat(Strategy):
             elif parts[3] == "text":
                 msg.text = self.app.get_app_value(key)
 
-            botlog.debug('after assignment: ' + str(eval("msg." + parts[3])))
-
-
-            botlog.debug("Found message option: " + str(key))
-            msgopts.append(parts)
+            botlog.debug('Found message option: ' + str(eval("msg." + parts[3])))
 
         now = datetime.now()
 
@@ -123,7 +118,7 @@ class Diplomat(Strategy):
     def maybe_parse_realms(self, buf, msg):
         if 'Enter Planet Name or Number (? for list):' not in buf:
             raise Exception("Unexpected text when messaging")
-        planet = self.data.find_planet(self, msg.destplanets[0])
+        planet = self.data.find_planet(msg.destplanets[0])
         if planet is None:
             raise Exception("Could not find planet: " + str(msg.destplanets[0]))
         self.app.sendl(planet.name,
@@ -147,13 +142,15 @@ class Diplomat(Strategy):
         return buf
 
     def send_msg(self, msgname, msg):
-        self.app.send(9, 'Entering IP menu to send messages')
+        botlog.debug("Sending message: " + str(msgname))
+
+        self.app.send(9, comment='Entering IP menu to send messages')
         buf = self.app.read()
 
-        self.app.send(7, 'Sending message menu')
+        self.app.send(7, comment='Sending message menu')
         buf = self.app.read()
 
-        if len(msg.destplanets == 1):
+        if len(msg.destplanets) == 1:
             self.app.send(1,comment="Messaging single planet: " + str(
                 msg.destplanets[0]))
             buf = self.app.read()
@@ -163,8 +160,11 @@ class Diplomat(Strategy):
                         str(len(msg.destplanets)) + " planets")
             botlog.send(0, comment="Exiting message menu")
 
-        realmletters = "z"
-        if msg.destrealms is not None:
+        realmletters = ""
+        if msg.destrealms is None or len(msg.destrealms) == 0:
+            realmletters = "z"
+        else:
+            realmletters = ""
             planet = self.app.data.find_planet(msg.destplanets[0])
             if planet is None:
                 raise Exception("Could not find planet: " + str(msg.destplanets[0]))
@@ -172,7 +172,7 @@ class Diplomat(Strategy):
                 for realm in planet.realms:
                     if realmname.lower() in realm.name.lower():
                         if realm.menu_option not in realmletters:
-                            realmletters.append(realm.menu_option)
+                            realmletters += realm.menu_option
 
         self.app.sendl(realmletters,comment="Sending message to these realms")
         buf = self.app.read()
@@ -189,6 +189,9 @@ class Diplomat(Strategy):
         # send it next time
         optionname = '_'.join([self.get_name(), msgname, "msg", "send"])
         self.app.options[optionname] = False
+        botlog.debug("Now set to not send message again: " +
+                     optionname + " = " +
+                     str(self.app.get_app_value(optionname)))
 
         # we should be back on IP menu now, one more exit will pop us back to
         #  main menu
