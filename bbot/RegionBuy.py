@@ -60,8 +60,10 @@ class RegionBuy(Strategy):
         # it has been shown necessary in war time, something with how the
         #   advisor calculates the deficit when there are a lot of waste
         #   regions
-        if (not wartime and
-                app.metadata.last_ag_buy_turn != self.data.realm.turns.current):
+        if (wartime or (
+                app.metadata.last_ag_buy_turn is not None and
+                app.metadata.last_ag_buy_turn !=
+                        self.data.realm.turns.current)):
             # buy just enough ag, this sends us back to the spending menu
             self.buy_ag_regions()
             app.metadata.last_ag_buy_turn = self.data.realm.turns.current
@@ -79,31 +81,38 @@ class RegionBuy(Strategy):
                 return
 
 
-        # in a nuke or victory region allocation, we must allocate
+        # in a nuke or victory region allocation, we must allocate, in these
+        #   situations, we pass in the number of regions to allocate
 
-        # during wartime we do not but regions unless in danger of bank
-        # overflow, and then we will only buy 1/8th of what we can afford
+
         must_allocate = num_regions is not None
 
-        if (not must_allocate and 
-                self.app.has_strategy("War") and 
-                self.app.data.has_enemy()):
-            if self.data.realm.gold > 0.75 * TWOBIL:
-                botlog.info("buying some regions in wartime so we don't "
-                            "overflow our cash")
-                self.a = int(math.ceil(self.a * 0.125))
-            else:
-                botlog.info("Not buying any regions in wartime")
-                self.a = 0
-            enter_to_exit = True
+        if not must_allocate:
+            # if we are very low on regions, buy some
+            if (self.data.realm.regions.number is not None and
+                    self.data.realm.regions.number < 500):
+                self.a = int(min(self.a), 500)
 
-        # We want some money for investments, but only out of protection
-        if (not must_allocate and
-                self.app.has_strategy("Investor") and 
-                self.data.is_oop() and
-                not self.data.has_full_investments()):
-            self.a = int(math.ceil(self.a * 0.125))
-            enter_to_exit = True
+            # during wartime we do not but regions unless in danger of bank
+            # overflow, and then we will only buy 1/8th of what we can afford
+            elif wartime:
+                if self.data.realm.gold > 0.75 * TWOBIL:
+                    botlog.info("buying some regions in wartime so we don't "
+                                "overflow our cash")
+                    self.a = int(math.ceil(self.a * 0.125))
+                else:
+                    botlog.info("Not buying any regions in wartime")
+                    self.a = 0
+                enter_to_exit = True
+            # We want some money for investments, but only out of protection
+            elif (self.app.has_strategy("Investor") and
+                    self.data.is_oop() and
+                    not self.data.has_full_investments()):
+                self.a = int(math.ceil(self.a * 0.125))
+                enter_to_exit = True
+
+
+
 
         if self.a == 0:
             botlog.info("not buying any regions")
@@ -113,7 +122,7 @@ class RegionBuy(Strategy):
 
         if region_ratio is None:
             r = self.app.metadata.get_region_ratio_func(
-                    self.app, 
+                    self.app,
                     self.app.metadata.get_region_ratio_context)
 
             # in case of emergency use the default region ratio
@@ -165,6 +174,8 @@ class RegionBuy(Strategy):
         advisors = self.data.realm.advisors
 
         num_to_buy = self.app.metadata.last_ag_buy
+        wartime = self.app.has_strategy("War") and self.app.data.has_enemy()
+
         # visit civilian advisor and buy ag regions until he is happy
         limit = 20
         while True:
@@ -191,8 +202,6 @@ class RegionBuy(Strategy):
             self.sp.parse(self.app, buf)
             self.app.sendl()
             self.app.read()
-
-            wartime = self.app.has_strategy("War") and self.app.data.has_enemy()
 
             needed_years_survival = 2
             needed_surplus = self.app.data.try_get_needed_surplus()
