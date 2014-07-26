@@ -19,6 +19,7 @@ class Investor(Strategy):
         self.has_full_inv = False
         self.ip = MaintParser()
         self.day = 2
+        self.first_turn = True
 
     def on_bank_menu(self):
         # we are not going to invest until the bank is full, its rate is always
@@ -31,6 +32,8 @@ class Investor(Strategy):
         realm = self.data.realm
         setup = self.data.setup
 
+        first_turn = self.first_turn
+        self.first_turn = False
         full_bank = realm.bank.gold >= 0.95 * TWOBIL
         high_cash = realm.gold >= 0.75 * TWOBIL
         low_cash = realm.gold <= HUNMIL
@@ -54,7 +57,12 @@ class Investor(Strategy):
                      "war_time? " + str(war_time) + ", " +
                      "full_investments? " + str(full_investments) + ", " +
                      "mostly_full_investments? " + str(mostly_full_investments) + ", " +
-                     "end_of_day? " + str(end_of_day))
+                     "end_of_day? " + str(end_of_day) +", " +
+                     "first_turn? " + str(first_turn))
+
+        if first_turn:
+            botlog.info("Not investing because this is the first turn")
+            return Strategy.UNHANDLED
 
         if full_investments:
             botlog.info("Not investing because there is less than 2 Bil in "
@@ -83,7 +91,6 @@ class Investor(Strategy):
                         "overflowing cash")
             return Strategy.UNHANDLED
 
-
         max_iters = 12
 
         while (realm.gold > HUNMIL and
@@ -108,11 +115,11 @@ class Investor(Strategy):
             # if the day  is fully invested, go to next day
             approx_ret = realm.bank.approx_return
             if approx_ret is None or TWOBIL - approx_ret <= 1:
-                self.day = self.day + 1
-            max_iters = max_iters - 1
+                self.day += 1
+            max_iters -= 1
 
         if max_iters == 0:
-            raise Exception("Spent too many iterations trying to invest")
+            botlog.warn("Spent too many iterations trying to invest")
 
 
 
