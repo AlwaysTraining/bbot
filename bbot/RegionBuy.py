@@ -60,10 +60,10 @@ class RegionBuy(Strategy):
         # it has been shown necessary in war time, something with how the
         #   advisor calculates the deficit when there are a lot of waste
         #   regions
-        if (wartime or (
-                app.metadata.last_ag_buy_turn is not None and
+        if (wartime or 
+            app.metadata.last_ag_buy_turn is None or (
                 app.metadata.last_ag_buy_turn !=
-                        self.data.realm.turns.current)):
+                self.data.realm.turns.current)):
             # buy just enough ag, this sends us back to the spending menu
             self.buy_ag_regions()
             app.metadata.last_ag_buy_turn = self.data.realm.turns.current
