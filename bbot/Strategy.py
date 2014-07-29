@@ -64,6 +64,66 @@ class Strategy:
         option = self.get_name() + "_" + name
         return self.app.get_app_value(option)
 
+    def buy_army_units(self, unit_types, buyratio=None, desired_ammount=None):
+
+        if ((buyratio is None and desired_ammount is None) or
+                (buyratio is not None and desired_ammount is not None)):
+            raise Exception("Must use either a buyratio or desired_ammount")
+
+        botlog.debug("Requested buy with buyratio: " + str(buyratio))
+        botlog.debug("Requested buy with desired_ammount: " + str(
+            desired_ammount))
+
+        sp = SpendingParser()
+
+        if isinstance(unit_types, basestring):
+            unit_types = Utils.make_string_list(unit_types)
+
+        if unit_types is None or len(unit_types) == 0:
+            raise Exception("No unit_types provided")
+        tot_ammount = 0
+
+        for unit_type in unit_types:
+            # Assume at buy menu
+            item = self.app.data.get_menu_option(unit_type)
+            ammount = desired_ammount
+
+            # determine number to buy
+            price = self.app.data.get_price(item)
+            if buyratio is not None:
+                gold = self.data.realm.gold * buyratio
+                ammount = gold / price
+            elif ammount is None:
+                raise Exception("Did not specify ratio or ammount of " + str(
+                    unit_type) + " to buy")
+
+            ammount = int(math.floor(ammount))
+
+            if ammount <= 0:
+                botlog.info("Could not afford even 1 " + unit_type)
+            else:
+                self.app.send(item, comment="buying " + unit_type)
+
+                self.app.metadata.max_ammount = -1
+                sp.parse(self.app, self.app.read())
+
+                if self.app.metadata.max_ammount == -1:
+                    raise Exception("Unable to read max buy amount")
+
+                # if amount for buy is more than possible
+                if self.app.metadata.max_ammount < ammount:
+                    # cap off how much we are buying
+                    ammount = self.app.metadata.max_ammount
+                    botlog.debug("Capping max buy to " + str(ammount))
+
+                # buy the items
+                self.app.sendl(ammount,
+                               comment="Buying " + str(
+                                   ammount) + " " + unit_type)
+                sp.parse(self.app, self.app.read())
+                tot_ammount += ammount
+
+        return tot_ammount
 
 
 class Strategies(list):
