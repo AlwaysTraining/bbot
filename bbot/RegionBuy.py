@@ -91,7 +91,7 @@ class RegionBuy(Strategy):
             # if we are very low on regions, buy some
             if (self.data.realm.regions.number is not None and
                     self.data.realm.regions.number < 500):
-                self.a = int(min(self.a), 500)
+                self.a = int(min(self.a, 500))
 
             # during wartime we do not but regions unless in danger of bank
             # overflow, and then we will only buy 1/8th of what we can afford
