@@ -9,8 +9,6 @@ from bbot.Strategy import Strategy
 from bbot.SpendingParser import SpendingParser
 from bbot.Data import *
 from bbot.RegionBuy import RegionBuy
-from bbot.SpendingParser import SpendingParser
-from bbot.Data import *
 
 S = SPACE_REGEX
 N = NUM_REGEX
@@ -51,6 +49,29 @@ class AgentRecruiter(Strategy):
         self.app.send_seq(['y', '\r', '\r', '>\r', '\r', '\r', '\r'])
 
 
+    def get_buy_ratio(self):
+
+        if not self.data.is_oop():
+            return 0.025
+
+        bank_full = self.data.has_full_bank()
+        is_investor = self.app.has_strategy("Investor")
+        inv_fill = self.data.has_full_investments()
+
+        if not is_investor:
+            if not bank_full:
+                return 0.1
+            else:
+                return 1
+        else:
+            if not bank_full:
+                return 0.1
+            elif not inv_fill:
+                return 0.2
+            else:
+                return 1
+
+
     def on_spending_menu(self):
 
         # specialize if we have not yet
@@ -60,27 +81,25 @@ class AgentRecruiter(Strategy):
                               comment="Specializing industry on turrets")
             self.do_specialize = False
 
-        sellItems = [
-                Troopers.menu_option,
-                Turrets.menu_option,
-                Jets.menu_option,
-                Tanks.menu_option,
-                Bombers.menu_option,
-                Carriers.menu_option
-            ]
-
-        botlog.info("Selling " + str(round(sell_ratio * 100, 1)) +
-                    "% of " + str(sellItems))
-
-        self.sell(sellItems, sell_ratio)
-        self.sp.parse(self.app, self.app.read())
-
-        ratio = self.get_army_buy_ratio()
+        ratio = self.get_buy_ratio()
         if ratio == 0:
             botlog.info("Not spending any money today, probably in protection")
 
         else:
-            self.buy_army_units([Agents.menu_option],buyratio=ratio)
+
+            item = Agents.menu_option
+
+            # determine number to buy
+            price = self.app.data.realm.army.agents.price
+            gold = self.data.realm.gold * ratio
+            ammount = int(math.floor(gold / price))
+
+            if ammount == 0:
+                botlog.info("Could not afford even 1 agent")
+            else:
+                # buy the items
+                self.app.send_seq([item, ammount, '\r'],
+                                  comment="Buying " + str(ammount) + " agents")
 
 
         # enter region buying menu
@@ -88,4 +107,3 @@ class AgentRecruiter(Strategy):
 
 
         # we should still be at buy menu
-
