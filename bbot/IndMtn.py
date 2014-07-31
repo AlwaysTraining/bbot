@@ -37,7 +37,6 @@ class IndMtn(MainStrategy):
     def __init__(self, app):
         MainStrategy.__init__(self, app)
         self.app.metadata.get_region_ratio_func = get_region_ratio
-        self.app.metadata.get_region_ratio_context = self
 
     def on_industry_menu(self):
 
