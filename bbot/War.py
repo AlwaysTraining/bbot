@@ -966,9 +966,15 @@ class War(Strategy):
             sent_strength += numtroopers * power
             needed_strength -= numtroopers * power
 
-        # noone really cares about bombers, just send some portion of what
-        # we have
-        numbombers = int(0.25 * army.bombers.number)
+
+        if strength_to_commit > 10:
+            # noone really cares about bombers, just send some portion of what
+            # we have
+            numbombers = int(0.25 * army.bombers.number)
+        else:
+            # we commit a small ammount when creating a GA, don't put
+            # in bombers at this time
+            numbombers = 0
 
 
         # Log how much we are submitting if this is not known to be a optimized
