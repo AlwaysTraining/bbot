@@ -149,7 +149,7 @@ class App:
             return True
 
     def try_get_app_value(self, key, secret=False, default=None):
-        if not self.has_app_value():
+        if not self.has_app_value(key):
             botlog.debug("reading application value [default] " + 
                     key + ' : ' + str(default))
             return default
