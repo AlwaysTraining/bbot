@@ -57,7 +57,7 @@ class MainStrategy(Strategy):
         # total day out of protection, we will always
         #   sell 100% of regions
         if not self.data.is_oop():
-            return self.protection_sell_ratio
+            ratio = self.protection_sell_ratio
 
         if (self.app.has_strategy("Investor") and
                     (
@@ -65,11 +65,18 @@ class MainStrategy(Strategy):
                 not self.data.has_full_investments(days_missing=2)):
             # if only missing one day of investments, this is normal, don't
             # sell anything, otherwise sell a chunk
-            return self.investing_sell_ratio
+            ratio =  self.investing_sell_ratio
 
         # in general, we will sell a small portion of our army to suppliment
         #   region growth
-        return self.normal_sell_ratio
+        ratio = self.normal_sell_ratio
+
+        if ((self.app.metadata.low_cash or
+                self.app.metadata.low_food) and ratio < 0.15):
+            ratio = 0.15
+            botlog.warn("Low cash or food, Using emergency sell ratio")
+
+        return ratio
 
     def get_army_buy_ratio(self):
 
