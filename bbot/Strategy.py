@@ -64,6 +64,10 @@ class Strategy:
         option = self.get_name() + "_" + name
         return self.app.get_app_value(option)
 
+    def try_get_strategy_option(self, name, default):
+        option = self.get_name() + "_" + name
+        return self.app.try_get_app_value(option,default)
+
     def buy_army_units(self, unit_types, buyratio=None, desired_ammount=None):
 
         if ((buyratio is None and desired_ammount is None) or

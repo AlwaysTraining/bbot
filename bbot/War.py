@@ -16,7 +16,7 @@ S = SPACE_REGEX
 N = NUM_REGEX
 
 # % of attack strength compared to target strength
-ATCK_SURP_RATIO = 1.125
+
 MULTIPLE_ATTACK_REDUCER = 0.9
 
 # what portion of troops stay home
@@ -28,7 +28,8 @@ def _networth_to_strength(net):
     return net * 4
 
 class Attack(object):
-    def __init__(self):
+    def __init__(self, attack_surp_ratio=1.25):
+        self.attack_surp_ratio = attack_surp_ratio
         self.id = None
         self.by = None
         self.planet = None
@@ -38,6 +39,9 @@ class Attack(object):
         self.tanks = None
         self.bombers = None
         self.leave = None
+
+    def get_attack_surp_ratio(self):
+        return self.attack_surp_ratio
 
     def __str__(self):
 
@@ -93,7 +97,7 @@ class Attack(object):
         # for attack on one realm
         target_strength = self.get_target_strength()
 
-        win_strength = target_strength * ATCK_SURP_RATIO
+        win_strength = target_strength * self.get_attack_surp_ratio()
 
         for i in range(num_reduces):
             win_strength *= MULTIPLE_ATTACK_REDUCER
@@ -110,7 +114,7 @@ class Attack(object):
                      str(self))
 
         # base needed strength
-        base = (self.get_target_strength() * ATCK_SURP_RATIO)
+        base = (self.get_target_strength() * self.get_attack_surp_ratio())
 
         botlog.debug("The base needed strength is " + readable_num(base))
 
@@ -205,14 +209,49 @@ class War(Strategy):
         self.sent_indies = False
         self.created_group_attacks = False
         self.sop_bombs = [5, 7, 6]
+
+        if not self.try_get_strategy_option(
+                "send_nuke", True):
+            self.sop_bombs.remove(5)
+
+        if not self.try_get_strategy_option(
+                "send_chem", True):
+            self.sop_bombs.remove(6)
+
+        if not self.try_get_strategy_option(
+                "send_sabre", True):
+            self.sop_bombs.remove(7)
+
         self.possible_tops = [2, 3, 4, 9]
+
+        user_tops = self.try_get_strategy_option(
+            "possible_terrorist_ops", None)
+        if user_tops is not None:
+            user_tops = make_string_list(user_tops)
+            if len(user_tops) > 0:
+                self.possible_tops = []
+                for str_top in user_tops:
+                    self.possible_tops = int(str_top)
+
+
         self.tops = []
         self.all_undermines_sent = False
+
+        if not self.try_get_strategy_option("send_undermines", True):
+            self.all_undermines_sent = True
+
         self.first_turn = True
         self.group_attacks = None
         self.attacked_targets = []
         self.at_war = None
         self.end_of_day = None
+
+        self.attack_surp_ratio = self.try_get_strategy_option(
+            "attacker_size_advantage_ratio", 1.25 )
+
+
+    def get_attack_surp_ratio(self):
+        return self.attack_surp_ratio
 
     def get_priority(self):
         return VERYHIGH_PRIORITY
@@ -273,7 +312,8 @@ class War(Strategy):
             realm):
 
 
-        defstrength = (_networth_to_strength(realm.networth) * ATCK_SURP_RATIO)
+        defstrength = (_networth_to_strength(realm.networth) *
+                       self.get_attack_surp_ratio())
 
         # if an attack on the realm is winable
         if atkstrength >= defstrength:
@@ -296,6 +336,11 @@ class War(Strategy):
         return targets
 
     def can_send_indie(self, max_strength=None):
+
+        if not self.try_get_strategy_option(
+                "send_indie_attacks", True):
+            return False
+
         if self.sent_indies:
             return False
 
@@ -573,7 +618,7 @@ class War(Strategy):
 
 
         # send s-op undermines
-        if not self.all_undermines_sent:
+        if (not self.all_undermines_sent):
 
             if target_realm is None:
                 raise Exception("Could not find and was not supplied with a "
@@ -663,11 +708,14 @@ class War(Strategy):
 
     def send_tops(self, top_target=None):
 
+        if not self.try_get_strategy_option(
+                "send_terrorist_ops", True):
+            return
+
         if self.sent_tops:
             return
 
         # our default top target will be high networth realm
-
 
 
         target = top_target
@@ -769,7 +817,7 @@ class War(Strategy):
         botlog.debug("GA parsing tokens: " + ', '.join(tokens))
 
         t = tokens
-        ga = Attack()
+        ga = Attack(self.get_attack_surp_ratio())
         i = 0
         ga.id = ToNum(t[i])
         i += 2 # skip who created the GA
@@ -1175,6 +1223,11 @@ class War(Strategy):
 
     def maybe_join_winning_group_attacks(self):
 
+        if not self.try_get_strategy_option(
+                "join_current_group_attacks", True):
+            return 0
+
+
         # if we can top off any GA that leaves soon, lets do it
 
         botlog.debug("Checking the " + str(len(self.group_attacks)) +
@@ -1220,6 +1273,10 @@ class War(Strategy):
 
 
     def maybe_fill_group_attacks(self):
+
+        if not self.try_get_strategy_option(
+                "join_future_group_attacks", True):
+            return 0
 
         # we only join Ga's at the end of our day, theory being, we have
         # already filled any ga's that will win as first priority, and
@@ -1333,7 +1390,7 @@ class War(Strategy):
         buf = self.app.read()
         self.app.send(3, comment="Going balls deep with extended attack")
 
-        indie = Attack()
+        indie = Attack(self.get_attack_surp_ratio())
         indie.realm = target
         indie.planet = self.data.find_planet(target.planet_name)
         indie.troopers = 0
@@ -1343,7 +1400,8 @@ class War(Strategy):
 
         ret_val = self.send_attack(
             indie,
-            _networth_to_strength(target.networth) * ATCK_SURP_RATIO)
+            (_networth_to_strength(target.networth) *
+                self.get_attack_surp_ratio()))
         if ret_val > 0:
             msg = ("Sent indie Attack: " + str(indie))
             botlog.note(msg)
@@ -1433,7 +1491,7 @@ class War(Strategy):
         for planet in self.data.league.planets:
             if planet.relation != "Enemy":
                 continue
-            if (our_strength * ATCK_SURP_RATIO >=
+            if (our_strength * self.get_attack_surp_ratio() >=
                     _networth_to_strength(planet.networth)):
                 global_target_planets.append(planet)
 
@@ -1447,7 +1505,7 @@ class War(Strategy):
         if len(global_target_planets) == 0:
             return 0
 
-        global_attack = Attack()
+        global_attack = Attack(self.get_attack_surp_ratio())
         global_attack.planet = global_target_planets[0]
         global_attack.leave = leave
 
@@ -1467,7 +1525,7 @@ class War(Strategy):
 
         target_realm = targets[0]
 
-        group_attack = Attack()
+        group_attack = Attack(self.get_attack_surp_ratio())
         group_attack.planet = self.data.find_planet(target_realm.planet_name)
         group_attack.leave = leave
         group_attack.realm = target_realm
@@ -1527,6 +1585,9 @@ class War(Strategy):
 
 
     def maybe_create_group_attacks(self):
+
+        if not self.try_get_strategy_option("create_group_attacks", True):
+            return 0
 
         if self.created_group_attacks:
             botlog.debug("All Group attacks have already been created")
