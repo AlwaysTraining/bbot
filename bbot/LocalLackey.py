@@ -77,6 +77,17 @@ class LocalLackey(LackeyBase):
         # priority so region buying comes afterwards
         self.system_trading_menu()
 
+    def calc_realm_trade_ratio(self, totalTradeRatio, cur_index, count):
+
+        num_remaining = count - cur_index
+
+        tradeRatio = 1.0 / num_remaining * totalTradeRatio
+        tradeRatioStep = totalTradeRatio / float(len(self.masterNames))
+
+        tradeRatio = min(tradeRatio, 1.0)
+        tradeRatio = max(tradeRatio, 0.0)
+
+        return  tradeRatio
 
 
     def system_trading_menu(self):
@@ -88,9 +99,11 @@ class LocalLackey(LackeyBase):
                 "Not trading this turn because: " + self.not_trading_reason)
             return
 
-        tradeRatioStep = totalTradeRatio / float(len(self.masterNames))
 
+
+        index = -1
         for userMasterName in self.masterNames:
+            index += 1
             if userMasterName in self.tradedWithMasterNames:
                 continue
             if userMasterName in self.noRelationMasterNames:
@@ -121,12 +134,9 @@ class LocalLackey(LackeyBase):
                 self.noRelationMasterNames.append(userMasterName)
 
             else:
-                tradeRatio = (tradeRatioStep * (
-                    1+len(self.tradedWithMasterNames) + len(
-                        self.noRelationMasterNames)))
-                tradeRatio = 1.0 - tradeRatio
-                tradeRatio = min(tradeRatio,1.0)
-                tradeRatio = max(tradeRatio,0.0)
+                tradeRatio = self.calc_realm_trade_ratio(
+                    totalTradeRatio, index, len(self.masterNames))
+
 
                 botlog.debug("Computed actual trade ratio of: " + str(tradeRatio))
 

@@ -103,6 +103,8 @@ def create_instance(
     # get the loadedModule value from the modulePath key
     py_mod = load_modules([modulePath])[modulePath]
 
+    # botlog.debug(dir(py_mod))
+
     # get the type specified by the srcMgrTypeName from the loaded module
     if not hasattr(py_mod, srcMgrTypeName):
         raise Exception("Type " + str(srcMgrTypeName) +

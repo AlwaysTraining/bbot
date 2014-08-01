@@ -1,0 +1,16 @@
+{
+   "address": "testbox", 
+   "data_dir": "$bbot_ROOT/test/data", 
+   "debug": "true", 
+   "game": 0, 
+   "human_delay": 0.1, 
+   "human_pause_ratio": 0, 
+   "id": "t02",
+   "realm": "LocalLackeyTest",
+   "test": "LocalLackeyTest",
+   "username": "Tester2",
+   "LocalLackey_tribute_ratio": 1,
+   "LocalLackey_trade_items": "Tanks",
+   "LocalLackey_master": "FakeMasterRealm"
+
+}
