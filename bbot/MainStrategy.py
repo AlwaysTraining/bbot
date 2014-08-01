@@ -26,19 +26,19 @@ class MainStrategy(Strategy):
         self.app.metadata.get_region_ratio_context = self
         self.sp = SpendingParser()
         self.do_specialize = False
-        self.protection_sell_ratio = self.app.get_app_value(
-            "protection_sell_ratio")
-        self.investing_sell_ratio = self.app.get_app_value(
-            "investing_sell_ratio")
-        self.normal_sell_ratio = self.app.get_app_value(
-            "normal_sell_ratio")
+        self.protection_sell_ratio = self.app.try_get_app_value(
+            "protection_sell_ratio", 0)
+        self.investing_sell_ratio = self.app.try_get_app_value(
+            "investing_sell_ratio", 0)
+        self.normal_sell_ratio = self.app.try_get_app_value(
+            "normal_sell_ratio", 0)
 
-        self.protection_buy_ratio = self.app.get_app_value(
-            "protection_buy_ratio")
-        self.investing_buy_ratio = self.app.get_app_value(
-            "investing_buy_ratio")
-        self.normal_buy_ratio = self.app.get_app_value(
-            "normal_buy_ratio")
+        self.protection_buy_ratio = self.app.try_get_app_value(
+            "protection_buy_ratio", 0)
+        self.investing_buy_ratio = self.app.try_get_app_value(
+            "investing_buy_ratio", 0)
+        self.normal_buy_ratio = self.app.try_get_app_value(
+            "normal_buy_ratio", 0)
         self.visited_sell_menu = False
 
         if self.normal_sell_ratio * self.normal_buy_ratio != 0:
@@ -221,23 +221,22 @@ class MainStrategy(Strategy):
         sell_ratio = self.get_army_sell_ratio()
 
         sellunits = self.get_sell_unit_types()
-        sellItems = []
+        if sellunits is not None and len(sellunits) > 0:
+            sellItems = []
 
-        for s in sellunits:
-            mnuopt = self.app.data.get_menu_option(s)
-            if mnuopt is not None:
-                sellItems.append(mnuopt)
-            else:
-                botlog.warn("could not find menu option for unit: " + str(s))
+            for s in sellunits:
+                mnuopt = self.app.data.get_menu_option(s)
+                if mnuopt is not None:
+                    sellItems.append(mnuopt)
+                else:
+                    botlog.warn("could not find menu option for unit: " + str(s))
 
-        # in protection sell everything, otherwise just tanks
+            if sellItems is None and len(sellItems) > 0:
+                botlog.info("Selling " + str(round(sell_ratio * 100, 1)) +
+                            "% of " + str(sellItems))
 
-        if sellItems is None and len(sellItems) > 0:
-            botlog.info("Selling " + str(round(sell_ratio * 100, 1)) +
-                        "% of " + str(sellItems))
-
-            self.sell(sellItems, sell_ratio)
-            self.sp.parse(self.app, self.app.read())
+                self.sell(sellItems, sell_ratio)
+                self.sp.parse(self.app, self.app.read())
 
         # buy tanks
         buy_ratio = self.get_army_buy_ratio()

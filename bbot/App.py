@@ -148,6 +148,13 @@ class App:
         if environkey in os.environ and os.environ[environkey] != '':
             return True
 
+    def try_get_app_value(self, key, secret=False, default=None):
+        if not self.has_app_value(key):
+            botlog.debug("reading application value [default] " + 
+                    key + ' : ' + str(default))
+            return default
+        return self.get_app_value(key, secret)
+
     def get_app_value(self, key, secret=False):
         # Check if value is in options
         if key in self.options and self.options[key] is not None:
