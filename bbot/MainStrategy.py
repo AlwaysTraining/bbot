@@ -26,19 +26,19 @@ class MainStrategy(Strategy):
         self.app.metadata.get_region_ratio_context = self
         self.sp = SpendingParser()
         self.do_specialize = False
-        self.protection_sell_ratio = self.app.get_app_value(
-            "protection_sell_ratio")
-        self.investing_sell_ratio = self.app.get_app_value(
-            "investing_sell_ratio")
-        self.normal_sell_ratio = self.app.get_app_value(
-            "normal_sell_ratio")
+        self.protection_sell_ratio = self.app.try_get_app_value(
+            "protection_sell_ratio", 0)
+        self.investing_sell_ratio = self.app.try_get_app_value(
+            "investing_sell_ratio", 0)
+        self.normal_sell_ratio = self.app.try_get_app_value(
+            "normal_sell_ratio", 0)
 
-        self.protection_buy_ratio = self.app.get_app_value(
-            "protection_buy_ratio")
-        self.investing_buy_ratio = self.app.get_app_value(
-            "investing_buy_ratio")
-        self.normal_buy_ratio = self.app.get_app_value(
-            "normal_buy_ratio")
+        self.protection_buy_ratio = self.app.try_get_app_value(
+            "protection_buy_ratio", 0)
+        self.investing_buy_ratio = self.app.try_get_app_value(
+            "investing_buy_ratio", 0)
+        self.normal_buy_ratio = self.app.try_get_app_value(
+            "normal_buy_ratio", 0)
         self.visited_sell_menu = False
 
         if self.normal_sell_ratio * self.normal_buy_ratio != 0:
