@@ -113,7 +113,8 @@ class LackeyBase(Strategy):
 
         return self.can_send_trade
 
-    def fill_trade_deal(self, tradeRatio, oneway=False):
+    def fill_trade_deal(self, tradeRatio, oneway=False,
+                        master_should_ignore_deal=False):
         seq = []
         trademap = {}
         for index in xrange(len(self.tradeItems)):
@@ -121,7 +122,6 @@ class LackeyBase(Strategy):
 
             ammount = self.app.data.get_number(item)
             trademap[self.tradeItemStrings[index]] = ammount
-            
 
             if ammount == 0:
                 continue
@@ -145,8 +145,14 @@ class LackeyBase(Strategy):
             return False
         else:
             if not oneway:
-                self.app.send_seq(["\r", "\r", 'y', 2, "\r"],
-                                  comment="Send the deal out")
+
+                if master_should_ignore_deal:
+                    # request max agents, send for max time
+                    seq = ["\r", 7, ">", "\r", "\r", "y", ">", "\r", "\r" ]
+                else:
+                    seq = ["\r", "\r", 'y', 2, "\r"]
+
+                self.app.send_seq(seq, comment="Send the deal out")
             else:
                 # TODO double check this sequence for IP Trading
                 self.app.send_seq(["\r", 'y'],

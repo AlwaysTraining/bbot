@@ -26,6 +26,8 @@ class LocalLackey(LackeyBase):
             self.masterName = self.masterNames[0]
         self.tradedWithMasterNames = []
         self.noRelationMasterNames = []
+        self.master_should_ignore_deal = self.try_get_strategy_option(
+            "master_should_ignore_deal", False)
 
     def get_master_name(self):
         return self.masterName
@@ -87,7 +89,7 @@ class LocalLackey(LackeyBase):
         tradeRatio = min(tradeRatio, 1.0)
         tradeRatio = max(tradeRatio, 0.0)
 
-        return  tradeRatio
+        return tradeRatio
 
 
     def system_trading_menu(self):
@@ -141,7 +143,8 @@ class LocalLackey(LackeyBase):
                 botlog.debug("Computed actual trade ratio of: " + str(tradeRatio))
 
                 traded = self.fill_trade_deal(
-                    tradeRatio)
+                    tradeRatio,
+                    master_should_ignore_deal = self.master_should_ignore_deal)
                 if traded:
                     self.tradedWithMasterNames.append(userMasterName)
 

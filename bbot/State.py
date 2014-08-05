@@ -468,8 +468,15 @@ class TurnStats(StatsState):
             botlog.note("Ignoring trade deal with " + str(r) +
                         "turns remaining:\n\n" + buf)
 
-            # TODO check what the text really is when a trade deal for ignore shows up
-            app.send('i', comment="ignoring mid day trade deal")
+            deny = app.try_get_app_value(
+                "deny_ignorable_trade_deals", False)
+            if deny:
+                app.send('n',
+                         comment="Denying mid-day trade deal that could have "
+                                      "been ignored")
+            else:
+                app.send('i', comment="ignoring mid-day tradedeal")
+
 
         elif 'of your freedom.' in buf or 'Years of Protection Left.' in buf:
 
@@ -520,8 +527,13 @@ class PreTurns(StatsState):
             app.send('y', comment="accepting trade deal")
 
         elif 'Do you wish to accept?' in buf:
-            #TODO this might be wronf, needd to look what it says if they send an unacceptable trade deal
-            app.send('i')
+            deny = app.try_get_app_value(
+                "deny_ignorable_trade_deals", False)
+            if deny:
+                app.send('n', comment="Denying trade deal that could have "
+                                      "been ignored")
+            else:
+                app.send('i', comment="ignoring tradedeal")
 
         # not sure why, but in an IP game, there were sm
         elif '[R]  Reply, [D]  Delete, [I]  Ignore, or [Q]  Quit>' in buf:
