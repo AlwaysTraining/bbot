@@ -231,7 +231,7 @@ class War(Strategy):
             if len(user_tops) > 0:
                 self.possible_tops = []
                 for str_top in user_tops:
-                    self.possible_tops = int(str_top)
+                    self.possible_tops.append(int(str_top))
 
 
         self.tops = []
