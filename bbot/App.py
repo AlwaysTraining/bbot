@@ -417,6 +417,10 @@ class App:
             default = []
             strats = list(set(strats) | set(default))
             # compile the strategies into indicators sorted by priority
+
+        #REMOVE this
+        throw Exception("Dynamicaly added an error")
+
         self.strategies = Strategy.Strategies(self, strats)
 
     def run_loop(self):
