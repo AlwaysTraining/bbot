@@ -243,6 +243,7 @@ class War(Strategy):
         self.first_turn = True
         self.group_attacks = None
         self.attacked_targets = []
+        self.joined_gas = []
         self.at_war = None
         self.end_of_day = None
 
@@ -1128,6 +1129,7 @@ class War(Strategy):
 
         if ret_val > 0:
             botlog.note("Joined attack: " + str(attack))
+            self.joined_gas.append(attack.id)
 
         return ret_val
 
@@ -1227,6 +1229,24 @@ class War(Strategy):
 
         return True
 
+    def do_not_join_ga(self, ga):
+        # attack is filled don't join
+        if ga.is_filled():
+            botlog.debug("Attack: " + str(ga.id) +
+                         " Is filled, not joining")
+            return True
+
+        # if we already joined this attack, and we don't have much more to
+        # offer towards victory, don't fill it.
+        if (id in self.joined_gas and
+                    self.data.get_attack_strength() <
+                        0.1 * ga.needed_strength()):
+            botlog.debug("Attack: " + str(ga.id) +
+                         " has already been joined, and we don't have "
+                         "much more to contribute")
+            return True
+        return False
+
     def maybe_join_winning_group_attacks(self):
 
         if not self.try_get_strategy_option(
@@ -1262,6 +1282,9 @@ class War(Strategy):
 
             botlog.debug("Determined that " + str(needed_strength_to_win_ga)
                          + " strength is required to win this GA")
+
+            if self.do_not_join_ga(ga):
+                continue
 
             if (0 < needed_strength_to_win_ga <=
                     self.data.get_attack_strength()):
@@ -1340,6 +1363,9 @@ class War(Strategy):
 
             for ga in cur_gas:
                 botlog.debug("Considering GA: " + str(ga.id))
+
+                if self.do_not_join_ga(ga):
+                    continue
 
                 val = self.join_group_attack(ga)
                 if val > 0:
@@ -1705,8 +1731,17 @@ class War(Strategy):
             return
 
         if self.data.realm.gold < HUNMIL:
-            botlog.info("Skipping War operations, less than 100 mil on hand")
-            return
+
+            if self.app.metadata.low_cash or self.end_of_day():
+                self.app.send_seq(['v','w','>','\r','\r'],
+                                  comment='withdawing war funds at end of day')
+                botlog.info("We are low on money "
+                            "on hand, withdrawing some so we can make "
+                            "something happen")
+                buf = self.app.read()
+            else:
+                botlog.info("Skipping War operations, less than 100 mil on hand")
+                return
 
         if self.group_attacks is None:
             self.parse_group_attacks()

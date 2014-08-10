@@ -91,7 +91,9 @@ class RegionBuy(Strategy):
             # if we are very low on regions, buy some
             if (self.data.realm.regions.number is not None and
                     self.data.realm.regions.number < 500):
-                self.a = int(min(self.a, 500))
+                if 500 < self.a:
+                    enter_to_exit = True
+                    self.a = 500
 
             # during wartime we do not but regions unless in danger of bank
             # overflow, and then we will only buy 1/8th of what we can afford
@@ -99,7 +101,8 @@ class RegionBuy(Strategy):
                 if self.data.realm.gold > 0.75 * TWOBIL:
                     botlog.info("buying some regions in wartime so we don't "
                                 "overflow our cash")
-                    self.a = int(math.ceil(self.a * 0.125))
+
+                    self.a = int(math.ceil(self.a * 0.75))
                 else:
                     botlog.info("Not buying any regions in wartime")
                     self.a = 0
