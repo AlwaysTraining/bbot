@@ -1732,7 +1732,10 @@ class War(Strategy):
 
         if self.data.realm.gold < HUNMIL:
 
-            if self.app.metadata.low_cash or self.end_of_day():
+            if (self.app.metadata.low_cash or (
+                        self.end_of_day.is_certain() and
+                        self.end_of_day.answer)):
+
                 self.app.send_seq(['v','w','>','\r','\r'],
                                   comment='withdawing war funds at end of day')
                 botlog.info("We are low on money "
