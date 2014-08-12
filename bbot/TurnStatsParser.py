@@ -60,6 +60,12 @@ class TurnStatsParser(StatsParser):
         if which == 200:
             realm.name = self.get_str()
         elif which == 210:
+            newturns = self.get_num()
+            # if we detect a new turn, decrement the number of turns remaining
+            if (realm.turns.current is not None and newturns >
+                    realm.turns.current):
+                if realm.turns.remaining is not None:
+                    realm.turns.remaining -= 1
             realm.turns.current = self.get_num()
         elif which == 220:
             realm.score = self.get_num()

@@ -21,7 +21,8 @@ class WarParser(StatsParser):
 
     def get_patterns(self):
         return {
-            '\([ 0-9]+\) ' + S + " (Enemy|None|Peace|Allied)" : 5532
+            '\([ 0-9]+\) ' + S + " (Enemy|None|Peace|Allied)" : 5532,
+            'You have ' + N + ' gold\.' : 5533
         }
 
 
@@ -50,6 +51,8 @@ class WarParser(StatsParser):
             planet.relation = relation
             botlog.debug("Diplomacy parser setting " + planet_name + " to " +
                 str(relation))
+        elif which == 5533:
+            app.data.realm.gold = self.get_num()
 
 
 

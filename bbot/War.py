@@ -1215,7 +1215,6 @@ class War(Strategy):
         low_hq = self.data.realm.army.headquarters.number < 100
         low_morale = False  # TODO, parse morale
 
-
         delay_attack = low_morale or (have_tanks and low_hq)
 
         if (delay_attack and
@@ -1238,7 +1237,7 @@ class War(Strategy):
 
         # if we already joined this attack, and we don't have much more to
         # offer towards victory, don't fill it.
-        if (id in self.joined_gas and
+        if (ga.id in self.joined_gas and
                     self.data.get_attack_strength() <
                         0.1 * ga.needed_strength()):
             botlog.debug("Attack: " + str(ga.id) +
@@ -1742,6 +1741,11 @@ class War(Strategy):
                             "on hand, withdrawing some so we can make "
                             "something happen")
                 buf = self.app.read()
+                self.wp.parse(self.app, buf)
+                if self.data.realm.gold < HUNMIL:
+                    botlog.info("Jeeze we are really broke, no war")
+                    return
+
             else:
                 botlog.info("Skipping War operations, less than 100 mil on hand")
                 return

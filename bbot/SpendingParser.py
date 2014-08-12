@@ -164,6 +164,8 @@ class SpendingParser(StatsParser):
             setup.turns_per_day = self.get_num()
             if realm.turns.current is not None:
                 realm.turns.remaining = setup.turns_per_day - realm.turns.current
+                botlog.debug("Presetting remaining turns at: " + str(
+                    realm.turns.remaining))
         elif which == 1820:
             setup.protection_turns = self.get_num()
         elif which == 1830:
