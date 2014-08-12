@@ -46,7 +46,7 @@ class Mentat:
             end_of_day = realm.turns.remaining <= END_OF_DAY_TURNS
         elif realm.turns.current is not None:
             maxturns = 8
-            if self.data.setup.turns_per_day is not None:
+            if self.data.setup is not None and self.data.setup.turns_per_day is not None:
                 maxturns = self.data.setup.turns_per_day
 
                 botlog.debug("Turns remaining not set, but max turns is: " +

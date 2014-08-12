@@ -911,7 +911,8 @@ class War(Strategy):
                     botlog.debug("reading body")
                     next_line_header = False
                     reading_body = True
-                elif reading_body and 'Join which group?' in line:
+                elif (reading_body and ('Join which group?' in line or
+                        'You must play one turn per entry into the game to access this option.' in line)):
                     botlog.debug("Done reading body")
                     reading_body = False
                     done_reading = True
