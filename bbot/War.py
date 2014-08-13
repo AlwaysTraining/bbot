@@ -866,6 +866,7 @@ class War(Strategy):
         sepchar = ';' #hopefully no one puts this char in their realm name
 
         self.data.gatext = ""
+        buf = ""
 
         while not done_reading and max_iterations > 0:
             buf = self.app.read()
@@ -961,8 +962,11 @@ class War(Strategy):
         if max_iterations <= 0:
             raise Exception("Too many iterations when listing GA's")
 
-        self.app.sendl(0, comment="Not joining GA, just reading list of "
-                                  "current ga's")
+        # on partial restart you don't get the option to join an attack
+        if ('You must play one turn per entry into the game to access this option.'
+                not in buf):
+            self.app.sendl(0, comment="Not joining GA, just reading list of "
+                                      "current ga's")
         buf = self.app.read()
         if "[InterPlanetary Operations]" not in buf:
             raise Exception("Not back at ip menu after parsing group attacks")
@@ -1240,7 +1244,7 @@ class War(Strategy):
         # offer towards victory, don't fill it.
         if (ga.id in self.joined_gas and
                     self.data.get_attack_strength() <
-                        0.1 * ga.needed_strength()):
+                        0.1 * ga.needed_strength(self.group_attacks)):
             botlog.debug("Attack: " + str(ga.id) +
                          " has already been joined, and we don't have "
                          "much more to contribute")
