@@ -100,7 +100,7 @@ class Attack(object):
     def get_target_strength(self):
         # for attack on one realm
         if self.realm is None:
-            return _planet_strength(self.war.app, self.planet)
+            return _planet_strength(self.war.app, self.planet.realms)
 
         # for planetary attack
         if (self.war.app.mentat.score_indicates_realm_in_protection(
