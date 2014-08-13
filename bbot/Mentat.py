@@ -64,3 +64,37 @@ class Mentat:
         return PrimeProjection(
             answer=end_of_day,
             confidence=confidence)
+
+    def score_indicates_realm_in_protection(self,realm=None):
+        confidence = 0.0
+        in_pro = False
+        SCORE_PER_TURN=213.0
+        score = None
+        if realm is not None:
+            score = realm.score
+        elif self.app.data.realm is not None:
+            score = self.app.data.realm.score
+
+        if score is not None:
+            confidence += 0.25
+
+        setup = self.app.data.setup
+        if (score is not None and
+                    setup is not None and
+                    setup.protection_turns is not None):
+            turns = int(math.ceil(score / SCORE_PER_TURN)) + 1
+            in_pro = turns <= setup.protection_turns
+            confidence += 0.50
+
+        # we can never be certain because pirates could be involved
+        return PrimeProjection(
+            answer=in_pro,
+            confidence=confidence)
+
+
+
+
+
+
+
+

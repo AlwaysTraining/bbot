@@ -27,9 +27,24 @@ DEFENSIIVE_RESERVE_RATIO = 0.1
 def _networth_to_strength(net):
     return net * 4
 
+def _protected_planet_networth(app, planet):
+    protected_networth = 0
+    for r in planet.realms:
+        if app.mentat.score_indicates_realm_in_protection(realm=r).answer:
+            protected_networth += r.networth
+    return protected_networth
+
+
+def _planet_strength(app, planet):
+    return _networth_to_strength(
+        planet.networth - _protected_planet_networth(app, planet))
+
+
+
 class Attack(object):
-    def __init__(self, attack_surp_ratio=1.25):
-        self.attack_surp_ratio = attack_surp_ratio
+    def __init__(self, war):
+        self.war = war
+        self.attack_surp_ratio = war.get_attack_surp_ratio()
         self.id = None
         self.by = None
         self.planet = None
@@ -84,13 +99,17 @@ class Attack(object):
 
     def get_target_strength(self):
         # for attack on one realm
-        target_strength = _networth_to_strength(self.planet.networth)
+        if self.realm is None:
+            return _planet_strength(self.war.app, self.planet)
 
-        if self.realm is not None:
-            # for planetary attack
-            target_strength = _networth_to_strength( self.realm.networth)
+        # for planetary attack
+        if (self.war.app.mentat.score_indicates_realm_in_protection(
+                self.realm).answer):
+            target_strength = 0
+        else:
+            target_strength = self.realm.networth
 
-        return target_strength
+        return _networth_to_strength(target_strength)
 
     def is_filled(self, num_reduces=0):
 
@@ -269,6 +288,12 @@ class War(Strategy):
             if p.relation != "Enemy":
                 continue
             for r in p.realms:
+
+                if (self.app.mentat.score_indicates_realm_in_protection(
+                        realm=r).answer):
+                    botlog.debug("Realm: " + (r.name) + " may be in protection")
+                    continue
+
                 if select_func(context, selected_realms, p, r):
                     selected_realms.append(r)
 
@@ -818,7 +843,7 @@ class War(Strategy):
         botlog.debug("GA parsing tokens: " + ', '.join(tokens))
 
         t = tokens
-        ga = Attack(self.get_attack_surp_ratio())
+        ga = Attack(self)
         i = 0
         ga.id = ToNum(t[i])
         i += 2 # skip who created the GA
@@ -1426,7 +1451,7 @@ class War(Strategy):
         buf = self.app.read()
         self.app.send(3, comment="Going balls deep with extended attack")
 
-        indie = Attack(self.get_attack_surp_ratio())
+        indie = Attack(self)
         indie.realm = target
         indie.planet = self.data.find_planet(target.planet_name)
         indie.troopers = 0
@@ -1506,9 +1531,7 @@ class War(Strategy):
 
     def get_planet_strength(self):
         # get our current strength
-        our_strength = 0
-        for realm in self.data.planet.realms:
-            our_strength += _networth_to_strength(realm.networth)
+        our_strength = _planet_strength(self.data.planet)
 
         botlog.debug("Determined our planet has a combined strength of " +
                      str(our_strength))
@@ -1528,7 +1551,7 @@ class War(Strategy):
             if planet.relation != "Enemy":
                 continue
             if (our_strength * self.get_attack_surp_ratio() >=
-                    _networth_to_strength(planet.networth)):
+                    _planet_strength(self.app, planet)):
                 global_target_planets.append(planet)
 
         # sort beatable enemies in order of most regions
@@ -1541,7 +1564,7 @@ class War(Strategy):
         if len(global_target_planets) == 0:
             return 0
 
-        global_attack = Attack(self.get_attack_surp_ratio())
+        global_attack = Attack(self)
         global_attack.planet = global_target_planets[0]
         global_attack.leave = leave
 
@@ -1561,7 +1584,7 @@ class War(Strategy):
 
         target_realm = targets[0]
 
-        group_attack = Attack(self.get_attack_surp_ratio())
+        group_attack = Attack(self)
         group_attack.planet = self.data.find_planet(target_realm.planet_name)
         group_attack.leave = leave
         group_attack.realm = target_realm
