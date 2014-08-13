@@ -1532,7 +1532,7 @@ class War(Strategy):
 
     def get_planet_strength(self):
         # get our current strength
-        our_strength = _planet_strength(self.data.planet)
+        our_strength = _planet_strength(self.app, self.data.planet)
 
         botlog.debug("Determined our planet has a combined strength of " +
                      str(our_strength))
