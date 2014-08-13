@@ -1532,7 +1532,7 @@ class War(Strategy):
 
     def get_planet_strength(self):
         # get our current strength
-        our_strength = _planet_strength(self.app, self.data.planet)
+        our_strength = _planet_strength(self.app, self.data.planet.realms)
 
         botlog.debug("Determined our planet has a combined strength of " +
                      str(our_strength))
@@ -1552,7 +1552,7 @@ class War(Strategy):
             if planet.relation != "Enemy":
                 continue
             if (our_strength * self.get_attack_surp_ratio() >=
-                    _planet_strength(self.app, planet)):
+                    _planet_strength(self.app, planet.realms)):
                 global_target_planets.append(planet)
 
         # sort beatable enemies in order of most regions
