@@ -992,7 +992,8 @@ class War(Strategy):
                 not in buf):
             self.app.sendl(0, comment="Not joining GA, just reading list of "
                                       "current ga's")
-        buf = self.app.read()
+            buf = self.app.read()
+            
         if "[InterPlanetary Operations]" not in buf:
             raise Exception("Not back at ip menu after parsing group attacks")
 
