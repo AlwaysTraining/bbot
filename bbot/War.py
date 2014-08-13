@@ -27,9 +27,9 @@ DEFENSIIVE_RESERVE_RATIO = 0.1
 def _networth_to_strength(net):
     return net * 4
 
-def _unprotected_planet_networth(app, planet):
+def _unprotected_planet_networth(app, realms):
     unprotected_networth = 0
-    for r in planet.realms:
+    for r in realms:
         if not app.mentat.score_indicates_realm_in_protection(realm=r).answer:
             unprotected_networth += r.networth
     return unprotected_networth
@@ -37,7 +37,7 @@ def _unprotected_planet_networth(app, planet):
 
 def _planet_strength(app, realms):
     return _networth_to_strength(
-        _unprotected_planet_networth(app, planet))
+        _unprotected_planet_networth(app, realms))
 
 
 
