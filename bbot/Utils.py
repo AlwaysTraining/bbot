@@ -212,7 +212,7 @@ from subprocess import PIPE
 def try_get_recent_changes():
     try:
         codedir = os.path.dirname(__file__)
-        gitcmd = "a"
+        gitcmd = "$(which git) log --pretty=format:'%cr:  %s' --abbrev-commit --date=short --branches -n 10"
         # with author name, but really who else will work on this project?
         # gitcmd = "$(which git) log --pretty=format:'%cr:  %s <%an>%Creset' --abbrev-commit --date=short --branches -n 10"
         cmd = "cd " + codedir + " && " + gitcmd
