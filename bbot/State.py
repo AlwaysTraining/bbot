@@ -968,7 +968,7 @@ class BBSMenus(State):
         elif ('Main' in buf and ('Section One BBS' in buf or
                 app.get_app_value("address") == 'sectiononebbs.com')):
             # there is a "Hit a key" in there because this menu is so big
-            app.send_seq(['x', '4', app.get_app_value('game')])
+            app.send_seq(['x', '5', app.get_app_value('game')])
             return StartGame()
 
 class Password(State):

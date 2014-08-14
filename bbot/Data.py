@@ -565,9 +565,10 @@ class Planet(object):
     def find_realm(self, name):
         found = None
         for r in self.realms:
-            if name in r.name:
+            if name.lower() in r.name.lower():
                 if found is not None:
-                    raise Exception("Ambiguous planet name search")
+                    raise Exception("Ambiguous planet name search: " +
+                                    str(name))
                 found = r
         return found
 

@@ -27,9 +27,24 @@ DEFENSIIVE_RESERVE_RATIO = 0.1
 def _networth_to_strength(net):
     return net * 4
 
+def _unprotected_planet_networth(app, realms):
+    unprotected_networth = 0
+    for r in realms:
+        if not app.mentat.score_indicates_realm_in_protection(realm=r).answer:
+            unprotected_networth += r.networth
+    return unprotected_networth
+
+
+def _planet_strength(app, realms):
+    return _networth_to_strength(
+        _unprotected_planet_networth(app, realms))
+
+
+
 class Attack(object):
-    def __init__(self, attack_surp_ratio=1.25):
-        self.attack_surp_ratio = attack_surp_ratio
+    def __init__(self, war):
+        self.war = war
+        self.attack_surp_ratio = war.get_attack_surp_ratio()
         self.id = None
         self.by = None
         self.planet = None
@@ -84,13 +99,17 @@ class Attack(object):
 
     def get_target_strength(self):
         # for attack on one realm
-        target_strength = _networth_to_strength(self.planet.networth)
+        if self.realm is None:
+            return _planet_strength(self.war.app, self.planet.realms)
 
-        if self.realm is not None:
-            # for planetary attack
-            target_strength = _networth_to_strength( self.realm.networth)
+        # for planetary attack
+        if (self.war.app.mentat.score_indicates_realm_in_protection(
+                self.realm).answer):
+            target_strength = 0
+        else:
+            target_strength = self.realm.networth
 
-        return target_strength
+        return _networth_to_strength(target_strength)
 
     def is_filled(self, num_reduces=0):
 
@@ -231,7 +250,7 @@ class War(Strategy):
             if len(user_tops) > 0:
                 self.possible_tops = []
                 for str_top in user_tops:
-                    self.possible_tops = int(str_top)
+                    self.possible_tops.append(int(str_top))
 
 
         self.tops = []
@@ -243,6 +262,7 @@ class War(Strategy):
         self.first_turn = True
         self.group_attacks = None
         self.attacked_targets = []
+        self.joined_gas = []
         self.at_war = None
         self.end_of_day = None
 
@@ -268,6 +288,12 @@ class War(Strategy):
             if p.relation != "Enemy":
                 continue
             for r in p.realms:
+
+                if (self.app.mentat.score_indicates_realm_in_protection(
+                        realm=r).answer):
+                    botlog.debug("Realm: " + (r.name) + " may be in protection")
+                    continue
+
                 if select_func(context, selected_realms, p, r):
                     selected_realms.append(r)
 
@@ -817,7 +843,7 @@ class War(Strategy):
         botlog.debug("GA parsing tokens: " + ', '.join(tokens))
 
         t = tokens
-        ga = Attack(self.get_attack_surp_ratio())
+        ga = Attack(self)
         i = 0
         ga.id = ToNum(t[i])
         i += 2 # skip who created the GA
@@ -865,6 +891,7 @@ class War(Strategy):
         sepchar = ';' #hopefully no one puts this char in their realm name
 
         self.data.gatext = ""
+        buf = ""
 
         while not done_reading and max_iterations > 0:
             buf = self.app.read()
@@ -910,7 +937,8 @@ class War(Strategy):
                     botlog.debug("reading body")
                     next_line_header = False
                     reading_body = True
-                elif reading_body and 'Join which group?' in line:
+                elif (reading_body and ('Join which group?' in line or
+                        'You must play one turn per entry into the game to access this option.' in line)):
                     botlog.debug("Done reading body")
                     reading_body = False
                     done_reading = True
@@ -959,9 +987,13 @@ class War(Strategy):
         if max_iterations <= 0:
             raise Exception("Too many iterations when listing GA's")
 
-        self.app.sendl(0, comment="Not joining GA, just reading list of "
-                                  "current ga's")
-        buf = self.app.read()
+        # on partial restart you don't get the option to join an attack
+        if ('You must play one turn per entry into the game to access this option.'
+                not in buf):
+            self.app.sendl(0, comment="Not joining GA, just reading list of "
+                                      "current ga's")
+            buf = self.app.read()
+
         if "[InterPlanetary Operations]" not in buf:
             raise Exception("Not back at ip menu after parsing group attacks")
 
@@ -1128,6 +1160,7 @@ class War(Strategy):
 
         if ret_val > 0:
             botlog.note("Joined attack: " + str(attack))
+            self.joined_gas.append(attack.id)
 
         return ret_val
 
@@ -1213,7 +1246,6 @@ class War(Strategy):
         low_hq = self.data.realm.army.headquarters.number < 100
         low_morale = False  # TODO, parse morale
 
-
         delay_attack = low_morale or (have_tanks and low_hq)
 
         if (delay_attack and
@@ -1226,6 +1258,24 @@ class War(Strategy):
             botlog.warn("Considering attacking even though morale or HQ is low")
 
         return True
+
+    def do_not_join_ga(self, ga):
+        # attack is filled don't join
+        if ga.is_filled():
+            botlog.debug("Attack: " + str(ga.id) +
+                         " Is filled, not joining")
+            return True
+
+        # if we already joined this attack, and we don't have much more to
+        # offer towards victory, don't fill it.
+        if (ga.id in self.joined_gas and
+                    self.data.get_attack_strength() <
+                        0.1 * ga.needed_strength(self.group_attacks)):
+            botlog.debug("Attack: " + str(ga.id) +
+                         " has already been joined, and we don't have "
+                         "much more to contribute")
+            return True
+        return False
 
     def maybe_join_winning_group_attacks(self):
 
@@ -1262,6 +1312,9 @@ class War(Strategy):
 
             botlog.debug("Determined that " + str(needed_strength_to_win_ga)
                          + " strength is required to win this GA")
+
+            if self.do_not_join_ga(ga):
+                continue
 
             if (0 < needed_strength_to_win_ga <=
                     self.data.get_attack_strength()):
@@ -1341,6 +1394,9 @@ class War(Strategy):
             for ga in cur_gas:
                 botlog.debug("Considering GA: " + str(ga.id))
 
+                if self.do_not_join_ga(ga):
+                    continue
+
                 val = self.join_group_attack(ga)
                 if val > 0:
                     botlog.debug("Joined GA: " + str(ga.id) + ", " +
@@ -1396,7 +1452,7 @@ class War(Strategy):
         buf = self.app.read()
         self.app.send(3, comment="Going balls deep with extended attack")
 
-        indie = Attack(self.get_attack_surp_ratio())
+        indie = Attack(self)
         indie.realm = target
         indie.planet = self.data.find_planet(target.planet_name)
         indie.troopers = 0
@@ -1476,9 +1532,7 @@ class War(Strategy):
 
     def get_planet_strength(self):
         # get our current strength
-        our_strength = 0
-        for realm in self.data.planet.realms:
-            our_strength += _networth_to_strength(realm.networth)
+        our_strength = _planet_strength(self.app, self.data.planet.realms)
 
         botlog.debug("Determined our planet has a combined strength of " +
                      str(our_strength))
@@ -1498,7 +1552,7 @@ class War(Strategy):
             if planet.relation != "Enemy":
                 continue
             if (our_strength * self.get_attack_surp_ratio() >=
-                    _networth_to_strength(planet.networth)):
+                    _planet_strength(self.app, planet.realms)):
                 global_target_planets.append(planet)
 
         # sort beatable enemies in order of most regions
@@ -1511,7 +1565,7 @@ class War(Strategy):
         if len(global_target_planets) == 0:
             return 0
 
-        global_attack = Attack(self.get_attack_surp_ratio())
+        global_attack = Attack(self)
         global_attack.planet = global_target_planets[0]
         global_attack.leave = leave
 
@@ -1531,7 +1585,7 @@ class War(Strategy):
 
         target_realm = targets[0]
 
-        group_attack = Attack(self.get_attack_surp_ratio())
+        group_attack = Attack(self)
         group_attack.planet = self.data.find_planet(target_realm.planet_name)
         group_attack.leave = leave
         group_attack.realm = target_realm
@@ -1705,8 +1759,25 @@ class War(Strategy):
             return
 
         if self.data.realm.gold < HUNMIL:
-            botlog.info("Skipping War operations, less than 100 mil on hand")
-            return
+
+            if (self.app.metadata.low_cash or (
+                        self.end_of_day.is_certain() and
+                        self.end_of_day.answer)):
+
+                self.app.send_seq(['v','w','>','\r','\r'],
+                                  comment='withdawing war funds at end of day')
+                botlog.info("We are low on money "
+                            "on hand, withdrawing some so we can make "
+                            "something happen")
+                buf = self.app.read()
+                self.wp.parse(self.app, buf)
+                if self.data.realm.gold < HUNMIL:
+                    botlog.info("Jeeze we are really broke, no war")
+                    return
+
+            else:
+                botlog.info("Skipping War operations, less than 100 mil on hand")
+                return
 
         if self.group_attacks is None:
             self.parse_group_attacks()

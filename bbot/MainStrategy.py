@@ -59,21 +59,21 @@ class MainStrategy(Strategy):
         if not self.data.is_oop():
             ratio = self.protection_sell_ratio
 
-        if (self.app.has_strategy("Investor") and
+        elif (self.app.has_strategy("Investor") and
                     (
                             self.data.realm.bank.investments) > 0 and  # TODO a better way to learn if investments are unparsed, or try to garantee that they are parsed before calling this funciton
                 not self.data.has_full_investments(days_missing=2)):
             # if only missing one day of investments, this is normal, don't
             # sell anything, otherwise sell a chunk
-            ratio =  self.investing_sell_ratio
-
-        # in general, we will sell a small portion of our army to suppliment
-        #   region growth
-        ratio = self.normal_sell_ratio
+            ratio = self.investing_sell_ratio
+        else:
+            # in general, we will sell a small portion of our army to suppliment
+            #   region growth
+            ratio = self.normal_sell_ratio
 
         if ((self.app.metadata.low_cash or
-                self.app.metadata.low_food) and ratio < 0.15):
-            ratio = 0.15
+                self.app.metadata.low_food) and ratio < 0.25):
+            ratio = 0.25
             botlog.warn("Low cash or food, Using emergency sell ratio")
 
         return ratio
@@ -221,6 +221,8 @@ class MainStrategy(Strategy):
         sell_ratio = self.get_army_sell_ratio()
 
         sellunits = self.get_sell_unit_types()
+        botlog.info("Selling items: " + str(sellunits) + " at ratio " +
+                    str(sell_ratio))
         if sellunits is not None and len(sellunits) > 0:
             sellItems = []
 
@@ -242,7 +244,7 @@ class MainStrategy(Strategy):
         buy_ratio = self.get_army_buy_ratio()
         buy_items = self.get_buy_unit_types()
         if (buy_ratio > 0 and self.data.realm.gold > 0 and
-            buy_items is not None and len(buy_items) > 0):
+                buy_items is not None and len(buy_items) > 0):
             self.buy_army_units(buy_items, buy_ratio)
 
         # enter region buying menu

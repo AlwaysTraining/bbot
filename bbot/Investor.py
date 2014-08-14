@@ -65,8 +65,7 @@ class Investor(Strategy):
             return Strategy.UNHANDLED
 
         if full_investments:
-            botlog.info("Not investing because there is less than 2 Bil in "
-                        "the bank")
+            botlog.info("Not investing because investments are fill")
             return Strategy.UNHANDLED
 
         if not full_bank:
