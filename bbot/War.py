@@ -1136,6 +1136,9 @@ class War(Strategy):
         while max_iterations > 0:
             buf = self.app.read()
             self.set_ga_text(buf)
+            if 'You must play one turn per entry into the game to access this option.' in buf:
+                botlog.debug("Can not join GA, we need to play another turn")
+                return 0
             if "Join which group?" in buf:
                 break
             self.app.sendl(comment="Who the fuck created so many damn GA's")
