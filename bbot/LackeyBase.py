@@ -148,7 +148,7 @@ class LackeyBase(Strategy):
 
                 if master_should_ignore_deal:
                     # request max agents, send for max time
-                    seq = ["\r", 7, ">", "\r", "\r", "y", ">", "\r", "\r" ]
+                    seq = ["\r", 7, HUNMIL, "\r", "\r", "y", ">", "\r", "\r" ]
                 else:
                     seq = ["\r", "\r", 'y', 2, "\r"]
 
