@@ -80,6 +80,11 @@ class MainStrategy(Strategy):
 
     def get_army_buy_ratio(self):
 
+        if ((self.app.metadata.low_cash or
+                self.app.metadata.low_food)):
+            botlog.warn("Low cash or food, Using emergency buy ratio")
+            return 0
+
         # if we are going to try to trade, don't buy anything
         will_attempt_to_trade = False
         if self.app.has_strategy("LocalLackey"):
@@ -233,7 +238,7 @@ class MainStrategy(Strategy):
                 else:
                     botlog.warn("could not find menu option for unit: " + str(s))
 
-            if sellItems is None and len(sellItems) > 0:
+            if sellItems is not None and len(sellItems) > 0:
                 botlog.info("Selling " + str(round(sell_ratio * 100, 1)) +
                             "% of " + str(sellItems))
 

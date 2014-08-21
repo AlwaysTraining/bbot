@@ -60,8 +60,10 @@ class RegionBuy(Strategy):
         # it has been shown necessary in war time, something with how the
         #   advisor calculates the deficit when there are a lot of waste
         #   regions
+        # if food is low, definatly, try to buy ag regions
         if (wartime or 
-            app.metadata.last_ag_buy_turn is None or (
+            app.metadata.last_ag_buy_turn is None or
+            app.metadata.low_food or (
                 app.metadata.last_ag_buy_turn !=
                 self.data.realm.turns.current)):
             # buy just enough ag, this sends us back to the spending menu
