@@ -486,7 +486,7 @@ class War(Strategy):
                 self.buy_army_units(
                     "carriers",
                     buyratio=None,
-                    desired_ammount=ammount)
+                    desired_ammount=1 + ammount)
 
 
     def get_highest_networth_enemy_realm(self):
