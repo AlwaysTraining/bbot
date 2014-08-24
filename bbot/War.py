@@ -641,6 +641,9 @@ class War(Strategy):
                 botlog.debug("Just sent the last bomb for today")
                 break
 
+        if ('(4) Undermine Investments' not in buf):
+            botlog.info("We must have already sent all undermines today")
+            self.all_undermines_sent = True
 
 
         # send s-op undermines
