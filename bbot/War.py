@@ -263,6 +263,7 @@ class War(Strategy):
         self.group_attacks = None
         self.attacked_targets = []
         self.joined_gas = []
+        self.currently_filling_ga = None
         self.at_war = None
         self.end_of_day = None
 
@@ -1265,22 +1266,30 @@ class War(Strategy):
 
         return True
 
-    def do_not_join_ga(self, ga):
+    def do_not_fill_ga(self, ga):
         # attack is filled don't join
         if ga.is_filled():
             botlog.debug("Attack: " + str(ga.id) +
                          " Is filled, not joining")
             return True
 
-        # if we already joined this attack, and we don't have much more to
-        # offer towards victory, don't fill it.
-        if (ga.id in self.joined_gas and
-                    self.data.get_attack_strength() <
-                        0.1 * ga.needed_strength(self.group_attacks)):
-            botlog.debug("Attack: " + str(ga.id) +
-                         " has already been joined, and we don't have "
-                         "much more to contribute")
+        # if we have no GA that we are currently filling
+        # then we could join this one
+        if self.currently_filling_ga is None:
+            return False
+
+        # if this is not the GA that we are currently filling
+        # we don't want to fill it. (we probably could use reference
+        # comparison here, but id comparison should be more robust)
+        if self.currently_filling_ga.id != ga.id:
             return True
+
+        # now we know this is the GA we are currently filling, we can't
+        # contribute at least 10% of current atttack, strength, do not join
+        if (self.data.get_attack_strength() <
+            0.1 * ga.needed_strength(self.group_attacks)):
+            return True
+
         return False
 
     def maybe_join_winning_group_attacks(self):
@@ -1319,9 +1328,6 @@ class War(Strategy):
             botlog.debug("Determined that " + str(needed_strength_to_win_ga)
                          + " strength is required to win this GA")
 
-            if self.do_not_join_ga(ga):
-                continue
-
             if (0 < needed_strength_to_win_ga <=
                     self.data.get_attack_strength()):
 
@@ -1339,6 +1345,8 @@ class War(Strategy):
 
     def maybe_fill_group_attacks(self):
 
+        ret_val = 0
+
         if not self.try_get_strategy_option(
                 "join_future_group_attacks", True):
             return 0
@@ -1346,7 +1354,7 @@ class War(Strategy):
         # we only join Ga's at the end of our day, theory being, we have
         # already filled any ga's that will win as first priority, and
         # we have also sent any winnable indies
-        if self.end_of_day.is_certain() and self.end_of_day.answer:
+        if self.end_of_day.is_certain() and not self.end_of_day.answer:
             botlog.debug("Not filling GA, more than " + str(
                 END_OF_DAY_TURNS) + " turns remain")
             return 0
@@ -1355,6 +1363,30 @@ class War(Strategy):
         if self.data.get_attack_strength() < 1000:
             botlog.debug("Not filling GA, we have very low strength")
             return 0
+
+        # is the ga we are currently filling full?
+        if (    self.currently_filling_ga is not None and
+                self.currently_filling_ga.is_filled()):
+                # the currenty filling ga is now full, reset it
+            self.currently_filling_ga = None
+
+        # if there is a GA we are currently filling, just fill that
+        if (self.currently_filling_ga is not None and
+            not self.do_not_fill_ga(self.currently_filling_ga)):
+
+            val = self.join_group_attack(self.currently_filling_ga)
+            if val > 0:
+                ret_val += val
+                botlog.debug("Joined GA: " + str(self.currently_filling_ga.id) +
+                             ", " + "with strength: " + str(val))
+                self.attacked_targets.append(self.currently_filling_ga.realm)
+                if self.currently_filling_ga.is_filled():
+                    self.currently_filling_ga = None
+
+        # if there is a GA that continues to need filling, don't search list
+        # for new ga
+        if self.currently_filling_ga is not None:
+            return ret_val
 
         # itterate ga's in 24 hour windows
         for t1, t2 in zip(range(0, 24 * 5, 24), range(24, 24 * 6, 24)):
@@ -1395,12 +1427,12 @@ class War(Strategy):
             # globals
             cur_gas = global_gas + indie_gas
 
-            ret_val = 0
+
 
             for ga in cur_gas:
                 botlog.debug("Considering GA: " + str(ga.id))
 
-                if self.do_not_join_ga(ga):
+                if self.do_not_fill_ga(ga):
                     continue
 
                 val = self.join_group_attack(ga)
@@ -1409,6 +1441,11 @@ class War(Strategy):
                                  "with strength: " + str(val))
                     ret_val += val
                     self.attacked_targets.append(ga.realm)
+                    # we just joined an attack, if it is not full, this is the
+                    # current attack we will be joining until it gets filled
+                    if not ga.is_filled():
+                        self.currently_filling_ga = ga
+                        break
 
                 # if we don't have much more army, stop joining
                 if self.data.get_attack_strength() < 1000:
@@ -1419,6 +1456,7 @@ class War(Strategy):
             if self.data.get_attack_strength() < 1000:
                 botlog.debug("Army is too low, stop joining all GA's")
                 break
+
 
         botlog.debug("Filled " + str(ret_val) + " strength worth of GA's")
         return ret_val
