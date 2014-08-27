@@ -596,8 +596,8 @@ class Data(dict):
         self.league = None
         self.ipscorestext = ''
         self.eventtext = ''
-        self.gatextdict = {}
         self.otherrealmscores = ''
+        self.gatext = ''
 
 
     def __str__(self):

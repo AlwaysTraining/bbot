@@ -61,23 +61,22 @@ class Attack(object):
     def __str__(self):
 
         msg = ""
-        msg += "Target: "
+        msg += "Attack (" + str(self.id) + "): "
         if self.planet is not None:
             msg += str(self.planet.name)
         if self.realm is not None:
             msg += " : " + self.realm.name
 
-        if self.troopers is not None and self.troopers > 0:
-            msg += ", Troopers: " + readable_num(self.troopers)
+        astrength = self.get_strength()
+        nstrength = self.needed_strength(self.war.group_attacks)
 
-        if self.jets is not None and self.jets > 0:
-            msg += ", Jets: " + readable_num(self.jets)
+        if nstrength > 0:
+            fullness = int(round(astrength / nstrength * 100.0))
+        else:
+            fullness = 0
 
-        if self.tanks is not None and self.tanks > 0:
-            msg += ", Tanks: " + readable_num(self.tanks)
-
-        if self.bombers is not None and self.bombers > 0:
-            msg += ", Bombers: " + readable_num(self.bombers)
+        msg += ", Tank equiv: " + readable_num(astrength/4.0)
+        msg += ", Filled: " + str(fullness) + "%"
 
         if self.leave is not None:
             msg += ", Leaves in " + str(self.leave) + " hours"
@@ -129,9 +128,14 @@ class Attack(object):
 
     def needed_strength(self, group_attacks, base=False):
 
+        # note, __str__ now uses this function, don't try to call __str__
+        # from this function (like with logging) or it will infinatly recurse
+
         botlog.debug("Determining needed strength for attack: " +
                      str(self))
 
+        # TODO, the base parameter is being ignored, have to look in to this
+        # are we getting expected behavior?
         # base needed strength
         base = (self.get_target_strength() * self.get_attack_surp_ratio())
 
