@@ -132,7 +132,7 @@ class Attack(object):
         # from this function (like with logging) or it will infinatly recurse
 
         botlog.debug("Determining needed strength for attack: " +
-                     str(self))
+                     str(self.id))
 
         # TODO, the base parameter is being ignored, have to look in to this
         # are we getting expected behavior?
