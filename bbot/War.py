@@ -61,7 +61,7 @@ class Attack(object):
     def __str__(self):
 
         msg = ""
-        msg += "Attack (" + str(self.id) + "): "
+        msg += "Attack " + str(self.id) + " to "
         if self.planet is not None:
             msg += str(self.planet.name)
         if self.realm is not None:
@@ -71,15 +71,16 @@ class Attack(object):
         nstrength = self.needed_strength(self.war.group_attacks)
 
         if nstrength > 0:
-            fullness = int(round(astrength / nstrength * 100.0))
+            fullness = astrength / float(nstrength) * 100.0
+            fullness = int(round(fullness))
         else:
             fullness = 0
 
-        msg += ", Tank equiv: " + readable_num(astrength/4.0)
-        msg += ", Filled: " + str(fullness) + "%"
+        msg += ", Tanks: " + readable_num(astrength/4.0)
+        msg += ", Fill: " + str(fullness) + "%"
 
         if self.leave is not None:
-            msg += ", Leaves in " + str(self.leave) + " hours"
+            msg += ", Leaves: " + str(self.leave) + "h"
 
         return msg
 
