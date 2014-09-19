@@ -24,13 +24,19 @@ MULTIPLE_ATTACK_REDUCER = 0.9
 DEFENSIIVE_RESERVE_RATIO = 0.1
 
 
+def _realm_in_protection(app, r):
+    if app.try_get_app_value("War_attack_protected_realms",False):
+        return False
+    return app.mentat.score_indicates_realm_in_protection(realm=r).answer
+
+
 def _networth_to_strength(net):
     return net * 4
 
 def _unprotected_planet_networth(app, realms):
     unprotected_networth = 0
     for r in realms:
-        if not app.mentat.score_indicates_realm_in_protection(realm=r).answer:
+        if not _realm_in_protection(app, r):
             unprotected_networth += r.networth
     return unprotected_networth
 
@@ -103,8 +109,7 @@ class Attack(object):
             return _planet_strength(self.war.app, self.planet.realms)
 
         # for planetary attack
-        if (self.war.app.mentat.score_indicates_realm_in_protection(
-                self.realm).answer):
+        if _realm_in_protection(self.war.app, r):
             target_strength = 0
         else:
             target_strength = self.realm.networth
@@ -295,8 +300,7 @@ class War(Strategy):
                 continue
             for r in p.realms:
 
-                if (self.app.mentat.score_indicates_realm_in_protection(
-                        realm=r).answer):
+                if _realm_in_protection(self.app, r):
                     botlog.debug("Realm: " + (r.name) + " may be in protection")
                     continue
 
