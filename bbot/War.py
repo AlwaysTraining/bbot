@@ -432,6 +432,13 @@ class War(Strategy):
 
         if self.at_war is None:
             self.at_war = self.get_num_enemy_planets() > 0
+            if self.at_war:
+                realms = self.select_enemy_realms(
+                    None,
+                    self._select_highest_networth_enemy_realm)
+                if len(realms) == 0:
+                    self.at_war = False
+
             if not self.at_war:
                 botlog.info("No Enemies Found")
 
