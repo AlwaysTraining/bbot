@@ -36,7 +36,7 @@ def _networth_to_strength(net):
 def _unprotected_planet_networth(app, realms):
     unprotected_networth = 0
     for r in realms:
-        if not realm_in_protection(app, r):
+        if not _realm_in_protection(app, r):
             unprotected_networth += r.networth
     return unprotected_networth
 
