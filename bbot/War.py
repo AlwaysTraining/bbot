@@ -36,7 +36,7 @@ def _networth_to_strength(net):
 def _unprotected_planet_networth(app, realms):
     unprotected_networth = 0
     for r in realms:
-        if not _realm_in_protection(app, r):
+        if not realm_in_protection(app, r):
             unprotected_networth += r.networth
     return unprotected_networth
 
@@ -109,7 +109,7 @@ class Attack(object):
             return _planet_strength(self.war.app, self.planet.realms)
 
         # for planetary attack
-        if _realm_in_protection(self.war.app, r):
+        if _realm_in_protection(self.war.app, self.realm):
             target_strength = 0
         else:
             target_strength = self.realm.networth
