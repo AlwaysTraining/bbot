@@ -16,6 +16,12 @@ class RegionBuy(Strategy):
     def __init__(self, app, num_regions=None, region_ratio=None,
                  enter_region_menu=False):
         Strategy.__init__(self, app)
+        self.protection_region_buy_ratio = self.app.try_get_app_value(
+            "protection_region_buy_ratio", 0)
+        self.investing_region_buy_ratio = self.app.try_get_app_value(
+            "investing_region_buy_ratio", 0)
+        self.normal_region_buy_ratio = self.app.try_get_app_value(
+            "normal_region_buy_ratio", 0)
         self.data = self.app.data
         self.realm = self.app.data.realm
         self.regions = self.app.data.realm.regions
@@ -90,34 +96,22 @@ class RegionBuy(Strategy):
         must_allocate = num_regions is not None
 
         if not must_allocate:
+
+            ratio = self.get_region_buy_ratio()
+            newa = int(math.ceil(self.a * ratio))
+
+
             # if we are very low on regions, buy some
             if (self.data.realm.regions.number is not None and
-                    self.data.realm.regions.number < 500):
-                if 500 < self.a:
-                    enter_to_exit = True
-                    self.a = 500
+                self.data.realm.regions.number < 500 and newa < 500):
+                botlog.warn("Regions are dangerously low, overiding ratios "
+                            "and buying at least 500")
+                newa = min(self.a,500)
 
-            # during wartime we do not but regions unless in danger of bank
-            # overflow, and then we will only buy 1/8th of what we can afford
-            elif wartime:
-                if self.data.realm.gold > 0.75 * TWOBIL:
-                    botlog.info("buying some regions in wartime so we don't "
-                                "overflow our cash")
-
-                    self.a = int(math.ceil(self.a * 0.75))
-                else:
-                    botlog.info("Not buying any regions in wartime")
-                    self.a = 0
-                enter_to_exit = True
-            # We want some money for investments, but only out of protection
-            elif (self.app.has_strategy("Investor") and
-                    self.data.is_oop() and
-                    not self.data.has_full_investments()):
-                self.a = int(math.ceil(self.a * 0.125))
+            if newa < self.a:
                 enter_to_exit = True
 
-
-
+            self.a = newa
 
         if self.a == 0:
             botlog.info("not buying any regions")
@@ -255,5 +249,41 @@ class RegionBuy(Strategy):
         #   we will start buying the number we
         #   ended up having to buy this time
 
+
+
+    def get_region_buy_ratio(self):
+        if not self.data.is_oop():
+            ratio = self.protection_region_buy_ratio
+
+        elif (self.app.has_strategy("Investor") and (
+                self.data.realm.bank.investments) > 0 and  # TODO a better way to learn if investments are unparsed, or try to garantee that they are parsed before calling this funciton
+                not self.data.has_full_investments(days_missing=2)):
+            # if only missing one day of investments, this is normal, don't
+            # sell anything, otherwise sell a chunk
+            ratio = self.investing_region_buy_ratio
+        else:
+            # in general, we will sell a small portion of our army to suppliment
+            # region growth
+            ratio = self.normal_region_buy_ratio
+
+
+        if ((self.app.metadata.low_cash or
+                 self.app.metadata.low_food) and ratio > 0.1):
+            ratio = 0.1
+            botlog.warn(
+                "Low cash or food, Using emergency region buy ratio 0.1")
+        else:
+            wartime = self.app.has_strategy("War")
+            if wartime:
+                botlog.info("War strategy overides region ratio to 0")
+                ratio = 0
+
+            if self.data.realm.gold > 0.75 * TWOBIL and ratio < 0.5:
+                botlog.info("Cash on hand is high, and region ratio is low, "
+                            "overriding region buy ratio to 0.5")
+                ratio = 0.5
+
+
+        return ratio
 
 

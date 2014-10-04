@@ -84,7 +84,7 @@ class Investor(Strategy):
                         "it is not the end of the day")
             return Strategy.UNHANDLED
 
-        if not mostly_full_investments and not high_cash and not end_of_day:
+        if mostly_full_investments and not high_cash and not end_of_day:
             botlog.info("No need to invest now, investments are mostly full, "
                         "it is early in the day, and we are not in danger of "
                         "overflowing cash")
