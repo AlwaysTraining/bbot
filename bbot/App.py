@@ -93,10 +93,7 @@ class App:
         # if reading options from file, dates will still be strings
         for key, value in options.items():
             if Utils.is_date(value):
-                print key, "is date"
                 options[key] = Utils.string_to_date(value)
-            else:
-                print key, "is not date"
 
         self.query_func = query_func
         self.secret_query_func = secret_query_func
