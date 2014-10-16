@@ -99,7 +99,7 @@ class RegionBuy(Strategy):
 
             ratio = self.get_region_buy_ratio()
             botlog.info("Determined region buy ratio of " + str(ratio))
-            
+
             newa = int(math.ceil(self.a * ratio))
 
 
