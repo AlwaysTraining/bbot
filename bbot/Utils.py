@@ -275,6 +275,9 @@ def make_string_list(items):
             items = [x.strip() for x in items.split(',')]
         else:
             items = [items]
+    else:
+        # case for one number as a list
+        items = [items]
 
     return items
 
