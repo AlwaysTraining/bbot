@@ -437,7 +437,7 @@ class War(Strategy):
                     None,
                     self._select_highest_networth_enemy_realm)
                 if len(realms) == 0:
-                    botlog.warning("There are no attackable realms")
+                    botlog.warn("There are no attackable realms")
                     self.at_war = False
 
             if not self.at_war:
