@@ -565,7 +565,7 @@ class Planet(object):
     def find_realm(self, name):
         found = None
         for r in self.realms:
-            if name.lower() in r.name.lower():
+            if name !=  "" and name.lower() in r.name.lower():
                 if found is not None:
                     raise Exception("Ambiguous planet name search: " +
                                     str(name))
@@ -808,7 +808,7 @@ class Data(dict):
         name = name.lower()
         found = None
         for p in self.league.planets:
-            if name in p.name.lower():
+            if name != "" and name in p.name.lower():
                 if found is not None:
                     raise Exception("Ambiguously specified planet")
                 found = p
